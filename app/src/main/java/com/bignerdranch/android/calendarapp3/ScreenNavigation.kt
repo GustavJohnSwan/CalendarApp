@@ -12,10 +12,12 @@ import androidx.navigation.compose.rememberNavController
 fun ScreenNavigation() {
     val navController = rememberNavController()
     val entryTableViewModel: EntryTableViewModel = viewModel()
+    val editEntryViewModel: EditEntryViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "MainScreen") {
-        composable("MainScreen") { MainScreen(navController = navController, entryTableViewModel = entryTableViewModel) }
-        composable("NewEntry") { NewEntry(navController = navController, entryTableViewModel = entryTableViewModel) }
+        composable("MainScreen") { MainScreen(navController = navController, entryTableViewModel = entryTableViewModel, editEntryViewModel = editEntryViewModel) }
+        composable("NewEntry") { NewEntry(navController = navController, entryTableViewModel = entryTableViewModel, editEntryViewModel = editEntryViewModel) }
+        composable("EditEntry") { EditEntry(navController = navController, entryTableViewModel = entryTableViewModel, editEntryViewModel = editEntryViewModel) }
     }
 
 }

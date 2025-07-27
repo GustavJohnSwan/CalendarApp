@@ -21,14 +21,12 @@ class CalendarViewModel : ViewModel() {
     var newEventText by mutableStateOf("")
         private set
 
-    // DELETE THIS AND EVERYTHING RELATED TO IT
-    /*
-    private var _counter = mutableStateOf(0)
-    val counter: State<Int> = _counter
-     */
+
 
 
     // used to update the SELECTED DATE
+    // CAUTION : this function didn't have a name origianlly. Recently this caused an error, so I identified that this was probably the function name
+    // I'm not sure if this will cause an error down the line so BE AWARE that this change happenned
     fun onDateSelected(date: LocalDate?) {
         selectedDate = if (selectedDate == date) null else date
     }

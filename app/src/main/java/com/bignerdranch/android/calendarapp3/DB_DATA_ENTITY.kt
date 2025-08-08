@@ -1,18 +1,31 @@
 package com.bignerdranch.android.calendarapp3
 
 import androidx.room.ColumnInfo
+import androidx.room.Embedded
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 
 // this defines the tables of the database
 
 // main table
-@Entity
+// FK doesn't work yet
+@Entity/*(
+    foreignKeys = [ForeignKey(
+        entity = EntryTable::class,
+        parentColumns = ["idExtra"],
+        childColumns = ["idEx"],
+        onDelete = ForeignKey.CASCADE
+    )]
+)
+*/
 data class EntryTable(
     @PrimaryKey(autoGenerate = true) val id: Int,
     @ColumnInfo(name = "date") val dateDB: String?,
     @ColumnInfo(name = "entry") val entryDB: String?,
-    @ColumnInfo(name = "id_ex") val idEx: String?
+    @ColumnInfo(name = "id_ex") val idEx: String? // this has to be changed into an Int
+
 )
 
 // this table is not currently used by the app

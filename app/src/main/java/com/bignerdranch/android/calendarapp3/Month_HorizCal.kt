@@ -22,6 +22,7 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.YearMonth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import java.time.LocalDate
 
 /*
 I implemented viewModel to seperate the UI design elements (composablse) from business logic elements.
@@ -31,7 +32,7 @@ I also make sure the app remembers (saves) certain state data when recomposition
 
 // this is the main screen composable that calls many of the other relevant composables for the month view
 @Composable
-fun MainScreen(navController: NavController, viewModel: CalendarViewModel = viewModel(), entryTableViewModel: EntryTableViewModel) {
+fun MainScreen(navController: NavController, viewModel: CalendarViewModel = viewModel(), entryTableViewModel: EntryTableViewModel, editEntryViewModel: EditEntryViewModel) {
 
     // only calls this function (retrieves database EntryTable data) once when MainScreen composable is first composed
     LaunchedEffect(Unit) {
@@ -90,7 +91,13 @@ fun MainScreen(navController: NavController, viewModel: CalendarViewModel = view
                     viewModel.toggleDayContentDialog(false) // changes showDayContentDialog value on dismiss
                     navController.navigate("NewEntry") // navigates to different composable
                 },
-                eventList = entryList // passes the entryTable list as event list to the dialog
+                onEditEntry = {
+                    viewModel.toggleDayContentDialog(false) // changes showDayContentDialog value on dismiss
+                    navController.navigate("EditEntry") // navigates to different composable
+                },
+                eventList = entryList, // passes the entryTable list as event list to the dialog
+
+                editEntryViewModel = editEntryViewModel
             )
         }
 
@@ -106,7 +113,9 @@ of showDayContentDialog. This boolean defines whether the DayContents DIALOG pop
                 Day(
                     onDateClick = { viewModel.toggleDayContentDialog(true) },
                     day,
-                    isSelected = viewModel.selectedDate == day.date
+                    isSelected = viewModel.selectedDate == day.date,
+                    onDateSelect = { selectedDate -> editEntryViewModel.saveSelectedDate(selectedDate) }
+
                 ) { day ->
                     viewModel.onDateSelected(day.date)
                 }
@@ -154,7 +163,14 @@ of showDayContentDialog. This boolean defines whether the DayContents DIALOG pop
 
 
             //------------------------------------------------------------------------------------
-            // delete and update (for testing, not currently integrated in the project)
+            // (delete and update (for testing, not currently integrated in the project)) (outdated comment)
+            //------------------------------------------------------------------------------------
+            //------------------------------------------------------------------------------------
+            //------------------------------------------------------------------------------------
+            // upper comment seems outdated and misleading. This code lists all entries in the database EntryTable
+            // and also adds two buttons under each displayed entry :
+            // update -> refreshes the list (in case a new entry has been made)
+            // delete -> deletes the elected entry
             entryList.forEach { entryTable ->
                 Column(modifier = Modifier.padding(4.dp)) {
                     Text(text = "Rez: ${entryTable.id}: ${entryTable.dateDB} ${entryTable.entryDB} ${entryTable.idEx}")

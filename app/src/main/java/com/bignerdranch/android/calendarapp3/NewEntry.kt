@@ -24,103 +24,51 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 @Composable
-fun NewEntry(navController: NavController, viewModel: CalendarViewModel = viewModel(), entryTableViewModel: EntryTableViewModel, editEntryViewModel: EditEntryViewModel,) {
-    var errorText by remember { mutableStateOf("") }
-
+fun NewEntry(
+    navController: NavController,
+    viewModel: CalendarViewModel = viewModel(),
+    entryTableViewModel: EntryTableViewModel,
+    editEntryViewModel: EditEntryViewModel
+) {
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var isExtraDataEnabled by remember { mutableStateOf(false) }
-    var extraFieldOne by remember { mutableStateOf("") }
-    var extraFieldTwo by remember { mutableStateOf("") }
 
     Column {
+        OutlinedTextField(
+            value = viewModel.newEventText,
+            onValueChange = {
+                viewModel.onEventTextBoxSelect(it)
+                errorMessage = null
+            },
+            label = { Text("Enter Event") },
+            isError = errorMessage != null,
+            modifier = Modifier.padding(16.dp)
+        )
 
-
-        Row {
-
-            // takes the input and gives it to viewModel
-            OutlinedTextField(
-                value = viewModel.newEventText,
-                onValueChange = {
-                    viewModel.onEventTextBoxSelect(it)
-                    errorText = ""
-                },
-                label = { Text("Enter Event") },
-                isError = errorText.isNotEmpty()
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
+        }
 
-            if (errorText.isNotEmpty()) {
-                Text(
-                    text = errorText,
-                    color = Color.Red,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                    textAlign = TextAlign.Start
+        Button(
+            onClick = {
+                if (viewModel.newEventText.isBlank()) {
+                    errorMessage = "Event cannot be empty"
+                    return@Button
+                }
+
+                entryTableViewModel.insertEntry(
+                    date = editEntryViewModel.selectedDate,
+                    content = viewModel.newEventText
                 )
-            }
-        }
-
-
-        Row {
-            // takes the user input and adds it to the database EntryTable
-            Button(
-                onClick = {
-                    val trimmedInput = viewModel.newEventText.trim()
-                    if (trimmedInput.isBlank()) {
-                        errorText = "Name cannot be empty."
-                        return@Button
-                    }
-
-                    val nameParts = trimmedInput.split(" ")
-                    //val dateDB = nameParts.getOrNull(0) ?: ""
-                    val dateDB = editEntryViewModel.selectedDate ?: ""
-                    val entryDB = nameParts.getOrNull(0) ?: ""
-                    val idEx = nameParts.getOrNull(1) ?: ""
-
-                    if (dateDB.length < 2) {
-                        errorText = "First name must be at least 2 characters."
-                        return@Button
-                    }
-
-                    entryTableViewModel.insertEntryTable(dateDB, entryDB, idEx)
-                    navController.popBackStack()
-                    entryTableViewModel.getAllEntryTables()
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Save Changes")
-            }
-
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+                navController.popBackStack()
+            },
+            modifier = Modifier.padding(16.dp)
         ) {
-            Column {
-                Text(
-                    "Extra Data ",
-                    modifier = Modifier.padding(end = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-            Column {
-                SwitchExtraData(
-                    isChecked = isExtraDataEnabled,
-                    onCheckedChange = { isExtraDataEnabled = it }
-                )
-
-            }
-        }
-        // Conditionally show extra fields
-        if (isExtraDataEnabled) {
-            Row {
-                OutlinedTextField(
-                    value = extraFieldOne,
-                    onValueChange = { extraFieldOne = it },
-                    label = { Text("Reminder (yyyy-mm-dd hh:mm)") },
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            Row {
-                CheckBoxRepeatEvent()
-            }
+            Text("Save Event")
         }
     }
 }

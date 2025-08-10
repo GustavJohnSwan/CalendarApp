@@ -12,6 +12,10 @@ interface EntryDao {
     @Query("SELECT * FROM EntryTable")
     suspend fun get_AllEntries(): List<EntryTable>
 
+    // Add this new query to get entries by specific date
+    @Query("SELECT * FROM EntryTable WHERE date = :date")
+    suspend fun getEntriesByDate(date: String): List<EntryTable>
+
     @Update
     suspend fun update_Entry(entryTable: EntryTable)
 

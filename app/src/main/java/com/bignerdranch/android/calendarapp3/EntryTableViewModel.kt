@@ -11,43 +11,54 @@ import kotlinx.coroutines.launch
 // this one is responsible for the business logic relating to interactions with the database
 class EntryTableViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
-    private val EntryDao = db.entryDao()
+    private val entryDao = db.entryDao()
 
-    // this list holds the values of EntryTable
+    // For all entries
     private val _entryList = mutableStateOf<List<EntryTable>>(emptyList())
-
-    // this exposes the list as READ-ONLY
     val entryList: State<List<EntryTable>> = _entryList
 
-    // this inserts a new entry in the EntryTable
-    fun insertEntryTable(dateDB: String, entryDB: String, idEx: String) {
+    // For date-specific entries
+    private val _dateEntries = mutableStateOf<List<EntryTable>>(emptyList())
+    val dateEntries: State<List<EntryTable>> = _dateEntries
+
+    fun loadEntriesForDate(date: String) {
         viewModelScope.launch {
-            EntryDao.insert_IntoEntryTable(EntryTable(id = 0, dateDB = dateDB, entryDB = entryDB, idEx = idEx))
+            _dateEntries.value = entryDao.getEntriesByDate(date)
         }
     }
 
-    // this gets all the entries from the database EntryTable and inserts them into the List
-    fun getAllEntryTables() {
+    fun insertEntry(date: String, content: String) {
         viewModelScope.launch {
-            val entryTables = EntryDao.get_AllEntries()
-            _entryList.value = entryTables // Update the state
+            entryDao.insert_IntoEntryTable(
+                EntryTable(
+                    id = 0,
+                    dateDB = date,
+                    entryDB = content,
+                    idEx = null
+                )
+            )
+            // Refresh entries for this date after insertion
+            loadEntriesForDate(date)
         }
     }
 
-    // this changes the value of the selected entry in EntryTable
-    fun updateEntryTable(entryTable: EntryTable) {
+    fun getAllEntries() {
         viewModelScope.launch {
-            EntryDao.update_Entry(entryTable)
+            _entryList.value = entryDao.get_AllEntries()
         }
     }
 
-    // this deletes the selected entry from the database table EntryTable
-    fun deleteEntryTable(entryTable: EntryTable) {
+    fun updateEntry(entry: EntryTable) {
         viewModelScope.launch {
-            EntryDao.delete_Entry(entryTable)
-            getAllEntryTables() // Refresh list after delete IMPLEMENT THIS FROM THE BEGINNING AUTOMATICALLY
+            entryDao.update_Entry(entry)
+            getAllEntries()
         }
     }
 
-
+    fun deleteEntry(entry: EntryTable) {
+        viewModelScope.launch {
+            entryDao.delete_Entry(entry)
+            getAllEntries()
+        }
+    }
 }

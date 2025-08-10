@@ -32,34 +32,20 @@ I also make sure the app remembers (saves) certain state data when recomposition
 
 // this is the main screen composable that calls many of the other relevant composables for the month view
 @Composable
-fun MainScreen(navController: NavController, viewModel: CalendarViewModel = viewModel(), entryTableViewModel: EntryTableViewModel, editEntryViewModel: EditEntryViewModel) {
-
-    // only calls this function (retrieves database EntryTable data) once when MainScreen composable is first composed
-    LaunchedEffect(Unit) {
-        entryTableViewModel.getAllEntryTables()
-    }
-
+fun MainScreen(
+    navController: NavController,
+    viewModel: CalendarViewModel = viewModel(),
+    entryTableViewModel: EntryTableViewModel,
+    editEntryViewModel: EditEntryViewModel
+) {
     val currentMonth = remember { YearMonth.now() }
     val startMonth = remember { currentMonth.minusMonths(100) }
     val endMonth = remember { currentMonth.plusMonths(100) }
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
 
-    // for DATABASE
-    // this is the list that contains the database EntryTable entries
-    val entryList by entryTableViewModel.entryList
+    // Get the entries for the currently selected date
+    val dateEntries by entryTableViewModel.dateEntries
 
-    // these are the EntryTable entry values
-    var dateDB by remember { mutableStateOf("") }
-    var entryDB by remember { mutableStateOf("") }
-    var idEx by remember { mutableStateOf("") }
-
-    // some example values for testing
-    dateDB = "Viens"
-    entryDB = "VēlViens"
-    idEx = "1"
-
-
-    // saves the parameters across recomposition
     val state = rememberCalendarState(
         startMonth = startMonth,
         endMonth = endMonth,
@@ -67,137 +53,59 @@ fun MainScreen(navController: NavController, viewModel: CalendarViewModel = view
         firstDayOfWeek = firstDayOfWeek
     )
 
-
-    // will produce => Sun | Mon | Tue | Wed | Thu | Fri | Sat
     val daysOfWeek = daysOfWeek()
 
     Column {
-        // defines variables to hold year and month values
         val displayedYear = state.firstVisibleMonth.yearMonth.year
         val displayedMonth = state.firstVisibleMonth.yearMonth.month.name.uppercase()
 
-        // calls the composable for displaying these variables correctly
         YearAndMonthDisplay(displayedMonth = displayedMonth, displayedYear = displayedYear)
 
-
-        // calls the MinimalDialog composable (responsible for the contents of a specific date, doesn't yet work as intended) if showDayContentDialog is set to true
         if (viewModel.showDayContentDialog) {
             MinimalDialog(
                 onDismissRequest = {
-                    viewModel.toggleDayContentDialog(false) // changes showDayContentDialog value on dismiss
-                    viewModel.onDateSelected(null) // clears selection on dismiss
+                    viewModel.toggleDayContentDialog(false)
+                    viewModel.onDateSelected(null)
                 },
                 onNewEntry = {
-                    viewModel.toggleDayContentDialog(false) // changes showDayContentDialog value on dismiss
-                    navController.navigate("NewEntry") // navigates to different composable
+                    viewModel.toggleDayContentDialog(false)
+                    navController.navigate("NewEntry")
                 },
-                onEditEntry = {
-                    viewModel.toggleDayContentDialog(false) // changes showDayContentDialog value on dismiss
-                    navController.navigate("EditEntry") // navigates to different composable
+                onEditEntry = { entry ->  // Now receives the entry directly
+                    editEntryViewModel.selectedEntry = entry
+                    navController.navigate("EditEntry")
                 },
-                eventList = entryList, // passes the entryTable list as event list to the dialog
-
-                editEntryViewModel = editEntryViewModel
+                editEntryViewModel = editEntryViewModel,
+                eventList = dateEntries // Use the date-specific entries
             )
         }
 
-        /*
-I give the composable Day() a function onDateClick() as a parameter so that I could change the boolean value
-of showDayContentDialog. This boolean defines whether the DayContents DIALOG pops up.
- */
-        // calls the HorizontalCalendar composable
-        // this comes from the kizitonwose library and it is responsible for generating the interactive month view UI
         HorizontalCalendar(
             state = state,
             dayContent = { day ->
                 Day(
-                    onDateClick = { viewModel.toggleDayContentDialog(true) },
-                    day,
+                    onDateClick = {
+                        viewModel.toggleDayContentDialog(true)
+                        // Load entries when date is clicked
+                        viewModel.selectedDate?.let {
+                            entryTableViewModel.loadEntriesForDate(it.toString())
+                        }
+                    },
+                    day = day,
                     isSelected = viewModel.selectedDate == day.date,
-                    onDateSelect = { selectedDate -> editEntryViewModel.saveSelectedDate(selectedDate) }
-
+                    onDateSelect = { selectedDate ->
+                        editEntryViewModel.saveSelectedDate(selectedDate.toString())
+                        // Load entries immediately when date is selected
+                        entryTableViewModel.loadEntriesForDate(selectedDate.toString())
+                    }
                 ) { day ->
                     viewModel.onDateSelected(day.date)
                 }
             },
-
             monthHeader = {
-                DaysOfWeekTitle(daysOfWeek = daysOfWeek) // calls the composable responsible for week day names
+                DaysOfWeekTitle(daysOfWeek = daysOfWeek)
             }
         )
-
-
-
-        // for the DATABASE
-        Column(modifier = Modifier.padding(16.dp)) {
-
-            // button that inserts predefined entry into database EntryTable
-            Button(onClick = {
-                if (dateDB.isNotEmpty() && entryDB.isNotEmpty()) {
-                    entryTableViewModel.insertEntryTable(dateDB, entryDB, idEx)
-                }
-            }) {
-                Text("Insert Event")
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // button that calls the function to refresh EntryList content from EntryTable
-            //(obsolete?)
-            Button(onClick = {
-                entryTableViewModel.getAllEntryTables()
-            }) {
-                Text("Get Events")
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // displays the EntryList entries (for testing)
-            /*
-            Column {
-                entryList.forEach { entryTable ->
-                    Text(text = "Rez:${entryTable.id}: ${entryTable.dateDB} ${entryTable.entryDB} ${entryTable.idEx}")
-                }
-            }
-
-             */
-
-
-
-            //------------------------------------------------------------------------------------
-            // (delete and update (for testing, not currently integrated in the project)) (outdated comment)
-            //------------------------------------------------------------------------------------
-            //------------------------------------------------------------------------------------
-            //------------------------------------------------------------------------------------
-            // upper comment seems outdated and misleading. This code lists all entries in the database EntryTable
-            // and also adds two buttons under each displayed entry :
-            // update -> refreshes the list (in case a new entry has been made)
-            // delete -> deletes the elected entry
-            entryList.forEach { entryTable ->
-                Column(modifier = Modifier.padding(4.dp)) {
-                    Text(text = "Rez: ${entryTable.id}: ${entryTable.dateDB} ${entryTable.entryDB} ${entryTable.idEx}")
-
-                    Row {
-                        Button(
-                            onClick = {
-                                val updatedEntry = entryTable.copy(dateDB = "Updated", entryDB = "Name")
-                                entryTableViewModel.updateEntryTable(updatedEntry)
-                                entryTableViewModel.getAllEntryTables() // refresh the list after update
-                            },
-                            modifier = Modifier.padding(end = 8.dp)
-                        ) {
-                            Text("Update")
-                        }
-
-                        Button(
-                            onClick = {
-                                entryTableViewModel.deleteEntryTable(entryTable)
-                            }
-                        ) {
-                            Text("Delete")
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

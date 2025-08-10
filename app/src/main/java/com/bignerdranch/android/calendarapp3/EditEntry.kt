@@ -23,84 +23,52 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 
 @Composable
-fun EditEntry(navController: NavController, viewModel: CalendarViewModel = viewModel(), entryTableViewModel: EntryTableViewModel, editEntryViewModel: EditEntryViewModel) {
-    var errorText by remember { mutableStateOf("") }
-
+fun EditEntry(
+    navController: NavController,
+    entryTableViewModel: EntryTableViewModel,
+    editEntryViewModel: EditEntryViewModel
+) {
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
-    var editableText by remember {
-        mutableStateOf(
-            selectedEntry?.let {
-                "${it.entryDB} ${it.idEx}"
-            } ?: ""
-        )
-    }
-
-
+    var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
 
     Column {
-        Row {
-            OutlinedTextField(
-                value = editableText,
-                onValueChange = {
-                    editableText = it
-                    errorText = ""
-                },
-                label = { Text("Enter Event") },
-                isError = errorText.isNotEmpty()
-            )
+        OutlinedTextField(
+            value = entryContent,
+            onValueChange = {
+                entryContent = it
+                errorMessage = null
+            },
+            label = { Text("Edit Event") },
+            isError = errorMessage != null,
+            modifier = Modifier.padding(16.dp)
+        )
 
-            if (errorText.isNotEmpty()) {
-                Text(
-                    text = errorText,
-                    color = Color.Red,
-                    modifier = Modifier.padding(start = 16.dp, top = 4.dp),
-                    textAlign = TextAlign.Start
-                )
-            }
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = Color.Red,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
         }
 
-        Row {
-            Button(
-                onClick = {
-                    val trimmedInput = editableText.trim() // Now using editableText here
-                    if (trimmedInput.isBlank()) {
-                        errorText = "Name cannot be empty."
-                        return@Button
-                    }
-
-                    val nameParts = trimmedInput.split(" ")
-                    //val dateDB = nameParts.getOrNull(0) ?: ""
-                    val entryDB = nameParts.getOrNull(0) ?: ""
-                    val idEx = nameParts.getOrNull(1) ?: ""
-
-                    if (entryDB.length < 2) {
-                        errorText = "First name must be at least 2 characters."
-                        return@Button
-                    }
-
-                    // Check if selectedEntry is not null, then update it
-                    selectedEntry?.let {
-                        val updatedEntry = it.copy(entryDB = entryDB, idEx = idEx)
-                        editEntryViewModel.updateEntry(updatedEntry) // Update the database
-                        entryTableViewModel.getAllEntryTables() // Refresh the list
-                    }
-
-                    navController.popBackStack()
-                },
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text("Save Changes")
-            }
-            /*
-            Button(
-                onClick = {
-                    entryTableViewModel.deleteEntryTable(entryTable)
+        Button(
+            onClick = {
+                if (entryContent.isBlank()) {
+                    errorMessage = "Event cannot be empty"
+                    return@Button
                 }
-            ) {
-                Text("Delete")
-            }
 
-             */
+                selectedEntry?.let {
+                    entryTableViewModel.updateEntry(
+                        it.copy(entryDB = entryContent)
+                    )
+                    navController.popBackStack()
+                }
+            },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text("Save Changes")
         }
     }
 }

@@ -16,7 +16,6 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
 
 
     var selectedEntry by mutableStateOf<EntryTable?>(null)
-        private set
 
     var selectedDate by mutableStateOf("")
 

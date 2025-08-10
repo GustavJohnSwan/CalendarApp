@@ -10,29 +10,32 @@ import androidx.room.Relation
 // this defines the tables of the database
 
 // main table
-// FK doesn't work yet
-@Entity/*(
+
+@Entity(
     foreignKeys = [ForeignKey(
         entity = EntryTable::class,
-        parentColumns = ["idExtra"],
-        childColumns = ["idEx"],
+        parentColumns = ["id"],
+        childColumns = ["id_ex"],
         onDelete = ForeignKey.CASCADE
     )]
 )
-*/
+
 data class EntryTable(
-    @PrimaryKey(autoGenerate = true) val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "date") val dateDB: String?,
     @ColumnInfo(name = "entry") val entryDB: String?,
-    @ColumnInfo(name = "id_ex") val idEx: String? // this has to be changed into an Int
+    @ColumnInfo(name = "id_ex") val idEx: Int? // Changed to Int
 
 )
 
 // this table is not currently used by the app
 @Entity
 data class ExtraDataTable(
-    @PrimaryKey(autoGenerate = true) val idExtra: Int,
-    @ColumnInfo(name = "reminder") val reminderDB: String?,
-    @ColumnInfo(name = "repeat") val repeatDB: String?,
-    @ColumnInfo(name = "attachment") val attachmentDB: String?
-)
+    @PrimaryKey(autoGenerate = true) val idExtra: Int = 0,
+    @ColumnInfo(name = "reminder") val reminderDB: String? = null,
+    @ColumnInfo(name = "repeat") val repeatDB: String? = null,
+    @ColumnInfo(name = "attachment") val attachmentDB: String? = null
+) {
+    // Secondary constructor for empty initialization
+    constructor() : this(0, null, null, null)
+}

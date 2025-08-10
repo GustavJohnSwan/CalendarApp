@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 class EntryTableViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val entryDao = db.entryDao()
+    private val extraDataDao = db.extraDataDao()  // Add this line
 
     // For all entries
     private val _entryList = mutableStateOf<List<EntryTable>>(emptyList())
@@ -27,18 +28,24 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    suspend fun insertEntryWithExtraData(dateDB: String, entryDB: String) {
+        // First insert empty ExtraData entry with all null values
+        val extraDataId = extraDataDao.insertExtraData(ExtraDataTable())
+
+        // Then insert main entry with reference
+        val entry = EntryTable(
+            id = 0,
+            dateDB = dateDB,
+            entryDB = entryDB,
+            idEx = extraDataId.toInt()
+        )
+        entryDao.insert_IntoEntryTable(entry)
+    }
+
+    // Make this function available to UI
     fun insertEntry(date: String, content: String) {
         viewModelScope.launch {
-            entryDao.insert_IntoEntryTable(
-                EntryTable(
-                    id = 0,
-                    dateDB = date,
-                    entryDB = content,
-                    idEx = null
-                )
-            )
-            // Refresh entries for this date after insertion
-            loadEntriesForDate(date)
+            insertEntryWithExtraData(date, content)
         }
     }
 

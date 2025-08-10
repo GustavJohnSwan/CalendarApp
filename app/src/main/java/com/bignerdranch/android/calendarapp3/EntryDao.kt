@@ -21,13 +21,19 @@ interface EntryDao {
 
     @Delete
     suspend fun delete_Entry(entryTable: EntryTable)
+
+    @Insert
+    suspend fun insertExtraData(extraDataTable: ExtraDataTable): Long
+
+    @Update
+    suspend fun updateEntryWithExtraId(entryTable: EntryTable)
 }
 
 
 @Dao
 interface ExtraDataDao {
     @Insert
-    suspend fun insert_IntoExDaTable(extraDataTable: ExtraDataTable)
+    suspend fun insertExtraData(extraDataTable: ExtraDataTable): Long  // Returns the generated ID
 
     @Query("SELECT * FROM ExtraDataTable")
     suspend fun get_AllExData(): List<ExtraDataTable>

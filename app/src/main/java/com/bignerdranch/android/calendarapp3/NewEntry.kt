@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.OutlinedTextField
 
 import androidx.compose.runtime.Composable
@@ -53,6 +54,8 @@ fun NewEntry(
             )
         }
 
+        CheckboxMinimalExample()
+
         Button(
             onClick = {
                 if (viewModel.newEventText.isBlank()) {
@@ -70,5 +73,23 @@ fun NewEntry(
         ) {
             Text("Save Event")
         }
+    }
+}
+
+
+@Composable
+fun CheckboxMinimalExample() {
+    var checked by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Checkbox(
+            checked = checked,
+            onCheckedChange = { checked = it }
+        )
+        Text(
+            if (checked) "Reminder ON" else "Reminder OFF"
+        )
     }
 }

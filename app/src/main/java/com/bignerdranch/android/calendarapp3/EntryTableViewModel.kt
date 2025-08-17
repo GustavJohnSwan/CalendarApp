@@ -28,24 +28,32 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    suspend fun insertEntryWithExtraData(dateDB: String, entryDB: String) {
-        // First insert empty ExtraData entry with all null values
-        val extraDataId = extraDataDao.insertExtraData(ExtraDataTable())
+    suspend fun insertEntryWithExtraData(dateDB: String, entryDB: String, needsExtraData: Boolean) {
+        // Insert main entry
+        entryDao.insert_IntoEntryTable(EntryTable(dateDB = dateDB, entryDB = entryDB))
 
-        // Then insert main entry with reference
-        val entry = EntryTable(
-            id = 0,
-            dateDB = dateDB,
-            entryDB = entryDB,
-            idEx = extraDataId.toInt()
-        )
-        entryDao.insert_IntoEntryTable(entry)
+        if (needsExtraData) {
+            // Get the ID of the entry we just inserted
+            val entries = entryDao.getEntriesByDate(dateDB)
+            val newEntry = entries.last()
+
+            // Insert extra data with PROPER COLUMN NAME that matches your table
+            extraDataDao.insertExtraData(
+                ExtraDataTable(
+                    entryId = newEntry.id  // This must match @ColumnInfo name exactly
+                )
+            )
+        }
+    }
+
+    suspend fun insertEntryInEntryTable(dateDB: String, entryDB: String) {
+
     }
 
     // Make this function available to UI
-    fun insertEntry(date: String, content: String) {
+    fun insertEntry(date: String, content: String, exDaBo: Boolean) {
         viewModelScope.launch {
-            insertEntryWithExtraData(date, content)
+            insertEntryWithExtraData(date, content, exDaBo)
         }
     }
 

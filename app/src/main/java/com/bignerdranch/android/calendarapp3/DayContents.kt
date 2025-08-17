@@ -131,6 +131,7 @@ private fun EventItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                /*
                 if (entry.idEx != null) {
                     Text(
                         text = entry.idEx.toString(), // Convert Int to String
@@ -138,6 +139,7 @@ private fun EventItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                */
             }
         }
     }

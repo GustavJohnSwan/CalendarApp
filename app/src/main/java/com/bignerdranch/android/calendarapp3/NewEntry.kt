@@ -33,6 +33,7 @@ fun NewEntry(
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isExtraDataEnabled by remember { mutableStateOf(false) }
+    var extraDataBoolean by remember { mutableStateOf(false) } // Make this mutable
 
     Column {
         OutlinedTextField(
@@ -54,7 +55,11 @@ fun NewEntry(
             )
         }
 
-        CheckboxMinimalExample()
+
+        CheckboxMinimalExample { checked ->
+            extraDataBoolean = checked
+        }
+
 
         Button(
             onClick = {
@@ -65,7 +70,8 @@ fun NewEntry(
 
                 entryTableViewModel.insertEntry(
                     date = editEntryViewModel.selectedDate,
-                    content = viewModel.newEventText
+                    content = viewModel.newEventText,
+                    exDaBo = extraDataBoolean
                 )
                 navController.popBackStack()
             },
@@ -78,7 +84,7 @@ fun NewEntry(
 
 
 @Composable
-fun CheckboxMinimalExample() {
+fun CheckboxMinimalExample(onCheckedChange: (Boolean) -> Unit) {
     var checked by remember { mutableStateOf(false) }
 
     Row(
@@ -86,7 +92,10 @@ fun CheckboxMinimalExample() {
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = { checked = it }
+            onCheckedChange = {
+                checked = it
+                onCheckedChange(it)
+            }
         )
         Text(
             if (checked) "Reminder ON" else "Reminder OFF"

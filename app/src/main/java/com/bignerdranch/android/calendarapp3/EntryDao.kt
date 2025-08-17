@@ -7,7 +7,7 @@ import androidx.room.*
 @Dao
 interface EntryDao {
     @Insert
-    suspend fun insert_IntoEntryTable(entryTable: EntryTable)
+    suspend fun insert_IntoEntryTable(entryTable: EntryTable): Long
 
     @Query("SELECT * FROM EntryTable")
     suspend fun get_AllEntries(): List<EntryTable>

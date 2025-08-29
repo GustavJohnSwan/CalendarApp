@@ -28,19 +28,41 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    suspend fun insertEntryWithExtraData(dateDB: String, entryDB: String, needsExtraData: Boolean) {
-        // Insert main entry
-        entryDao.insert_IntoEntryTable(EntryTable(dateDB = dateDB, entryDB = entryDB))
+    // ADD THIS METHOD to update entry time
+    fun updateEntryTime(entryId: Int, timeMinutes: Int) {
+        viewModelScope.launch {
+            entryDao.updateTime(entryId, timeMinutes)
+            // Refresh the current view if needed
+            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
+            currentDate?.let { loadEntriesForDate(it) }
+        }
+    }
+
+    // UPDATE this method to accept time parameter
+    suspend fun insertEntryWithExtraData(
+        dateDB: String,
+        entryDB: String,
+        needsExtraData: Boolean,
+        timeMinutes: Int? = null,
+        reminderType: String? = null // ADD THIS
+        ) {
+        // Insert main entry WITH TIME
+        val newEntry = EntryTable(
+            dateDB = dateDB,
+            entryDB = entryDB,
+            timeMinutes = timeMinutes
+        )
+        entryDao.insert_IntoEntryTable(newEntry)
 
         if (needsExtraData) {
             // Get the ID of the entry we just inserted
             val entries = entryDao.getEntriesByDate(dateDB)
-            val newEntry = entries.last()
+            val insertedEntry = entries.last()
 
-            // Insert extra data with PROPER COLUMN NAME that matches your table
             extraDataDao.insertExtraData(
                 ExtraDataTable(
-                    entryId = newEntry.id  // This must match @ColumnInfo name exactly
+                    entryId = insertedEntry.id,
+                    reminderType = reminderType // STORE THE SELECTED OPTION
                 )
             )
         }
@@ -51,9 +73,11 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     // Make this function available to UI
-    fun insertEntry(date: String, content: String, exDaBo: Boolean) {
+    // UPDATE this function to accept time parameter
+    // UPDATE this function to accept reminderType
+    fun insertEntry(date: String, content: String, exDaBo: Boolean, timeMinutes: Int? = null, reminderType: String? = null) {
         viewModelScope.launch {
-            insertEntryWithExtraData(date, content, exDaBo)
+            insertEntryWithExtraData(date, content, exDaBo, timeMinutes, reminderType)
         }
     }
 
@@ -63,10 +87,13 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
+    // ADD THIS METHOD to update entry with time
     fun updateEntry(entry: EntryTable) {
         viewModelScope.launch {
             entryDao.update_Entry(entry)
-            getAllEntries()
+            // Refresh the current view
+            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
+            currentDate?.let { loadEntriesForDate(it) }
         }
     }
 
@@ -76,4 +103,6 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
             getAllEntries()
         }
     }
+
+
 }

@@ -12,48 +12,49 @@ import java.time.LocalDate
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
-    private val EntryDao = db.entryDao()
-
+    private val entryDao = db.entryDao()
+    private val extraDataDao = db.extraDataDao() // ADD THIS
 
     var selectedEntry by mutableStateOf<EntryTable?>(null)
-
     var selectedDate by mutableStateOf("")
+    var hasReminder by mutableStateOf(false) // ADD THIS for checkbox state
+    var selectedReminderType by mutableStateOf("At time of event") // ADD THIS
 
     fun onEventSelect(entry: EntryTable) {
         selectedEntry = entry
+        // Load reminder status when entry is selected
+        viewModelScope.launch {
+            val extraData = extraDataDao.get_AllExData().find { it.entryId == entry.id }
+            hasReminder = extraData != null
+            selectedReminderType = extraData?.reminderType ?: "At time of event" // SET THE SELECTED TYPE
+        }
     }
 
     fun saveSelectedDate(date: String) {
         selectedDate = date
     }
 
-    /*
-    var selectedEvent1 by mutableStateOf<String?>("")
-        private set
-
-    var selectedEvent2 by mutableStateOf<String?>("")
-        private set
-
-    var selectedEvent3 by mutableStateOf<String?>("")
-        private set
-
-
-
-
-
-    fun onEventSelect(text1: String?, text2: String?, text3: String?) {
-        selectedEvent1 = text1
-        selectedEvent2 = text2
-        selectedEvent3 = text3
-    }
-
-     */
-
-    // this changes the value of the selected entry in EntryTable
-    fun updateEntry(entryTable: EntryTable) {
+    fun updateEntry(entryTable: EntryTable, hasReminder: Boolean, reminderType: String?) { // UPDATE THIS
         viewModelScope.launch {
-            EntryDao.update_Entry(entryTable)
+            entryDao.update_Entry(entryTable)
+
+            // Handle reminder data
+            val existingExtraData = extraDataDao.get_AllExData().find { it.entryId == entryTable.id }
+
+            if (hasReminder && reminderType != null) {
+                if (existingExtraData == null) {
+                    // Create new reminder
+                    extraDataDao.insertExtraData(ExtraDataTable(entryId = entryTable.id, reminderType = reminderType))
+                }else {
+                    // Update existing reminder type
+                    extraDataDao.update_ExData(
+                        existingExtraData.copy(reminderType = reminderType)
+                    )
+                }
+            } else {
+                // Remove reminder if it exists
+                existingExtraData?.let { extraDataDao.delete_ExData(it) }
+            }
         }
     }
-
 }

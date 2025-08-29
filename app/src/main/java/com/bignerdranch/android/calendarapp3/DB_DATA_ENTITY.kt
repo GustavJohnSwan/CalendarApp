@@ -16,7 +16,8 @@ import androidx.room.Relation
 data class EntryTable(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "date") val dateDB: String?,
-    @ColumnInfo(name = "entry") val entryDB: String?
+    @ColumnInfo(name = "entry") val entryDB: String?,
+    @ColumnInfo(name = "time_minutes") val timeMinutes: Int? = null // Store as minutes
 )
 
 // EXTRA DATA TABLE (child - contains the foreign key)
@@ -31,7 +32,7 @@ data class EntryTable(
 data class ExtraDataTable(
     @PrimaryKey(autoGenerate = true) val idExtra: Int = 0,
     @ColumnInfo(name = "entry_id") val entryId: Int,  // This is the FK to EntryTable
-    @ColumnInfo(name = "reminder") val reminder: String? = null,
+    @ColumnInfo(name = "reminder_type") val reminderType: String? = null, // CHANGED from "reminder" to "reminder_type"
     @ColumnInfo(name = "repeat") val repeat: String? = null,
     @ColumnInfo(name = "attachment") val attachment: String? = null
 ) {

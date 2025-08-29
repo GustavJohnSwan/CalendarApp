@@ -35,6 +35,7 @@ import androidx.navigation.NavController
 fun NewEntry(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
+    eventDetailViewModel: EventDetailsViewModel = viewModel(),
     entryTableViewModel: EntryTableViewModel,
     editEntryViewModel: EditEntryViewModel
 ) {
@@ -42,7 +43,7 @@ fun NewEntry(
     var isExtraDataEnabled by remember { mutableStateOf(false) }
     var extraDataBoolean by remember { mutableStateOf(false) } // Make this mutable
     var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) } // ADD THIS
-    var selectedReminderType by remember { mutableStateOf("At time of event") } // ADD THIS for radio button selection
+    var selectedReminderType by remember { mutableStateOf("None") } // ADD THIS for radio button selection
 
     Column {
         OutlinedTextField(
@@ -73,7 +74,8 @@ fun NewEntry(
 
 
         // KEEP YOUR EXISTING CHECKBOX BUT ADD REMINDER TYPE CAPABILITY
-        CheckboxMinimalExample(
+        /*
+        CheckboxMinimalExample_V2(
             onCheckedChange = { checked ->
                 extraDataBoolean = checked
             },
@@ -82,6 +84,14 @@ fun NewEntry(
             onReminderTypeChange = { newType -> selectedReminderType = newType } // ADD THIS CALLBACK
         )
 
+         */
+
+
+        // NEW: Reminder Selector (works like time picker)
+        ReminderSelector(
+            selectedReminderType = selectedReminderType,
+            onReminderTypeChange = { newType -> selectedReminderType = newType }
+        )
 
 
 
@@ -109,163 +119,3 @@ fun NewEntry(
     }
 }
 
-
-@Composable
-fun CheckboxMinimalExample(
-    onCheckedChange: (Boolean) -> Unit,
-    isChecked: Boolean,
-    selectedReminderType: String, // ADD THIS PARAMETER
-    onReminderTypeChange: (String) -> Unit // ADD THIS CALLBACK
-    ) {
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = isChecked, // USE THE PASSED PARAMETER
-            onCheckedChange = { onCheckedChange(it) } // CALL THE CALLBACK DIRECTLY
-        )
-        Text(if (isChecked) "Reminder ON" else "Reminder OFF") // USE THE PARAMETER
-    }
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (isChecked) { // USE THE PARAMETER
-            RadioButtonSingleSelection(
-                selectedOption = selectedReminderType,
-                onOptionSelected = onReminderTypeChange
-            )
-        }
-    }
-}
-
-
-
-@Composable
-fun RadioButtonSingleSelection(
-    modifier: Modifier = Modifier,
-    selectedOption: String, // ADD THIS PARAMETER
-    onOptionSelected: (String) -> Unit // ADD THIS CALLBACK
-    ) {
-    val radioOptions = listOf("At time of event", "10 mins before", "1 hour before", "1 day before")
-    //val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
-    // Note that Modifier.selectableGroup() is essential to ensure correct accessibility behavior
-    Column(modifier.selectableGroup()) {
-        radioOptions.forEach { text ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .selectable(
-                        selected = (text == selectedOption),
-                        onClick = { onOptionSelected(text) },
-                        role = Role.RadioButton
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (text == selectedOption),
-                    onClick = null // null recommended for accessibility with screen readers
-                )
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
-        }
-    }
-}
-
-
-
-
-
-@Composable
-fun CheckboxRepeatEvent(
-    onCheckedChange: (Boolean) -> Unit,
-    isChecked: Boolean,
-    selectedRepeatType: String,
-    onRepeatTypeChange: (String) -> Unit
-) {
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = isChecked,
-            onCheckedChange = { onCheckedChange(it) }
-        )
-        Text(if (isChecked) "Repeat YES" else "Repeat NO")
-    }
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (isChecked) {
-            RadioButtonRepeatType(
-                selectedOption = selectedRepeatType,
-                onOptionSelected = onRepeatTypeChange
-            )
-        }
-    }
-}
-
-@Composable
-fun RadioButtonRepeatType(
-    modifier: Modifier = Modifier,
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
-) {
-    val radioOptions = listOf("Daily", "Weekly", "Monthly", "Yearly")
-    Column(modifier.selectableGroup()) {
-        radioOptions.forEach { text ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .selectable(
-                        selected = (text == selectedOption),
-                        onClick = { onOptionSelected(text) },
-                        role = Role.RadioButton
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (text == selectedOption),
-                    onClick = null // null recommended for accessibility with screen readers
-                )
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
-            RepeatTypeDetails(repeatType = selectedOption)
-        }
-    }
-}
-
-
-@Composable
-fun RepeatTypeDetails(
-    repeatType: String
-) {
-    when (repeatType) {
-        "Daily" ->
-            Row() {
-
-            }
-        "Weekly" ->
-            Row() {
-
-            }
-        "Monthly" ->
-            Row() {
-
-            }
-        "Yearly" ->
-            Row() {
-
-            }
-        else ->
-            Row() {
-
-            }
-    }
-}

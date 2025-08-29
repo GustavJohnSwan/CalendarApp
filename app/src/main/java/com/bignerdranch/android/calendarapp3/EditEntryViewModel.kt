@@ -17,16 +17,16 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
 
     var selectedEntry by mutableStateOf<EntryTable?>(null)
     var selectedDate by mutableStateOf("")
-    var hasReminder by mutableStateOf(false) // ADD THIS for checkbox state
-    var selectedReminderType by mutableStateOf("At time of event") // ADD THIS
+    //var hasReminder by mutableStateOf(false) // ADD THIS for checkbox state
+    var selectedReminderType by mutableStateOf("None") // ADD THIS
 
     fun onEventSelect(entry: EntryTable) {
         selectedEntry = entry
         // Load reminder status when entry is selected
         viewModelScope.launch {
             val extraData = extraDataDao.get_AllExData().find { it.entryId == entry.id }
-            hasReminder = extraData != null
-            selectedReminderType = extraData?.reminderType ?: "At time of event" // SET THE SELECTED TYPE
+            //hasReminder = extraData != null
+            selectedReminderType = extraData?.reminderType ?: "None" // SET THE SELECTED TYPE
         }
     }
 

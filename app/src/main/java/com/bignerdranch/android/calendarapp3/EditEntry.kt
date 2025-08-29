@@ -40,7 +40,7 @@ fun EditEntry(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
     var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
-    var hasReminder by remember { mutableStateOf(editEntryViewModel.hasReminder) } // ADD THIS
+    //var hasReminder by remember { mutableStateOf(editEntryViewModel.hasReminder) } // ADD THIS
     var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) } // ADD THIS
 
     Column {
@@ -68,25 +68,11 @@ fun EditEntry(
             )
         }
 
-        // ADD REMINDER CHECKBOX
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = hasReminder,
-                onCheckedChange = { hasReminder = it }
-            )
-            Text("Set Reminder")
-        }
-
-        // ADD REMINDER TYPE SELECTION (only show if reminder is checked)
-        if (hasReminder) {
-            RadioButtonSingleSelection(
-                selectedOption = selectedReminderType,
-                onOptionSelected = { newType -> selectedReminderType = newType }
-            )
-        }
+        // NEW: Reminder Selector (works like time picker)
+        ReminderSelector(
+            selectedReminderType = selectedReminderType,
+            onReminderTypeChange = { newType -> selectedReminderType = newType }
+        )
 
         errorMessage?.let {
             Text(
@@ -107,7 +93,7 @@ fun EditEntry(
                     // UPDATE to include reminder and time
                     val updatedEntry = entry.copy(entryDB = entryContent)
                     entryTableViewModel.updateEntry(updatedEntry)
-                    editEntryViewModel.updateEntry(updatedEntry, hasReminder, selectedReminderType) // UPDATE THIS
+                    //editEntryViewModel.updateEntry(updatedEntry, hasReminder, selectedReminderType) // UPDATE THIS
                     navController.popBackStack()
                 }
             },

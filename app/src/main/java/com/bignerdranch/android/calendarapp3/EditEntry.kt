@@ -40,8 +40,10 @@ fun EditEntry(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
     var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
-    var hasReminder by remember { mutableStateOf(editEntryViewModel.hasReminder) } // ADD THIS
-    var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) } // ADD THIS
+    var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
+
+    // Use the reminder type from ViewModel (loaded when entry was selected)
+    var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) }
 
     Column {
         OutlinedTextField(
@@ -55,39 +57,6 @@ fun EditEntry(
             modifier = Modifier.padding(16.dp)
         )
 
-        // ADD TIME PICKER
-        selectedEntry?.let { entry ->
-            InputTimePicker(
-                currentTimeMinutes = entry.timeMinutes,
-                onTimeSelected = { newTimeMinutes ->
-                    // Update the entry with new time
-                    entryTableViewModel.updateEntry(
-                        entry.copy(timeMinutes = newTimeMinutes)
-                    )
-                }
-            )
-        }
-
-        // ADD REMINDER CHECKBOX
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = hasReminder,
-                onCheckedChange = { hasReminder = it }
-            )
-            Text("Set Reminder")
-        }
-
-        // ADD REMINDER TYPE SELECTION (only show if reminder is checked)
-        if (hasReminder) {
-            RadioButtonSingleSelection(
-                selectedOption = selectedReminderType,
-                onOptionSelected = { newType -> selectedReminderType = newType }
-            )
-        }
-
         errorMessage?.let {
             Text(
                 text = it,
@@ -95,6 +64,18 @@ fun EditEntry(
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
+
+        // Time Picker
+        InputTimePicker(
+            currentTimeMinutes = selectedTimeMinutes,
+            onTimeSelected = { minutes -> selectedTimeMinutes = minutes }
+        )
+
+        // NEW: Use the same ReminderSelector as NewEntry
+        ReminderSelector(
+            selectedReminderType = selectedReminderType,
+            onReminderTypeChange = { newType -> selectedReminderType = newType }
+        )
 
         Button(
             onClick = {
@@ -104,52 +85,28 @@ fun EditEntry(
                 }
 
                 selectedEntry?.let { entry ->
-                    // UPDATE to include reminder and time
-                    val updatedEntry = entry.copy(entryDB = entryContent)
+                    // Update the entry with new content and time
+                    val updatedEntry = entry.copy(
+                        entryDB = entryContent,
+                        timeMinutes = selectedTimeMinutes
+                    )
+
+                    // Update the entry in database
                     entryTableViewModel.updateEntry(updatedEntry)
-                    editEntryViewModel.updateEntry(updatedEntry, hasReminder, selectedReminderType) // UPDATE THIS
+
+                    // Update reminder data (pass whether reminder is enabled and the type)
+                    editEntryViewModel.updateEntry(
+                        updatedEntry,
+                        selectedReminderType != "None", // hasReminder
+                        if (selectedReminderType != "None") selectedReminderType else null // reminderType
+                    )
+
                     navController.popBackStack()
                 }
             },
             modifier = Modifier.padding(16.dp)
         ) {
             Text("Save Changes")
-        }
-    }
-}
-
-// ADD THIS COMPOSABLE FUNCTION (copy from your NewEntry.kt)
-@Composable
-fun RadioButtonSingleSelection(
-    selectedOption: String,
-    onOptionSelected: (String) -> Unit
-) {
-    val radioOptions = listOf("At time of event", "10 mins before", "1 hour before", "1 day before")
-
-    Column(Modifier.selectableGroup()) {
-        radioOptions.forEach { text ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .selectable(
-                        selected = (text == selectedOption),
-                        onClick = { onOptionSelected(text) },
-                        role = Role.RadioButton
-                    )
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (text == selectedOption),
-                    onClick = null
-                )
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-            }
         }
     }
 }

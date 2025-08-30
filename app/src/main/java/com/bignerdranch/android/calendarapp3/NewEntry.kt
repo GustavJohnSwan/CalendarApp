@@ -35,14 +35,15 @@ import androidx.navigation.NavController
 fun NewEntry(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
+    eventDetailViewModel: EventDetailsViewModel = viewModel(),
     entryTableViewModel: EntryTableViewModel,
     editEntryViewModel: EditEntryViewModel
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isExtraDataEnabled by remember { mutableStateOf(false) }
-    var extraDataBoolean by remember { mutableStateOf(false) } // Make this mutable
-    var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) } // ADD THIS
-    var selectedReminderType by remember { mutableStateOf("At time of event") } // ADD THIS for radio button selection
+    var extraDataBoolean by remember { mutableStateOf(false) }
+    var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) }
+    var selectedReminderType by remember { mutableStateOf("None") } // Default to "None"
 
     Column {
         OutlinedTextField(
@@ -64,26 +65,17 @@ fun NewEntry(
             )
         }
 
-        // ADD TIME PICKER SECTION
-        // ← REPLACE WITH NEW TIME PICKER
+        // Time Picker
         InputTimePicker(
             currentTimeMinutes = selectedTimeMinutes,
             onTimeSelected = { minutes -> selectedTimeMinutes = minutes }
         )
 
-
-        // KEEP YOUR EXISTING CHECKBOX BUT ADD REMINDER TYPE CAPABILITY
-        CheckboxMinimalExample(
-            onCheckedChange = { checked ->
-                extraDataBoolean = checked
-            },
-            isChecked = extraDataBoolean,
-            selectedReminderType = selectedReminderType, // ADD THIS PARAMETER
-            onReminderTypeChange = { newType -> selectedReminderType = newType } // ADD THIS CALLBACK
+        // NEW: Reminder Selector (works like time picker)
+        ReminderSelector(
+            selectedReminderType = selectedReminderType,
+            onReminderTypeChange = { newType -> selectedReminderType = newType }
         )
-
-
-
 
         Button(
             onClick = {
@@ -95,9 +87,9 @@ fun NewEntry(
                 entryTableViewModel.insertEntry(
                     date = editEntryViewModel.selectedDate,
                     content = viewModel.newEventText,
-                    exDaBo = extraDataBoolean,
+                    exDaBo = selectedReminderType != "None", // Enable extra data only if reminder is not "None"
                     timeMinutes = selectedTimeMinutes,
-                    reminderType = if (extraDataBoolean) selectedReminderType else null // ADD THIS
+                    reminderType = if (selectedReminderType != "None") selectedReminderType else null
                 )
                 navController.popBackStack()
             },
@@ -105,7 +97,6 @@ fun NewEntry(
         ) {
             Text("Save Event")
         }
-
     }
 }
 
@@ -141,12 +132,11 @@ fun CheckboxMinimalExample(
 @Composable
 fun RadioButtonSingleSelection(
     modifier: Modifier = Modifier,
-    selectedOption: String, // ADD THIS PARAMETER
-    onOptionSelected: (String) -> Unit // ADD THIS CALLBACK
-    ) {
-    val radioOptions = listOf("At time of event", "10 mins before", "1 hour before", "1 day before")
-    //val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
-    // Note that Modifier.selectableGroup() is essential to ensure correct accessibility behavior
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    val radioOptions = listOf("None", "At time of event", "10 mins before", "1 hour before", "1 day before")
+
     Column(modifier.selectableGroup()) {
         radioOptions.forEach { text ->
             Row(
@@ -163,7 +153,7 @@ fun RadioButtonSingleSelection(
             ) {
                 RadioButton(
                     selected = (text == selectedOption),
-                    onClick = null // null recommended for accessibility with screen readers
+                    onClick = null
                 )
                 Text(
                     text = text,

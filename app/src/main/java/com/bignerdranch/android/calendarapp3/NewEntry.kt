@@ -45,6 +45,9 @@ fun NewEntry(
     var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) }
     var selectedReminderType by remember { mutableStateOf("None") } // Default to "None"
 
+    var selectedRepeatType by remember { mutableStateOf("Never") } // Default to "None"
+    var repeatOptions by remember { mutableStateOf(RepeatOptions()) }
+
     Column {
         OutlinedTextField(
             value = viewModel.newEventText,
@@ -77,6 +80,14 @@ fun NewEntry(
             onReminderTypeChange = { newType -> selectedReminderType = newType }
         )
 
+
+        RepeatSelector(
+            selectedRepeatType = selectedRepeatType,
+            onRepeatTypeChange = { newType -> selectedRepeatType = newType },
+            repeatOptions = repeatOptions,
+            onRepeatOptionsChange = { newOptions -> repeatOptions = newOptions }
+        )
+
         Button(
             onClick = {
                 if (viewModel.newEventText.isBlank()) {
@@ -84,12 +95,21 @@ fun NewEntry(
                     return@Button
                 }
 
+                // Serialize repeat options
+                val repeatDetails = if (selectedRepeatType != "Never") {
+                    RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
+                } else {
+                    null
+                }
+
                 entryTableViewModel.insertEntry(
                     date = editEntryViewModel.selectedDate,
                     content = viewModel.newEventText,
                     exDaBo = selectedReminderType != "None", // Enable extra data only if reminder is not "None"
                     timeMinutes = selectedTimeMinutes,
-                    reminderType = if (selectedReminderType != "None") selectedReminderType else null
+                    reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                    repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                    repeatDetails = repeatDetails
                 )
                 navController.popBackStack()
             },
@@ -201,7 +221,7 @@ fun RadioButtonRepeatType(
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
-    val radioOptions = listOf("Daily", "Weekly", "Monthly", "Yearly")
+    val radioOptions = listOf("Never", "Daily", "Weekly", "Monthly", "Yearly")
     Column(modifier.selectableGroup()) {
         radioOptions.forEach { text ->
             Row(
@@ -220,13 +240,15 @@ fun RadioButtonRepeatType(
                     selected = (text == selectedOption),
                     onClick = null // null recommended for accessibility with screen readers
                 )
+
                 Text(
                     text = text,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(start = 16.dp)
                 )
             }
-            RepeatTypeDetails(repeatType = selectedOption)
+
+
         }
     }
 }

@@ -5,28 +5,33 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bignerdranch.android.calendarapp3.RepeatOptionsSerializer.getRepeatOptionsForEntry
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val entryDao = db.entryDao()
-    private val extraDataDao = db.extraDataDao() // ADD THIS
+    private val extraDataDao = db.extraDataDao()
 
     var selectedEntry by mutableStateOf<EntryTable?>(null)
     var selectedDate by mutableStateOf("")
-    var hasReminder by mutableStateOf(false) // ADD THIS for checkbox state
-    var selectedReminderType by mutableStateOf("None") // ADD THIS
+    var hasReminder by mutableStateOf(false)
+    var selectedReminderType by mutableStateOf("None")
+    var selectedRepeatType by mutableStateOf("Never")
+    var repeatOptions by mutableStateOf(RepeatOptions()) // ADD THIS
 
     fun onEventSelect(entry: EntryTable) {
         selectedEntry = entry
-        // Load reminder status when entry is selected
+        // Load reminder status and repeat details when entry is selected
         viewModelScope.launch {
             val extraData = extraDataDao.get_AllExData().find { it.entryId == entry.id }
             hasReminder = extraData != null
-            selectedReminderType = extraData?.reminderType ?: "None" // SET THE SELECTED TYPE
+            selectedReminderType = extraData?.reminderType ?: "None"
+            selectedRepeatType = extraData?.repeat ?: "Never"
+
+            // USE THE UTILITY FUNCTION INSTEAD OF MANUAL DESERIALIZATION
+            repeatOptions = getRepeatOptionsForEntry(extraData, selectedRepeatType)
         }
     }
 
@@ -34,25 +39,46 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
         selectedDate = date
     }
 
-    fun updateEntry(entryTable: EntryTable, hasReminder: Boolean, reminderType: String?) { // UPDATE THIS
+    // UPDATE THIS FUNCTION to handle repeat details
+    fun updateEntry(
+        entryTable: EntryTable,
+        hasReminder: Boolean,
+        reminderType: String?,
+        repeatType: String?,
+        repeatDetails: String? = null // ADD THIS PARAMETER
+    ) {
         viewModelScope.launch {
             entryDao.update_Entry(entryTable)
 
-            // Handle reminder data
+            // Handle reminder and repeat data
             val existingExtraData = extraDataDao.get_AllExData().find { it.entryId == entryTable.id }
 
-            if (hasReminder && reminderType != null) {
+            if (hasReminder && (reminderType != null || repeatType != null)) {
+                val newReminderType = if (hasReminder) reminderType else null
+                val newRepeatType = if (hasReminder) repeatType else null
+
                 if (existingExtraData == null) {
-                    // Create new reminder
-                    extraDataDao.insertExtraData(ExtraDataTable(entryId = entryTable.id, reminderType = reminderType))
-                }else {
-                    // Update existing reminder type
+                    // Create new extra data with reminder, repeat, and details
+                    extraDataDao.insertExtraData(
+                        ExtraDataTable(
+                            entryId = entryTable.id,
+                            reminderType = newReminderType,
+                            repeat = newRepeatType,
+                            repeatDetails = repeatDetails // ADD THIS
+                        )
+                    )
+                } else {
+                    // Update existing extra data with all fields
                     extraDataDao.update_ExData(
-                        existingExtraData.copy(reminderType = reminderType)
+                        existingExtraData.copy(
+                            reminderType = newReminderType,
+                            repeat = newRepeatType,
+                            repeatDetails = repeatDetails // ADD THIS
+                        )
                     )
                 }
             } else {
-                // Remove reminder if it exists
+                // Remove extra data if it exists and no reminder/repeat is needed
                 existingExtraData?.let { extraDataDao.delete_ExData(it) }
             }
         }

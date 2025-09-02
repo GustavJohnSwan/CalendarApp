@@ -1,6 +1,5 @@
 package com.bignerdranch.android.calendarapp3
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,20 +12,17 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -42,8 +38,23 @@ fun EditEntry(
     var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
     var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
 
-    // Use the reminder type from ViewModel (loaded when entry was selected)
+    // Use the reminder and repeat types from ViewModel
     var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) }
+    var selectedRepeatType by remember { mutableStateOf(editEntryViewModel.selectedRepeatType) }
+    var repeatOptions by remember { mutableStateOf(editEntryViewModel.repeatOptions) }
+
+    // Update local state when ViewModel changes
+    LaunchedEffect(editEntryViewModel.selectedReminderType) {
+        selectedReminderType = editEntryViewModel.selectedReminderType
+    }
+
+    LaunchedEffect(editEntryViewModel.selectedRepeatType) {
+        selectedRepeatType = editEntryViewModel.selectedRepeatType
+    }
+
+    LaunchedEffect(editEntryViewModel.repeatOptions) {
+        repeatOptions = editEntryViewModel.repeatOptions
+    }
 
     Column {
         OutlinedTextField(
@@ -71,10 +82,27 @@ fun EditEntry(
             onTimeSelected = { minutes -> selectedTimeMinutes = minutes }
         )
 
-        // NEW: Use the same ReminderSelector as NewEntry
+        // Reminder Selector
         ReminderSelector(
             selectedReminderType = selectedReminderType,
-            onReminderTypeChange = { newType -> selectedReminderType = newType }
+            onReminderTypeChange = { newType ->
+                selectedReminderType = newType
+                editEntryViewModel.selectedReminderType = newType
+            }
+        )
+
+        // Repeat Selector with detailed options
+        RepeatSelector(
+            selectedRepeatType = selectedRepeatType,
+            onRepeatTypeChange = { newType ->
+                selectedRepeatType = newType
+                editEntryViewModel.selectedRepeatType = newType
+            },
+            repeatOptions = repeatOptions,
+            onRepeatOptionsChange = { newOptions ->
+                repeatOptions = newOptions
+                editEntryViewModel.repeatOptions = newOptions
+            }
         )
 
         Button(
@@ -91,14 +119,23 @@ fun EditEntry(
                         timeMinutes = selectedTimeMinutes
                     )
 
+                    // Serialize repeat options if needed
+                    val repeatDetails = if (selectedRepeatType != "Never") {
+                        RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
+                    } else {
+                        null
+                    }
+
                     // Update the entry in database
                     entryTableViewModel.updateEntry(updatedEntry)
 
-                    // Update reminder data (pass whether reminder is enabled and the type)
+                    // Update extra data with repeat details
                     editEntryViewModel.updateEntry(
                         updatedEntry,
-                        selectedReminderType != "None", // hasReminder
-                        if (selectedReminderType != "None") selectedReminderType else null // reminderType
+                        selectedReminderType != "None" || selectedRepeatType != "Never",
+                        if (selectedReminderType != "None") selectedReminderType else null,
+                        if (selectedRepeatType != "Never") selectedRepeatType else null,
+                        repeatDetails // PASS REPEAT DETAILS
                     )
 
                     navController.popBackStack()

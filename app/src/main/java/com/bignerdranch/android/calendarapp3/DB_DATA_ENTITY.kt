@@ -34,7 +34,8 @@ data class ExtraDataTable(
     @ColumnInfo(name = "entry_id") val entryId: Int,  // This is the FK to EntryTable
     @ColumnInfo(name = "reminder_type") val reminderType: String? = null, // CHANGED from "reminder" to "reminder_type"
     @ColumnInfo(name = "repeat") val repeat: String? = null,
+    @ColumnInfo(name = "repeat_details") val repeatDetails: String? = null, // ADD THIS NEW COLUMN
     @ColumnInfo(name = "attachment") val attachment: String? = null
 ) {
-    constructor() : this(0, 0, null, null, null)
+    constructor() : this(0, 0, null, null, null, null)
 }

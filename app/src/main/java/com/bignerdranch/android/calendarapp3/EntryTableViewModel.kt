@@ -39,30 +39,32 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     // UPDATE this method to accept time parameter
+// In EntryTableViewModel.kt
+    // UPDATE this method to accept repeatDetails parameter
     suspend fun insertEntryWithExtraData(
         dateDB: String,
         entryDB: String,
         needsExtraData: Boolean,
         timeMinutes: Int? = null,
-        reminderType: String? = null // ADD THIS
-        ) {
+        reminderType: String? = null,
+        repeat: String? = null,
+        repeatDetails: String? = null // ADD THIS PARAMETER
+    ) {
         // Insert main entry WITH TIME
         val newEntry = EntryTable(
             dateDB = dateDB,
             entryDB = entryDB,
             timeMinutes = timeMinutes
         )
-        entryDao.insert_IntoEntryTable(newEntry)
+        val entryId = entryDao.insert_IntoEntryTable(newEntry).toInt()
 
         if (needsExtraData) {
-            // Get the ID of the entry we just inserted
-            val entries = entryDao.getEntriesByDate(dateDB)
-            val insertedEntry = entries.last()
-
             extraDataDao.insertExtraData(
                 ExtraDataTable(
-                    entryId = insertedEntry.id,
-                    reminderType = reminderType // STORE THE SELECTED OPTION
+                    entryId = entryId,
+                    reminderType = reminderType,
+                    repeat = repeat,
+                    repeatDetails = repeatDetails // ADD THIS FIELD
                 )
             )
         }
@@ -75,9 +77,26 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     // Make this function available to UI
     // UPDATE this function to accept time parameter
     // UPDATE this function to accept reminderType
-    fun insertEntry(date: String, content: String, exDaBo: Boolean, timeMinutes: Int? = null, reminderType: String? = null) {
+    // UPDATE this function to accept repeatDetails
+    fun insertEntry(
+        date: String,
+        content: String,
+        exDaBo: Boolean,
+        timeMinutes: Int? = null,
+        reminderType: String? = null,
+        repeat: String?,
+        repeatDetails: String? = null // ADD THIS PARAMETER
+    ) {
         viewModelScope.launch {
-            insertEntryWithExtraData(date, content, exDaBo, timeMinutes, reminderType)
+            insertEntryWithExtraData(
+                date,
+                content,
+                exDaBo,
+                timeMinutes,
+                reminderType,
+                repeat,
+                repeatDetails // PASS THE PARAMETER
+            )
         }
     }
 
@@ -94,6 +113,13 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
             // Refresh the current view
             val currentDate = _dateEntries.value.firstOrNull()?.dateDB
             currentDate?.let { loadEntriesForDate(it) }
+        }
+    }
+
+    // ADD THIS METHOD to update extra data (including repeat details)
+    fun updateExtraData(extraData: ExtraDataTable) {
+        viewModelScope.launch {
+            extraDataDao.update_ExData(extraData)
         }
     }
 

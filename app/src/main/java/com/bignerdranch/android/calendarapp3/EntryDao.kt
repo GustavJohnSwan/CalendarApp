@@ -33,6 +33,9 @@ interface EntryDao {
     @Update
     suspend fun updateEntryWithExtraId(entryTable: EntryTable)
 
+    @Update
+    suspend fun updateExtraData(extraDataTable: ExtraDataTable) // ADD THIS METHOD
+
     // ADD THIS NEW METHOD for updating time only
     @Query("UPDATE EntryTable SET time_minutes = :timeMinutes WHERE id = :entryId")
     suspend fun updateTime(entryId: Int, timeMinutes: Int)

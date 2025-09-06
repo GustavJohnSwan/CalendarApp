@@ -126,16 +126,19 @@ fun EditEntry(
                         null
                     }
 
+                    // Determine if we need extra data (has reminder OR repeat)
+                    val needsExtraData = selectedReminderType != "None" || selectedRepeatType != "Never"
+
                     // Update the entry in database
                     entryTableViewModel.updateEntry(updatedEntry)
 
                     // Update extra data with repeat details
                     editEntryViewModel.updateEntry(
                         updatedEntry,
-                        selectedReminderType != "None" || selectedRepeatType != "Never",
+                        needsExtraData,
                         if (selectedReminderType != "None") selectedReminderType else null,
                         if (selectedRepeatType != "Never") selectedRepeatType else null,
-                        repeatDetails // PASS REPEAT DETAILS
+                        repeatDetails
                     )
 
                     navController.popBackStack()

@@ -107,9 +107,37 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     // ADD THIS METHOD to update entry with time
+// In EntryTableViewModel.kt - update the updateEntry method
     fun updateEntry(entry: EntryTable) {
         viewModelScope.launch {
             entryDao.update_Entry(entry)
+            // Refresh the current view
+            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
+            currentDate?.let { loadEntriesForDate(it) }
+        }
+    }
+
+    // Add this method to handle extra data updates
+    fun updateEntryWithExtraData(
+        entry: EntryTable,
+        extraData: ExtraDataTable?
+    ) {
+        viewModelScope.launch {
+            entryDao.update_Entry(entry)
+
+            if (extraData != null) {
+                val existingExtraData = extraDataDao.getExtraDataByEntryId(entry.id)
+                if (existingExtraData != null) {
+                    extraDataDao.update_ExData(extraData)
+                } else {
+                    extraDataDao.insertExtraData(extraData)
+                }
+            } else {
+                // Remove extra data if it exists
+                val existingExtraData = extraDataDao.getExtraDataByEntryId(entry.id)
+                existingExtraData?.let { extraDataDao.delete_ExData(it) }
+            }
+
             // Refresh the current view
             val currentDate = _dateEntries.value.firstOrNull()?.dateDB
             currentDate?.let { loadEntriesForDate(it) }

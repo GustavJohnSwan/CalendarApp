@@ -19,19 +19,23 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
     var hasReminder by mutableStateOf(false)
     var selectedReminderType by mutableStateOf("None")
     var selectedRepeatType by mutableStateOf("Never")
-    var repeatOptions by mutableStateOf(RepeatOptions()) // ADD THIS
+    var repeatOptions by mutableStateOf(RepeatOptions())
 
     fun onEventSelect(entry: EntryTable) {
         selectedEntry = entry
         // Load reminder status and repeat details when entry is selected
         viewModelScope.launch {
-            val extraData = extraDataDao.get_AllExData().find { it.entryId == entry.id }
+            val extraData = extraDataDao.getExtraDataByEntryId(entry.id)
             hasReminder = extraData != null
             selectedReminderType = extraData?.reminderType ?: "None"
             selectedRepeatType = extraData?.repeat ?: "Never"
 
-            // USE THE UTILITY FUNCTION INSTEAD OF MANUAL DESERIALIZATION
-            repeatOptions = getRepeatOptionsForEntry(extraData, selectedRepeatType)
+            // Load repeat options from extra data
+            if (extraData != null && !extraData.repeatDetails.isNullOrEmpty()) {
+                repeatOptions = RepeatOptionsSerializer.deserialize(extraData.repeatDetails!!)
+            } else {
+                repeatOptions = RepeatOptions() // Reset to default
+            }
         }
     }
 
@@ -39,43 +43,47 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
         selectedDate = date
     }
 
-    // UPDATE THIS FUNCTION to handle repeat details
     fun updateEntry(
         entryTable: EntryTable,
         hasReminder: Boolean,
         reminderType: String?,
         repeatType: String?,
-        repeatDetails: String? = null // ADD THIS PARAMETER
+        repeatDetails: String? = null
     ) {
         viewModelScope.launch {
             entryDao.update_Entry(entryTable)
 
             // Handle reminder and repeat data
-            val existingExtraData = extraDataDao.get_AllExData().find { it.entryId == entryTable.id }
+            val existingExtraData = extraDataDao.getExtraDataByEntryId(entryTable.id)
 
-            if (hasReminder && (reminderType != null || repeatType != null)) {
+            if (hasReminder || repeatType != null) {
                 val newReminderType = if (hasReminder) reminderType else null
-                val newRepeatType = if (hasReminder) repeatType else null
+                val newRepeatType = if (repeatType != "Never") repeatType else null
 
-                if (existingExtraData == null) {
-                    // Create new extra data with reminder, repeat, and details
+                if (existingExtraData == null && (newReminderType != null || newRepeatType != null)) {
+                    // Create new extra data
                     extraDataDao.insertExtraData(
                         ExtraDataTable(
                             entryId = entryTable.id,
                             reminderType = newReminderType,
                             repeat = newRepeatType,
-                            repeatDetails = repeatDetails // ADD THIS
+                            repeatDetails = repeatDetails
                         )
                     )
-                } else {
-                    // Update existing extra data with all fields
-                    extraDataDao.update_ExData(
-                        existingExtraData.copy(
-                            reminderType = newReminderType,
-                            repeat = newRepeatType,
-                            repeatDetails = repeatDetails // ADD THIS
+                } else if (existingExtraData != null) {
+                    if (newReminderType != null || newRepeatType != null) {
+                        // Update existing extra data
+                        extraDataDao.update_ExData(
+                            existingExtraData.copy(
+                                reminderType = newReminderType,
+                                repeat = newRepeatType,
+                                repeatDetails = repeatDetails
+                            )
                         )
-                    )
+                    } else {
+                        // Remove extra data if no longer needed
+                        extraDataDao.delete_ExData(existingExtraData)
+                    }
                 }
             } else {
                 // Remove extra data if it exists and no reminder/repeat is needed

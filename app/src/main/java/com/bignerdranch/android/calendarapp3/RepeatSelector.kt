@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun RepeatSelector(
@@ -19,46 +20,79 @@ fun RepeatSelector(
     repeatOptions: RepeatOptions = RepeatOptions(),
     onRepeatOptionsChange: (RepeatOptions) -> Unit = {}
 ) {
-    var showRepeaterDialog by remember { mutableStateOf(false) }
+    val dialogState = rememberRepeatDialogState()
 
-    // Display the current selection
-    val displayText = if (selectedRepeatType == "Never") {
-        "Repeat: Never"
-    } else {
-        "Repeat: $selectedRepeatType"
-    }
+    // Generate display text based on selected options (single line)
+    val displayText = generateRepeatDisplayText(selectedRepeatType, repeatOptions)
 
-    Column {
-        Text(
-            text = displayText,
-            modifier = Modifier
-                .clickable { showRepeaterDialog = true }
-                .padding(8.dp)
-        )
+    Text(
+        text = displayText,
+        modifier = Modifier
+            .clickable { dialogState.openDialog() }
+            .padding(8.dp)
+    )
 
-        // Show detailed options if a repeat type is selected (other than Never)
-        if (selectedRepeatType != "Never") {
-            RepeatOptionsDetail(
-                repeatType = selectedRepeatType,
-                options = repeatOptions,
-                onOptionsChange = onRepeatOptionsChange,
-                modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-            )
-        }
-    }
-
-    if (showRepeaterDialog) {
+    if (dialogState.isDialogOpen) {
         RepeatSelectionDialog(
             selectedOption = selectedRepeatType,
             onOptionSelected = { newType ->
                 onRepeatTypeChange(newType)
-                // Don't close dialog when a type is selected
             },
-            onDismissRequest = { showRepeaterDialog = false },
+            onDismissRequest = { dialogState.closeDialog() },
             repeatOptions = repeatOptions,
-            onRepeatOptionsChange = onRepeatOptionsChange
+            onRepeatOptionsChange = onRepeatOptionsChange,
+            dialogState = dialogState
         )
     }
+}
+
+// Function to generate display text for the repeat selector (single line version)
+// Function to generate display text for the repeat selector
+fun generateRepeatDisplayText(repeatType: String, options: RepeatOptions): String {
+    val baseText = when (repeatType) {
+        "Never" -> "Repeat: Never"
+        "Daily" -> "Repeat: Daily (every ${options.interval} day${if (options.interval > 1) "s" else ""})"
+        "Weekly" -> {
+            val daysText = if (options.selectedDays.isNotEmpty()) {
+                val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+                options.selectedDays.sorted().joinToString(", ") { dayIndex ->
+                    dayNames.getOrElse(dayIndex - 1) { "Day $dayIndex" }
+                }
+            } else {
+                "No days selected"
+            }
+            "Repeat: Weekly (every ${options.interval} week${if (options.interval > 1) "s" else ""} on $daysText)"
+        }
+        "Monthly" -> {
+            val monthlyText = if (options.monthlyType == "absolute") {
+                "on day ${options.absoluteDay}"
+            } else {
+                "${options.relativeWeek} ${options.relativeDay}"
+            }
+            "Repeat: Monthly (every ${options.interval} month${if (options.interval > 1) "s" else ""} $monthlyText)"
+        }
+        "Yearly" -> "Repeat: Yearly (every year on ${getMonthName(options.month)} ${options.yearlyDay})"
+        else -> "Repeat: $repeatType"
+    }
+
+    // Add end option information
+    val endText = when (options.endType) {
+        "never" -> ""
+        "on_date" -> " • Ends on ${options.endDateDay}/${options.endDateMonth}/${options.endDateYear}"
+        "after_occurrences" -> " • Ends after ${options.occurrences} occurrence${if (options.occurrences > 1) "s" else ""}"
+        else -> ""
+    }
+
+    return baseText + endText
+}
+
+// Helper function to get month name
+fun getMonthName(month: Int): String {
+    val months = listOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
+    return months.getOrElse(month - 1) { "Month $month" }
 }
 
 @Composable
@@ -67,13 +101,17 @@ fun RepeatSelectionDialog(
     onOptionSelected: (String) -> Unit,
     onDismissRequest: () -> Unit,
     repeatOptions: RepeatOptions,
-    onRepeatOptionsChange: (RepeatOptions) -> Unit
+    onRepeatOptionsChange: (RepeatOptions) -> Unit,
+    dialogState: RepeatDialogState
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false) // Allow custom sizing
+    ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.8f), // Use percentage of screen height instead of fixed height
+                .fillMaxWidth(0.9f) // Use percentage instead of fixed values
+                .fillMaxHeight(0.8f),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
@@ -87,11 +125,17 @@ fun RepeatSelectionDialog(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                // Make the content scrollable
+                val scrollState = rememberScrollState()
+
+                // Save scroll position when it changes
+                LaunchedEffect(scrollState.value) {
+                    dialogState.updateScrollPosition(scrollState.value.toFloat())
+                }
+
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(scrollState)
                 ) {
                     RadioButtonRepeatType(
                         selectedOption = selectedOption,
@@ -100,7 +144,6 @@ fun RepeatSelectionDialog(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Show detailed options when a repeat type is selected
                     if (selectedOption != "Never") {
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
                         Text(

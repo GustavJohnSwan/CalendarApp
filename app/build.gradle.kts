@@ -63,7 +63,7 @@ dependencies {
 
     // Compose Navigation dependencies
     implementation ("androidx.navigation:navigation-compose:2.8.9")
-    implementation(libs.play.services.fido)
+
 
 
     // SQLite ROOM dependencies

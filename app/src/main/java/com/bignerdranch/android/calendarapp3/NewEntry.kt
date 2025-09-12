@@ -1,6 +1,9 @@
 package com.bignerdranch.android.calendarapp3
 
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +33,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.buisness_logic.AttachmentViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
@@ -44,7 +49,8 @@ fun NewEntry(
     viewModel: CalendarViewModel = viewModel(),
     eventDetailViewModel: EventDetailsViewModel = viewModel(),
     entryTableViewModel: EntryTableViewModel,
-    editEntryViewModel: EditEntryViewModel
+    editEntryViewModel: EditEntryViewModel,
+    attachmentViewModel: AttachmentViewModel = viewModel() // <- ADD THIS
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isExtraDataEnabled by remember { mutableStateOf(false) }
@@ -54,6 +60,24 @@ fun NewEntry(
 
     var selectedRepeatType by remember { mutableStateOf("Never") } // Default to "None"
     var repeatOptions by remember { mutableStateOf(RepeatOptions()) }
+
+    // NEW: LaunchedEffect to load attachments (for this new entry, it will be empty initially)
+    LaunchedEffect(Unit) {
+        // We don't have an entryId yet for a new entry, so we can't load attachments here.
+        // Attachments will be linked after the entry is created and we have an ID.
+    }
+
+    // NEW: File Picker Launcher
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            // We will handle this after the entry is saved, as we need an entryId
+            // For now, we can store the URI(s) in a temporary list
+            // This is a more advanced flow. For simplicity, we might add attachments in the Edit screen after creation.
+            // Let's focus on implementing this first in EditEntry.
+        }
+    }
 
     Column {
         OutlinedTextField(
@@ -95,6 +119,11 @@ fun NewEntry(
             onRepeatOptionsChange = { newOptions -> repeatOptions = newOptions }
         )
 
+        // NEW: Attachment Section
+        Text("Attachments", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleSmall)
+        // For a new entry, we'll keep it simple and suggest adding attachments after saving.
+        Text("Add attachments after saving the event.", modifier = Modifier.padding(horizontal = 16.dp))
+
         Button(
             onClick = {
                 if (viewModel.newEventText.isBlank()) {
@@ -124,6 +153,39 @@ fun NewEntry(
         ) {
             Text("Save Event")
         }
+
+        Button(
+            onClick = {
+                if (viewModel.newEventText.isBlank()) {
+                    errorMessage = "Event cannot be empty"
+                    return@Button
+                }
+
+                // Serialize repeat options
+                val repeatDetails = if (selectedRepeatType != "Never") {
+                    RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
+                } else {
+                    null
+                }
+
+                // INSERT THE ENTRY FIRST
+                entryTableViewModel.insertEntry(
+                    date = editEntryViewModel.selectedDate,
+                    content = viewModel.newEventText,
+                    exDaBo = selectedReminderType != "None",
+                    timeMinutes = selectedTimeMinutes,
+                    reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                    repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                    repeatDetails = repeatDetails
+                )
+                // After saving, we navigate back. The user can add attachments by editing the entry.
+                navController.popBackStack()
+            },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text("Save Event")
+        }
+
     }
 }
 

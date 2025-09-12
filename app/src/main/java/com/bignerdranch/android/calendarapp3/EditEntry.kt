@@ -1,8 +1,21 @@
 package com.bignerdranch.android.calendarapp3
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,31 +24,46 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.buisness_logic.AttachmentViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.database.EntryAttachment
 import com.bignerdranch.android.calendarapp3.entry_extra_data.ReminderSelector
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
+
+import androidx.compose.ui.res.painterResource
+
 
 @Composable
 fun EditEntry(
     navController: NavController,
     entryTableViewModel: EntryTableViewModel,
-    editEntryViewModel: EditEntryViewModel
+    editEntryViewModel: EditEntryViewModel,
+    attachmentViewModel: AttachmentViewModel = viewModel()
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
     var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
     var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
+    val context = LocalContext.current
 
     // Use the reminder and repeat types from ViewModel
     var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) }
     var selectedRepeatType by remember { mutableStateOf(editEntryViewModel.selectedRepeatType) }
     var repeatOptions by remember { mutableStateOf(editEntryViewModel.repeatOptions) }
+
+    val entryId = selectedEntry?.id ?: -1
+
 
     // Update local state when ViewModel changes
     LaunchedEffect(editEntryViewModel.selectedReminderType) {
@@ -48,6 +76,26 @@ fun EditEntry(
 
     LaunchedEffect(editEntryViewModel.repeatOptions) {
         repeatOptions = editEntryViewModel.repeatOptions
+    }
+
+    // NEW: Load attachments when the entry is selected
+    LaunchedEffect(selectedEntry) {
+        if (entryId != -1) {
+            attachmentViewModel.loadAttachmentsForEntry(entryId)
+        }
+    }
+    val attachments by attachmentViewModel.attachments
+
+    // NEW: File Picker Launcher
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { selectedUri ->
+            // Now we have an entryId, so we can add the attachment
+            if (entryId != -1) {
+                attachmentViewModel.addAttachment(entryId, selectedUri)
+            }
+        }
     }
 
     Column {
@@ -99,6 +147,42 @@ fun EditEntry(
             }
         )
 
+        // NEW: Attachment Section
+        Text("Attachments", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleSmall)
+
+        // Button to Add Attachment
+        Button(
+            onClick = { filePickerLauncher.launch("*/*") },
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            Text("Add Attachment")
+        }
+
+        // List of Attachments
+        LazyColumn {
+            items(attachments) { attachment ->
+                AttachmentItem(
+                    attachment = attachment,
+                    onViewClick = {
+                        // Use the ViewModel to get a shareable URI and open it
+                        val uri = attachmentViewModel.getUriForAttachment(attachment)
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, attachment.mimeType)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: android.content.ActivityNotFoundException) { // <- FIXED: Use fully qualified name
+                            Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onDeleteClick = {
+                        attachmentViewModel.deleteAttachment(attachment.id)
+                    }
+                )
+            }
+        }
+
         Button(
             onClick = {
                 if (entryContent.isBlank()) {
@@ -141,6 +225,47 @@ fun EditEntry(
             modifier = Modifier.padding(16.dp)
         ) {
             Text("Save Changes")
+        }
+    }
+}
+
+// NEW: Composable to display a single attachment
+// NEW: Composable to display a single attachment
+// NEW: Composable to display a single attachment
+// Add these imports at the top
+
+
+// NEW: Composable to display a single attachment
+@Composable
+fun AttachmentItem(
+    attachment: EntryAttachment,
+    onViewClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    Card(modifier = Modifier.padding(8.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(attachment.fileName, fontWeight = FontWeight.Bold)
+                Text("${attachment.fileSize / 1024} KB")
+            }
+            IconButton(onClick = onViewClick) {
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_view), // system view icon
+                    contentDescription = "View Attachment"
+                )
+            }
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    painter = painterResource(id = android.R.drawable.ic_menu_delete), // system delete icon
+                    contentDescription = "Delete Attachment"
+                )
+            }
+
         }
     }
 }

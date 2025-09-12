@@ -4,8 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.bignerdranch.android.calendarapp3.database.EntryAttachment
-import com.google.android.gms.fido.fido2.api.common.Attachment
+
 
 // this defines the tables of the database
 

@@ -1,20 +1,9 @@
 package com.bignerdranch.android.calendarapp3
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.daysOfWeek
@@ -22,7 +11,9 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.YearMonth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import java.time.LocalDate
+import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
 
 /*
 I implemented viewModel to seperate the UI design elements (composablse) from business logic elements.

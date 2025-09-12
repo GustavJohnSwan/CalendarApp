@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 object TimeUtils {
     // Convert minutes to formatted time string (HH:mm)

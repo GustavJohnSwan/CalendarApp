@@ -1,11 +1,7 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 
 @Composable
 fun SwitchExtraData(isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {

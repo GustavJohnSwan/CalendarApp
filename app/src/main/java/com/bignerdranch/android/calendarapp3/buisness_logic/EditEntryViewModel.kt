@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -6,7 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.bignerdranch.android.calendarapp3.RepeatOptionsSerializer.getRepeatOptionsForEntry
+import com.bignerdranch.android.calendarapp3.database.AppDatabase
+import com.bignerdranch.android.calendarapp3.database.EntryTable
+import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
+import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
+import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
 import kotlinx.coroutines.launch
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {

@@ -1,11 +1,10 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import androidx.lifecycle.ViewModel
 import java.time.LocalDate
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.State
 
 // this is the first viewModel - a class that functions as a business logic or screen level state holder.
 // It makes sure that state values are remembered when navigating between activities or following configuration changes (screen rotation)

@@ -1,11 +1,9 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.database
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 
 // this defines the tables of the database
 

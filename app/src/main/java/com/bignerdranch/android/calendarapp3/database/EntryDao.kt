@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.database
 
 
 import androidx.room.*

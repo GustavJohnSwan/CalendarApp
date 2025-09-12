@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bignerdranch.android.calendarapp3.RadioButtonSingleSelection
+import com.bignerdranch.android.calendarapp3.buisness_logic.EventDetailsViewModel
 
 @Composable
 fun EventDetailDialog(

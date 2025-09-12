@@ -26,10 +26,17 @@ import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EventDetailsViewModel
+import com.bignerdranch.android.calendarapp3.entry_extra_data.ReminderSelector
+import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
+import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
+import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
 
 @Composable
 fun NewEntry(

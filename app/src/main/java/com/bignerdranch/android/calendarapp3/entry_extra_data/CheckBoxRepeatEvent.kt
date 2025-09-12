@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

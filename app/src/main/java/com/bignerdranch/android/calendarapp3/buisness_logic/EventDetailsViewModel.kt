@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

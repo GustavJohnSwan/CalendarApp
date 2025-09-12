@@ -1,10 +1,13 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import androidx.compose.runtime.State
 import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.bignerdranch.android.calendarapp3.database.AppDatabase
+import com.bignerdranch.android.calendarapp3.database.EntryTable
+import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
 import kotlinx.coroutines.launch
 
 // this is the second viewModel - a class that functions as a business logic or screen level state holder.

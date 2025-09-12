@@ -1,11 +1,10 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,8 +20,6 @@ import androidx.compose.ui.unit.dp
 
 
 // Add these imports if not already present
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue

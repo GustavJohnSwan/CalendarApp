@@ -1,4 +1,6 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.entry_extra_data
+
+import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
 
 object RepeatOptionsSerializer {
     fun serialize(options: RepeatOptions, repeatType: String): String {

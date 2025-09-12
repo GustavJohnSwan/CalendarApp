@@ -5,6 +5,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
 
 
 // this composable is responsible for navigating between two main composables : MainScreen and NewEntry

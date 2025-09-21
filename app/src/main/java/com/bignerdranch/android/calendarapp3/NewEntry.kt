@@ -42,6 +42,7 @@ import com.bignerdranch.android.calendarapp3.entry_extra_data.ReminderSelector
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
+import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
 
 @Composable
 fun NewEntry(
@@ -131,9 +132,9 @@ fun NewEntry(
                     return@Button
                 }
 
-                // Serialize repeat options
+                // Generate RRule string using the new generator
                 val repeatDetails = if (selectedRepeatType != "Never") {
-                    RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
+                    generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
                 } else {
                     null
                 }
@@ -145,7 +146,7 @@ fun NewEntry(
                     timeMinutes = selectedTimeMinutes,
                     reminderType = if (selectedReminderType != "None") selectedReminderType else null,
                     repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
-                    repeatDetails = repeatDetails
+                    repeatDetails = repeatDetails // Store the RRule string
                 )
                 navController.popBackStack()
             },
@@ -153,39 +154,6 @@ fun NewEntry(
         ) {
             Text("Save Event")
         }
-
-        Button(
-            onClick = {
-                if (viewModel.newEventText.isBlank()) {
-                    errorMessage = "Event cannot be empty"
-                    return@Button
-                }
-
-                // Serialize repeat options
-                val repeatDetails = if (selectedRepeatType != "Never") {
-                    RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
-                } else {
-                    null
-                }
-
-                // INSERT THE ENTRY FIRST
-                entryTableViewModel.insertEntry(
-                    date = editEntryViewModel.selectedDate,
-                    content = viewModel.newEventText,
-                    exDaBo = selectedReminderType != "None",
-                    timeMinutes = selectedTimeMinutes,
-                    reminderType = if (selectedReminderType != "None") selectedReminderType else null,
-                    repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
-                    repeatDetails = repeatDetails
-                )
-                // After saving, we navigate back. The user can add attachments by editing the entry.
-                navController.popBackStack()
-            },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Save Event")
-        }
-
     }
 }
 

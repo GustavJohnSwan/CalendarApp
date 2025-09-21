@@ -42,6 +42,7 @@ import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSeria
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
 
 import androidx.compose.ui.res.painterResource
+import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
 
 
 @Composable
@@ -197,9 +198,9 @@ fun EditEntry(
                         timeMinutes = selectedTimeMinutes
                     )
 
-                    // Serialize repeat options if needed
+                    // Generate RRule string using the new generator
                     val repeatDetails = if (selectedRepeatType != "Never") {
-                        RepeatOptionsSerializer.serialize(repeatOptions, selectedRepeatType)
+                        generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
                     } else {
                         null
                     }

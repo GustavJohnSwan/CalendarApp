@@ -11,7 +11,11 @@ import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
+import com.bignerdranch.android.calendarapp3.entry_extra_data.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
+
+import java.util.Calendar
+import java.util.Date
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
@@ -34,9 +38,10 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
             selectedReminderType = extraData?.reminderType ?: "None"
             selectedRepeatType = extraData?.repeat ?: "Never"
 
-            // Load repeat options from extra data
-            if (extraData != null && !extraData.repeatDetails.isNullOrEmpty()) {
-                repeatOptions = RepeatOptionsSerializer.deserialize(extraData.repeatDetails!!)
+            // Load repeat options from extra data - FIXED VERSION
+            if (extraData != null && !extraData.repeatDetails.isNullOrEmpty() && extraData.repeat != null) {
+                // PARSE the stored RRULE back into RepeatOptions
+                repeatOptions = parseRRuleToRepeatOptions(extraData.repeatDetails!!, extraData.repeat!!)
             } else {
                 repeatOptions = RepeatOptions() // Reset to default
             }

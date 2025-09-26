@@ -64,7 +64,7 @@ dependencies {
     // Compose Navigation dependencies
     implementation ("androidx.navigation:navigation-compose:2.8.9")
 
-    implementation("org.dmfs:lib-recur:0.10.2")
+    implementation("org.dmfs:lib-recur:0.17.1")
 
     implementation("com.github.PhilJay:RRule:1.0.3")
 

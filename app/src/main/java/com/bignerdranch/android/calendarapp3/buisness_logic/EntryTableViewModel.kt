@@ -52,7 +52,7 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         reminderType: String? = null,
         repeat: String? = null,
         repeatDetails: String? = null // ADD THIS PARAMETER
-    ) {
+    ): Int {
         // Insert main entry WITH TIME
         val newEntry = EntryTable(
             dateDB = dateDB,
@@ -71,6 +71,7 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
                 )
             )
         }
+        return entryId // RETURN the primary key
     }
 
     suspend fun insertEntryInEntryTable(dateDB: String, entryDB: String) {
@@ -88,10 +89,11 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         timeMinutes: Int? = null,
         reminderType: String? = null,
         repeat: String?,
-        repeatDetails: String? = null // ADD THIS PARAMETER
+        repeatDetails: String? = null, // ADD THIS PARAMETER
+        onEntryInserted: (Int) -> Unit = {} // ADD callback for the primary key
     ) {
         viewModelScope.launch {
-            insertEntryWithExtraData(
+            val entryId = insertEntryWithExtraData(
                 date,
                 content,
                 exDaBo,
@@ -100,6 +102,7 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
                 repeat,
                 repeatDetails // PASS THE PARAMETER
             )
+            onEntryInserted(entryId) // CALL callback with the primary key
         }
     }
 

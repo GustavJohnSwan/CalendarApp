@@ -43,6 +43,7 @@ import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
 import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
 import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
+import com.bignerdranch.android.calendarapp3.entry_extra_data.repeatEventListener
 
 @Composable
 fun NewEntry(
@@ -146,9 +147,19 @@ fun NewEntry(
                     timeMinutes = selectedTimeMinutes,
                     reminderType = if (selectedReminderType != "None") selectedReminderType else null,
                     repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
-                    repeatDetails = repeatDetails // Store the RRule string
+                    repeatDetails = repeatDetails, // Store the RRule string
+                    onEntryInserted = { entryId ->  // ADD THIS CALLBACK
+                        // This gets called AFTER the entry is inserted and we have the ID
+                        if (repeatDetails != null) {
+                            repeatEventListener(entryId, repeatDetails)
+                        }
+                        navController.popBackStack()
+                    }
                 )
-                navController.popBackStack()
+
+                //repeatEventListener(entryId, repeatDetails)
+
+
             },
             modifier = Modifier.padding(16.dp)
         ) {

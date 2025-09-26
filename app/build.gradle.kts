@@ -68,6 +68,10 @@ dependencies {
 
     implementation("com.github.PhilJay:RRule:1.0.3")
 
+    implementation("org.dmfs:jems2:2.0.0")
+
+    implementation("org.dmfs:rfc5545-datetime:0.2.4")
+
 
 
 

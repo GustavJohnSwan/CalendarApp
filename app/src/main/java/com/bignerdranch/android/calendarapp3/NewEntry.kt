@@ -151,7 +151,7 @@ fun NewEntry(
                     onEntryInserted = { entryId ->  // ADD THIS CALLBACK
                         // This gets called AFTER the entry is inserted and we have the ID
                         if (repeatDetails != null) {
-                            repeatEventListener(entryId, repeatDetails)
+                            repeatEventListener(entryId, repeatDetails, editEntryViewModel.selectedDate)
                         }
                         navController.popBackStack()
                     }

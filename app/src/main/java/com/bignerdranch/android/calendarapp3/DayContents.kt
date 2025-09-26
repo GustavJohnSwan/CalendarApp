@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
 @Composable
@@ -32,8 +33,9 @@ fun MinimalDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     onNewEntry: () -> Unit,
-    onEditEntry: (EntryTable) -> Unit, // Changed to accept EntryTable directly
+    onEditEntry: (EntryTable) -> Unit,
     editEntryViewModel: EditEntryViewModel,
+    entryTableViewModel: EntryTableViewModel, // Add this parameter
     eventList: List<EntryTable>,
 ) {
     val filteredEntries = remember(eventList, editEntryViewModel.selectedDate) {

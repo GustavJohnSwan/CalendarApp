@@ -68,7 +68,13 @@ dependencies {
 
     implementation("com.github.PhilJay:RRule:1.0.3")
 
-
+// Your existing dependencies...
+    implementation(libs.dmfs.lib.recur)
+    implementation(libs.rfc5545.datetime)
+    implementation("org.dmfs:jems2:2.25.0")
+// required
+// Kotlin stdlib (if not already included)
+//    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.8.0")
 
 
 

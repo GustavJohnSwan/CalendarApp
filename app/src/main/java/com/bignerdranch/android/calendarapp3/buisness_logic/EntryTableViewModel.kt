@@ -160,6 +160,4 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
             getAllEntries()
         }
     }
-
-
 }

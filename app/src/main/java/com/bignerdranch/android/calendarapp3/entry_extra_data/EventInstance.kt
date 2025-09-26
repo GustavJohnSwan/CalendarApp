@@ -2,7 +2,6 @@ package com.bignerdranch.android.calendarapp3.entry_extra_data
 
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
-// EventInstance.kt
 data class EventInstance(
     val id: String, // Unique ID for this instance (masterId + date)
     val masterEventId: Int, // Link back to the original event
@@ -12,9 +11,9 @@ data class EventInstance(
     val isRecurringInstance: Boolean
 ) {
     companion object {
-        fun fromEntry(entry: EntryTable, isRecurringInstance: Boolean): EventInstance {
+        fun fromEntry(entry: EntryTable, isRecurringInstance: Boolean = false): EventInstance {
             return EventInstance(
-                id = entry.id.toString(),
+                id = if (isRecurringInstance) "${entry.id}_${entry.dateDB}" else entry.id.toString(),
                 masterEventId = entry.id,
                 title = entry.entryDB ?: "",
                 date = entry.dateDB ?: "",
@@ -22,5 +21,10 @@ data class EventInstance(
                 isRecurringInstance = isRecurringInstance
             )
         }
+    }
+
+    // Helper function to check if this instance occurs on a specific date
+    fun occursOnDate(targetDate: String): Boolean {
+        return date == targetDate
     }
 }

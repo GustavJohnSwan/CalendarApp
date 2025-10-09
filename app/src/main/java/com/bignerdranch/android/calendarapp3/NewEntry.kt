@@ -148,18 +148,18 @@ fun NewEntry(
                     reminderType = if (selectedReminderType != "None") selectedReminderType else null,
                     repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
                     repeatDetails = repeatDetails, // Store the RRule string
-                    onEntryInserted = { entryId ->  // ADD THIS CALLBACK
-                        // This gets called AFTER the entry is inserted and we have the ID
+                    onEntryInserted = { entryId ->
                         if (repeatDetails != null) {
-                            repeatEventListener(entryId, repeatDetails, editEntryViewModel.selectedDate)
+                            repeatEventListener(
+                                entryId = entryId,
+                                repeatDetails = repeatDetails,
+                                startDate = editEntryViewModel.selectedDate,
+                                entryTableViewModel = entryTableViewModel // ADD THIS
+                            )
                         }
                         navController.popBackStack()
                     }
                 )
-
-                //repeatEventListener(entryId, repeatDetails)
-
-
             },
             modifier = Modifier.padding(16.dp)
         ) {

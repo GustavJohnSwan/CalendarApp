@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
+import com.bignerdranch.android.calendarapp3.database.RecurringEvent
 import kotlinx.coroutines.launch
 
 // this is the second viewModel - a class that functions as a business logic or screen level state holder.
@@ -17,6 +18,8 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     private val entryDao = db.entryDao()
     private val extraDataDao = db.extraDataDao()  // Add this line
 
+    private val recurringEventDao = db.recurringEventDao() // ADD THIS
+
     // For all entries
     private val _entryList = mutableStateOf<List<EntryTable>>(emptyList())
     val entryList: State<List<EntryTable>> = _entryList
@@ -24,6 +27,31 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     // For date-specific entries
     private val _dateEntries = mutableStateOf<List<EntryTable>>(emptyList())
     val dateEntries: State<List<EntryTable>> = _dateEntries
+
+    // Add this method to handle recurring events
+    suspend fun saveRecurringEventToDatabase(entryId: Int, date: String) {
+        val recurringEvent = RecurringEvent(
+            entryId = entryId,
+            occurrenceDate = date
+        )
+        recurringEventDao.insert(recurringEvent)
+    }
+
+    // Add method to get combined events (original + recurring)
+    suspend fun getEventsForDate(date: String): List<EntryTable> {
+        val directEntries = entryDao.getEntriesByDate(date)
+        val recurringEntries = recurringEventDao.getEventsByDate(date).mapNotNull { recurringEvent ->
+            entryDao.getExtraDataByEntryId(recurringEvent.entryId)?.let { extraData ->
+                // Create a virtual entry for the recurring occurrence
+                EntryTable(
+                    dateDB = date,
+                    entryDB = "Recurring event placeholder", // You'll need to get the actual content
+                    timeMinutes = null // You might want to store time in recurring events too
+                )
+            }
+        }
+        return directEntries + recurringEntries
+    }
 
     fun loadEntriesForDate(date: String) {
         viewModelScope.launch {

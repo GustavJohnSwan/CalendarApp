@@ -60,3 +60,19 @@ interface ExtraDataDao {
     @Query("SELECT * FROM ExtraDataTable WHERE entry_id = :entryId")
     suspend fun getExtraDataByEntryId(entryId: Int): ExtraDataTable?
 }
+
+// Add to EntryDao.kt
+@Dao
+interface RecurringEventDao {
+    @Insert
+    suspend fun insert(recurringEvent: RecurringEvent)
+
+    @Query("SELECT * FROM recurring_events WHERE entry_id = :entryId")
+    suspend fun getRecurringEventsByEntryId(entryId: Int): List<RecurringEvent>
+
+    @Query("DELETE FROM recurring_events WHERE entry_id = :entryId")
+    suspend fun deleteByEntryId(entryId: Int)
+
+    @Query("SELECT * FROM recurring_events WHERE occurrence_date = :date")
+    suspend fun getEventsByDate(date: String): List<RecurringEvent>
+}

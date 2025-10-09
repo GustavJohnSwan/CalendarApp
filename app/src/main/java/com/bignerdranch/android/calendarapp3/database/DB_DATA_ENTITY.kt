@@ -46,3 +46,12 @@ data class ExtraDataTable(
 ) {
     constructor() : this(0, 0, null, null, null, null)
 }
+
+// Add to DB_DATA_ENTITY.kt
+@Entity(tableName = "recurring_events")
+data class RecurringEvent(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "entry_id") val entryId: Int, // Foreign key to EntryTable
+    @ColumnInfo(name = "occurrence_date") val occurrenceDate: String, // Format: "yyyy-MM-dd"
+    @ColumnInfo(name = "is_exception") val isException: Boolean = false
+)

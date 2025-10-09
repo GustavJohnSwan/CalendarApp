@@ -15,12 +15,15 @@ import androidx.room.RoomDatabase
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed
-@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class], version = 9)
+@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, RecurringEvent::class], version = 10)
 abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabase
     // returns DAO interfaces
     abstract fun entryDao(): EntryDao
     abstract fun extraDataDao(): ExtraDataDao
     abstract fun attachmentDao(): AttachmentDao // <- NEW DAO
+
+    // Add this method to your database class
+    abstract fun recurringEventDao(): RecurringEventDao
 
     // this creates a shared, static variable called INSTANCE. It holds the only copy of the database. It is a SINGLETON that allows only one INSTANCE to exist in the whole app
     companion object {

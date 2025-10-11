@@ -48,10 +48,19 @@ data class ExtraDataTable(
 }
 
 // Add to DB_DATA_ENTITY.kt
-@Entity(tableName = "recurring_events")
+
+@Entity(
+    tableName = "recurring_events",
+    foreignKeys = [ForeignKey(
+        entity = EntryTable::class,
+        parentColumns = ["id"],
+        childColumns = ["entry_id"],
+        onDelete = ForeignKey.CASCADE // or SET_NULL depending on your needs
+    )]
+)
 data class RecurringEvent(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "entry_id") val entryId: Int, // Foreign key to EntryTable
-    @ColumnInfo(name = "occurrence_date") val occurrenceDate: String, // Format: "yyyy-MM-dd"
+    @ColumnInfo(name = "occurrence_date") val occurrenceDate: String,
     @ColumnInfo(name = "is_exception") val isException: Boolean = false
 )

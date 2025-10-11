@@ -56,8 +56,11 @@ fun repeatEventListener(
                 entryTableViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
             }
 
+// In RepeatEventListener.kt - enhance the catch block
         } catch (e: Exception) {
             e.printStackTrace()
+            // Add Log.d or Log.e for better debugging
+            android.util.Log.e("RepeatEvent", "Error generating recurring events: ${e.message}")
         }
     }
 }

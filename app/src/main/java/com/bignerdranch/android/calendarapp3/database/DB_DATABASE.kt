@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed
-@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, RecurringEvent::class], version = 10)
+@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, RecurringEvent::class], version = 11)
 abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabase
     // returns DAO interfaces
     abstract fun entryDao(): EntryDao

@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -11,6 +11,10 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.YearMonth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.ui_composables.month_view.Day
+import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DaysOfWeekTitle
+import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DayContentsDialog
+import com.bignerdranch.android.calendarapp3.ui_composables.month_view.YearAndMonthDisplay
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
@@ -53,7 +57,7 @@ fun MainScreen(
         YearAndMonthDisplay(displayedMonth = displayedMonth, displayedYear = displayedYear)
 
         if (viewModel.showDayContentDialog) {
-            MinimalDialog(
+            DayContentsDialog(
                 onDismissRequest = {
                     viewModel.toggleDayContentDialog(false)
                     viewModel.onDateSelected(null)

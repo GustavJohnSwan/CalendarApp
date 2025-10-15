@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.month_view
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

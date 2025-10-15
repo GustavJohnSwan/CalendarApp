@@ -1,5 +1,7 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view
 
+import android.R
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -37,11 +39,11 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.AttachmentViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
-import com.bignerdranch.android.calendarapp3.entry_extra_data.ReminderSelector
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.ReminderSelector
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.RepeatSelector
 
 import androidx.compose.ui.res.painterResource
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
 
 
@@ -173,7 +175,7 @@ fun EditEntry(
                         }
                         try {
                             context.startActivity(intent)
-                        } catch (e: android.content.ActivityNotFoundException) { // <- FIXED: Use fully qualified name
+                        } catch (e: ActivityNotFoundException) { // <- FIXED: Use fully qualified name
                             Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
                         }
                     },
@@ -256,13 +258,13 @@ fun AttachmentItem(
             }
             IconButton(onClick = onViewClick) {
                 Icon(
-                    painter = painterResource(id = android.R.drawable.ic_menu_view), // system view icon
+                    painter = painterResource(id = R.drawable.ic_menu_view), // system view icon
                     contentDescription = "View Attachment"
                 )
             }
             IconButton(onClick = onDeleteClick) {
                 Icon(
-                    painter = painterResource(id = android.R.drawable.ic_menu_delete), // system delete icon
+                    painter = painterResource(id = R.drawable.ic_menu_delete), // system delete icon
                     contentDescription = "Delete Attachment"
                 )
             }

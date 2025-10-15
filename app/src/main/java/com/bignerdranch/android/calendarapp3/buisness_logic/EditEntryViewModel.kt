@@ -9,13 +9,11 @@ import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.bignerdranch.android.calendarapp3.entry_extra_data.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
 
-import java.util.Calendar
-import java.util.Date
+
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)

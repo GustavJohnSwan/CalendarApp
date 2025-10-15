@@ -1,5 +1,6 @@
 package com.bignerdranch.android.calendarapp3.entry_extra_data
 
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
@@ -86,13 +87,6 @@ fun generateRRuleString(
     }
 
     return rule.toRFC5545String()
-}
-
-/**
- * Helper to parse a stored RRule string
- */
-fun parseRRuleString(rRuleString: String): RRule {
-    return RRule(rRuleString)
 }
 
 /*____________________________________________________________________________________________*/

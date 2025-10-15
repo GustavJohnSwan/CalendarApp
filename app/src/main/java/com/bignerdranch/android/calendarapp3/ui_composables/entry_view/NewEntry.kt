@@ -1,9 +1,6 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view
 
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -33,30 +29,24 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bignerdranch.android.calendarapp3.buisness_logic.AttachmentViewModel
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
-import com.bignerdranch.android.calendarapp3.buisness_logic.EventDetailsViewModel
-import com.bignerdranch.android.calendarapp3.entry_extra_data.ReminderSelector
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptions
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatOptionsSerializer
-import com.bignerdranch.android.calendarapp3.entry_extra_data.RepeatSelector
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.ReminderSelector
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.RepeatSelector
 import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
-import com.bignerdranch.android.calendarapp3.entry_extra_data.repeatEventListener
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.repeatEventListener
 
 @Composable
 fun NewEntry(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
-    eventDetailViewModel: EventDetailsViewModel = viewModel(),
     entryTableViewModel: EntryTableViewModel,
     editEntryViewModel: EditEntryViewModel,
-    attachmentViewModel: AttachmentViewModel = viewModel() // <- ADD THIS
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isExtraDataEnabled by remember { mutableStateOf(false) }
-    var extraDataBoolean by remember { mutableStateOf(false) }
     var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) }
     var selectedReminderType by remember { mutableStateOf("None") } // Default to "None"
 
@@ -69,17 +59,6 @@ fun NewEntry(
         // Attachments will be linked after the entry is created and we have an ID.
     }
 
-    // NEW: File Picker Launcher
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let { selectedUri ->
-            // We will handle this after the entry is saved, as we need an entryId
-            // For now, we can store the URI(s) in a temporary list
-            // This is a more advanced flow. For simplicity, we might add attachments in the Edit screen after creation.
-            // Let's focus on implementing this first in EditEntry.
-        }
-    }
 
     Column {
         OutlinedTextField(
@@ -170,34 +149,6 @@ fun NewEntry(
 
 
 @Composable
-fun CheckboxMinimalExample(
-    onCheckedChange: (Boolean) -> Unit,
-    isChecked: Boolean,
-    selectedReminderType: String, // ADD THIS PARAMETER
-    onReminderTypeChange: (String) -> Unit // ADD THIS CALLBACK
-    ) {
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = isChecked, // USE THE PASSED PARAMETER
-            onCheckedChange = { onCheckedChange(it) } // CALL THE CALLBACK DIRECTLY
-        )
-        Text(if (isChecked) "Reminder ON" else "Reminder OFF") // USE THE PARAMETER
-    }
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (isChecked) { // USE THE PARAMETER
-            RadioButtonSingleSelection(
-                selectedOption = selectedReminderType,
-                onOptionSelected = onReminderTypeChange
-            )
-        }
-    }
-}
-
-
-
-@Composable
 fun RadioButtonSingleSelection(
     modifier: Modifier = Modifier,
     selectedOption: String,
@@ -234,35 +185,6 @@ fun RadioButtonSingleSelection(
 }
 
 
-
-
-
-@Composable
-fun CheckboxRepeatEvent(
-    onCheckedChange: (Boolean) -> Unit,
-    isChecked: Boolean,
-    selectedRepeatType: String,
-    onRepeatTypeChange: (String) -> Unit
-) {
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(
-            checked = isChecked,
-            onCheckedChange = { onCheckedChange(it) }
-        )
-        Text(if (isChecked) "Repeat YES" else "Repeat NO")
-    }
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        if (isChecked) {
-            RadioButtonRepeatType(
-                selectedOption = selectedRepeatType,
-                onOptionSelected = onRepeatTypeChange
-            )
-        }
-    }
-}
-
 @Composable
 fun RadioButtonRepeatType(
     modifier: Modifier = Modifier,
@@ -298,34 +220,5 @@ fun RadioButtonRepeatType(
 
 
         }
-    }
-}
-
-
-@Composable
-fun RepeatTypeDetails(
-    repeatType: String
-) {
-    when (repeatType) {
-        "Daily" ->
-            Row() {
-
-            }
-        "Weekly" ->
-            Row() {
-
-            }
-        "Monthly" ->
-            Row() {
-
-            }
-        "Yearly" ->
-            Row() {
-
-            }
-        else ->
-            Row() {
-
-            }
     }
 }

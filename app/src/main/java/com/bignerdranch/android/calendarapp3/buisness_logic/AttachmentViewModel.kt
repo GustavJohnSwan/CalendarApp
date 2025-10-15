@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
-import com.bignerdranch.android.calendarapp3.entry_extra_data.attachment.AttachmentRepository
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.AttachmentRepository
 import kotlinx.coroutines.launch
 
 class AttachmentViewModel(application: Application) : AndroidViewModel(application) {

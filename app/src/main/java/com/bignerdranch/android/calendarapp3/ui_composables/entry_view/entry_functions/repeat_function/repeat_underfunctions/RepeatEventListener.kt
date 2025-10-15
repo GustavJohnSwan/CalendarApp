@@ -1,9 +1,9 @@
 // RepeatEventListener.kt - with proper RFC 5545 date handling
-package com.bignerdranch.android.calendarapp3.entry_extra_data
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions
 
+import android.util.Log
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
 import org.dmfs.rfc5545.DateTime
-import org.dmfs.rfc5545.RecurrenceSet
 import org.dmfs.rfc5545.recurrenceset.OfRule
 import org.dmfs.jems2.iterator.First
 import java.text.SimpleDateFormat
@@ -60,7 +60,7 @@ fun repeatEventListener(
         } catch (e: Exception) {
             e.printStackTrace()
             // Add Log.d or Log.e for better debugging
-            android.util.Log.e("RepeatEvent", "Error generating recurring events: ${e.message}")
+            Log.e("RepeatEvent", "Error generating recurring events: ${e.message}")
         }
     }
 }

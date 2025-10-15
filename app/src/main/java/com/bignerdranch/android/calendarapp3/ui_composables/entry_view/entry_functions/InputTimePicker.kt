@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -13,7 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
-import com.bignerdranch.android.calendarapp3.entry_extra_data.TimeUtils
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.TimeUtils
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)

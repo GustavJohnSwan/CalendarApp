@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3.entry_extra_data
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.bignerdranch.android.calendarapp3.RadioButtonRepeatType
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatDialogState
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptionsDetail
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.rememberRepeatDialogState
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.RadioButtonRepeatType
 
 @Composable
 fun RepeatSelector(

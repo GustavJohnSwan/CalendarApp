@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.month_view
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Row

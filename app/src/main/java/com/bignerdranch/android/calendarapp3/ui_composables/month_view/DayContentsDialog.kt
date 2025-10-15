@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3
+package com.bignerdranch.android.calendarapp3.ui_composables.month_view
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +28,7 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
 @Composable
-fun MinimalDialog(
+fun DayContentsDialog(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     onNewEntry: () -> Unit,
@@ -130,15 +130,6 @@ private fun EventItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                /*
-                if (entry.idEx != null) {
-                    Text(
-                        text = entry.idEx.toString(), // Convert Int to String
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                */
             }
         }
     }

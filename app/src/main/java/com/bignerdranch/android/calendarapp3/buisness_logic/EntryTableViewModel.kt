@@ -37,35 +37,9 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         recurringEventDao.insert(recurringEvent)
     }
 
-    // Add method to get combined events (original + recurring)
-    suspend fun getEventsForDate(date: String): List<EntryTable> {
-        val directEntries = entryDao.getEntriesByDate(date)
-        val recurringEntries = recurringEventDao.getEventsByDate(date).mapNotNull { recurringEvent ->
-            entryDao.getExtraDataByEntryId(recurringEvent.entryId)?.let { extraData ->
-                // Create a virtual entry for the recurring occurrence
-                EntryTable(
-                    dateDB = date,
-                    entryDB = "Recurring event placeholder", // You'll need to get the actual content
-                    timeMinutes = null // You might want to store time in recurring events too
-                )
-            }
-        }
-        return directEntries + recurringEntries
-    }
-
     fun loadEntriesForDate(date: String) {
         viewModelScope.launch {
             _dateEntries.value = entryDao.getEntriesByDate(date)
-        }
-    }
-
-    // ADD THIS METHOD to update entry time
-    fun updateEntryTime(entryId: Int, timeMinutes: Int) {
-        viewModelScope.launch {
-            entryDao.updateTime(entryId, timeMinutes)
-            // Refresh the current view if needed
-            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
-            currentDate?.let { loadEntriesForDate(it) }
         }
     }
 
@@ -102,10 +76,6 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         return entryId // RETURN the primary key
     }
 
-    suspend fun insertEntryInEntryTable(dateDB: String, entryDB: String) {
-
-    }
-
     // Make this function available to UI
     // UPDATE this function to accept time parameter
     // UPDATE this function to accept reminderType
@@ -134,12 +104,6 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         }
     }
 
-    fun getAllEntries() {
-        viewModelScope.launch {
-            _entryList.value = entryDao.get_AllEntries()
-        }
-    }
-
     // ADD THIS METHOD to update entry with time
 // In EntryTableViewModel.kt - update the updateEntry method
     fun updateEntry(entry: EntryTable) {
@@ -148,47 +112,6 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
             // Refresh the current view
             val currentDate = _dateEntries.value.firstOrNull()?.dateDB
             currentDate?.let { loadEntriesForDate(it) }
-        }
-    }
-
-    // Add this method to handle extra data updates
-    fun updateEntryWithExtraData(
-        entry: EntryTable,
-        extraData: ExtraDataTable?
-    ) {
-        viewModelScope.launch {
-            entryDao.update_Entry(entry)
-
-            if (extraData != null) {
-                val existingExtraData = extraDataDao.getExtraDataByEntryId(entry.id)
-                if (existingExtraData != null) {
-                    extraDataDao.update_ExData(extraData)
-                } else {
-                    extraDataDao.insertExtraData(extraData)
-                }
-            } else {
-                // Remove extra data if it exists
-                val existingExtraData = extraDataDao.getExtraDataByEntryId(entry.id)
-                existingExtraData?.let { extraDataDao.delete_ExData(it) }
-            }
-
-            // Refresh the current view
-            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
-            currentDate?.let { loadEntriesForDate(it) }
-        }
-    }
-
-    // ADD THIS METHOD to update extra data (including repeat details)
-    fun updateExtraData(extraData: ExtraDataTable) {
-        viewModelScope.launch {
-            extraDataDao.update_ExData(extraData)
-        }
-    }
-
-    fun deleteEntry(entry: EntryTable) {
-        viewModelScope.launch {
-            entryDao.delete_Entry(entry)
-            getAllEntries()
         }
     }
 

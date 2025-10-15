@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3.entry_extra_data
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.bignerdranch.android.calendarapp3.RadioButtonSingleSelection
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.RadioButtonSingleSelection
 
 // Add this to your ReminderAndRepeater_V2.kt file
 @Composable

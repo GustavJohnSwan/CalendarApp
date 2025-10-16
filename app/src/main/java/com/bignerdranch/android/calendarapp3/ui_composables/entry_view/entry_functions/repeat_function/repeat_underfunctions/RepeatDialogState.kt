@@ -6,6 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
+
+@Composable
+fun rememberRepeatDialogState(): RepeatDialogState {
+    return remember { RepeatDialogState() }
+}
 class RepeatDialogState {
     var scrollState by mutableStateOf(0f)
     var isDialogOpen by mutableStateOf(false)
@@ -23,7 +28,3 @@ class RepeatDialogState {
     }
 }
 
-@Composable
-fun rememberRepeatDialogState(): RepeatDialogState {
-    return remember { RepeatDialogState() }
-}

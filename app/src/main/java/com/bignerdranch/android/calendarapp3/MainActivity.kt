@@ -1,10 +1,11 @@
-package com.bignerdranch.android.calendarapp3.ui_composables.main
+package com.bignerdranch.android.calendarapp3
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.bignerdranch.android.calendarapp3.ui.theme.CalendarApp3Theme
+import com.bignerdranch.android.calendarapp3.ui_composables.ScreenNavigation
 
 // this is the main activity or the entry point of the app
 class MainActivity : ComponentActivity() {

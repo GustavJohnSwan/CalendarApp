@@ -6,7 +6,7 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.content.FileProvider
-import com.bignerdranch.android.calendarapp3.database.AttachmentDao
+import com.bignerdranch.android.calendarapp3.database.DAO.AttachmentDao
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

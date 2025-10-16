@@ -17,7 +17,7 @@
         <profileable android:shell="true" />
 
         <activity
-            android:name=".ui_composables.main.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.CalendarApp3">

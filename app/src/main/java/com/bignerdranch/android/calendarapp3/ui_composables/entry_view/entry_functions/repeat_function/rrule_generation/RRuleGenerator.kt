@@ -1,4 +1,4 @@
-package com.bignerdranch.android.calendarapp3.entry_extra_data
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation
 
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.philjay.Frequency

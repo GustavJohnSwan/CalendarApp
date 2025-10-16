@@ -1,17 +1,13 @@
 package com.bignerdranch.android.calendarapp3.database
 
 import android.content.Context
-import androidx.room.ColumnInfo
-import androidx.room.Dao
 import androidx.room.Database
-import androidx.room.Delete
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Insert
-import androidx.room.PrimaryKey
-import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.bignerdranch.android.calendarapp3.database.DAO.AttachmentDao
+import com.bignerdranch.android.calendarapp3.database.DAO.EntryDao
+import com.bignerdranch.android.calendarapp3.database.DAO.ExtraDataDao
+import com.bignerdranch.android.calendarapp3.database.DAO.RecurringEventDao
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed

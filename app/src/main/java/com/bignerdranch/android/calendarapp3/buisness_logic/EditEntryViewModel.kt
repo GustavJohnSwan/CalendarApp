@@ -10,7 +10,7 @@ import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
-import com.bignerdranch.android.calendarapp3.entry_extra_data.parseRRuleToRepeatOptions
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
 
 

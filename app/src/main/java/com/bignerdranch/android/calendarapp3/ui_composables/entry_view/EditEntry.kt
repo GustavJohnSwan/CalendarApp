@@ -44,7 +44,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 
 import androidx.compose.ui.res.painterResource
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
-import com.bignerdranch.android.calendarapp3.entry_extra_data.generateRRuleString
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.generateRRuleString
 
 
 @Composable

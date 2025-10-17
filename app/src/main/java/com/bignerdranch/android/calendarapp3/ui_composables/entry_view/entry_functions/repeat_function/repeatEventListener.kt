@@ -1,6 +1,6 @@
+package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function
+
 // RepeatEventListener.kt - with proper RFC 5545 date handling
-/*
-package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions
 
 import android.util.Log
 import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
@@ -67,6 +67,3 @@ fun repeatEventListener(
 }
 
 // REMOVE the standalone saveRecurringEventToDatabase function - it's now in ViewModel
-
-
- */

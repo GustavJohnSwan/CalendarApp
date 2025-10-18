@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 // this is the second viewModel - a class that functions as a business logic or screen level state holder.
 // this one is responsible for the business logic relating to interactions with the database
-class EntryTableViewModel(application: Application) : AndroidViewModel(application) {
+class NewEntryViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val entryDao = db.entryDao()
     private val extraDataDao = db.extraDataDao()  // Add this line
@@ -25,8 +25,12 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
     val entryList: State<List<EntryTable>> = _entryList
 
     // For date-specific entries
+
+    /*
     private val _dateEntries = mutableStateOf<List<EntryTable>>(emptyList())
     val dateEntries: State<List<EntryTable>> = _dateEntries
+
+     */
 
     // Add this method to handle recurring events
     suspend fun saveRecurringEventToDatabase(entryId: Int, date: String) {
@@ -36,12 +40,14 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
         )
         recurringEventDao.insert(recurringEvent)
     }
-
+/*
     fun loadEntriesForDate(date: String) {
         viewModelScope.launch {
             _dateEntries.value = entryDao.getEntriesByDate(date)
         }
     }
+
+ */
 
     // UPDATE this method to accept time parameter
 // In EntryTableViewModel.kt
@@ -106,6 +112,7 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
 
     // ADD THIS METHOD to update entry with time
 // In EntryTableViewModel.kt - update the updateEntry method
+    /*
     fun updateEntry(entry: EntryTable) {
         viewModelScope.launch {
             entryDao.update_Entry(entry)
@@ -114,6 +121,7 @@ class EntryTableViewModel(application: Application) : AndroidViewModel(applicati
             currentDate?.let { loadEntriesForDate(it) }
         }
     }
+     */
 
 
 }

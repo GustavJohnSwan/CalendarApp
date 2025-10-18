@@ -3,7 +3,7 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fu
 // RepeatEventListener.kt - with proper RFC 5545 date handling
 
 import android.util.Log
-import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import org.dmfs.rfc5545.DateTime
 import org.dmfs.rfc5545.recurrenceset.OfRule
 import org.dmfs.jems2.iterator.First
@@ -24,7 +24,7 @@ fun repeatEventListener(
     entryId: Int,
     repeatDetails: String,
     startDate: String,
-    entryTableViewModel: EntryTableViewModel // ADD THIS PARAMETER
+    newEntryViewModel: NewEntryViewModel // ADD THIS PARAMETER
 ) {
     if (repeatDetails.isBlank()) return
 
@@ -54,7 +54,7 @@ fun repeatEventListener(
                 val formattedDate = String.format("%04d-%02d-%02d", occurrence.year, occurrence.month, occurrence.dayOfMonth)
 
                 // Use the ViewModel to save to database
-                entryTableViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
+                newEntryViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
             }
 
 // In RepeatEventListener.kt - enhance the catch block

@@ -2,16 +2,10 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view
 
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,17 +16,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
-import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.ReminderSelector
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.RepeatSelector
@@ -44,7 +36,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 fun NewEntry(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
-    entryTableViewModel: EntryTableViewModel,
+    newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -120,7 +112,7 @@ fun NewEntry(
                     null
                 }
 
-                entryTableViewModel.insertEntry(
+                newEntryViewModel.insertEntry(
                     date = editEntryViewModel.selectedDate,
                     content = viewModel.newEventText,
                     exDaBo = selectedReminderType != "None", // Enable extra data only if reminder is not "None"
@@ -134,7 +126,7 @@ fun NewEntry(
                                 entryId = entryId,
                                 repeatDetails = repeatDetails,
                                 startDate = editEntryViewModel.selectedDate,
-                                entryTableViewModel = entryTableViewModel // ADD THIS
+                                newEntryViewModel = newEntryViewModel // ADD THIS
                             )
                         }
                         navController.popBackStack()

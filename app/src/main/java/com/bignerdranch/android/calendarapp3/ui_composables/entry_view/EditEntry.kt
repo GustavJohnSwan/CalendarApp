@@ -37,7 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bignerdranch.android.calendarapp3.buisness_logic.AttachmentViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
-import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.ReminderSelector
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.RepeatSelector
@@ -50,7 +50,6 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 @Composable
 fun EditEntry(
     navController: NavController,
-    entryTableViewModel: EntryTableViewModel,
     editEntryViewModel: EditEntryViewModel,
     attachmentViewModel: AttachmentViewModel = viewModel()
 ) {
@@ -211,7 +210,8 @@ fun EditEntry(
                     val needsExtraData = selectedReminderType != "None" || selectedRepeatType != "Never"
 
                     // Update the entry in database
-                    entryTableViewModel.updateEntry(updatedEntry)
+                    editEntryViewModel.updateBasicEntry(updatedEntry)
+
 
                     // Update extra data with repeat details
                     editEntryViewModel.updateEntry(

@@ -8,35 +8,35 @@ import androidx.navigation.compose.rememberNavController
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.EditEntry
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.NewEntry
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
-import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
 
 // this composable is responsible for navigating between two main composables : MainScreen and NewEntry
 @Composable
 fun ScreenNavigation() {
     val navController = rememberNavController()
-    val entryTableViewModel: EntryTableViewModel = viewModel()
+    val newEntryViewModel: NewEntryViewModel = viewModel()
     val editEntryViewModel: EditEntryViewModel = viewModel()
 
     NavHost(navController = navController, startDestination = "MainScreen") {
         composable("MainScreen") {
             MainScreen(
                 navController = navController,
-                entryTableViewModel = entryTableViewModel,
+                newEntryViewModel = newEntryViewModel,
                 editEntryViewModel = editEntryViewModel
             )
         }
         composable("NewEntry") {
             NewEntry(
                 navController = navController,
-                entryTableViewModel = entryTableViewModel,
+                newEntryViewModel = newEntryViewModel,
                 editEntryViewModel = editEntryViewModel
             )
         }
         composable("EditEntry") {
             EditEntry(
                 navController = navController,
-                entryTableViewModel = entryTableViewModel,
+                //newEntryViewModel = newEntryViewModel,
                 editEntryViewModel = editEntryViewModel
             )
         }

@@ -17,7 +17,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DayConten
 import com.bignerdranch.android.calendarapp3.ui_composables.month_view.YearAndMonthDisplay
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
-import com.bignerdranch.android.calendarapp3.buisness_logic.EntryTableViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
 /*
 I implemented viewModel to seperate the UI design elements (composablse) from business logic elements.
@@ -30,7 +30,7 @@ I also make sure the app remembers (saves) certain state data when recomposition
 fun MainScreen(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
-    entryTableViewModel: EntryTableViewModel,
+    newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel
 ) {
     val currentMonth = remember { YearMonth.now() }
@@ -39,7 +39,7 @@ fun MainScreen(
     val firstDayOfWeek = remember { firstDayOfWeekFromLocale() }
 
     // Get the entries for the currently selected date
-    val dateEntries by entryTableViewModel.dateEntries
+    val dateEntries by editEntryViewModel.dateEntries
 
     val state = rememberCalendarState(
         startMonth = startMonth,
@@ -83,7 +83,7 @@ fun MainScreen(
                         viewModel.toggleDayContentDialog(true)
                         // Load entries when date is clicked
                         viewModel.selectedDate?.let {
-                            entryTableViewModel.loadEntriesForDate(it.toString())
+                            editEntryViewModel.loadEntriesForDate(it.toString())
                         }
                     },
                     day = day,
@@ -91,7 +91,7 @@ fun MainScreen(
                     onDateSelect = { selectedDate ->
                         editEntryViewModel.saveSelectedDate(selectedDate.toString())
                         // Load entries immediately when date is selected
-                        entryTableViewModel.loadEntriesForDate(selectedDate.toString())
+                        editEntryViewModel.loadEntriesForDate(selectedDate.toString())
                     }
                 ) { day ->
                     viewModel.onDateSelected(day.date)

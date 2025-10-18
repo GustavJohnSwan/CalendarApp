@@ -1,6 +1,7 @@
 package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import android.app.Application
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -49,6 +50,35 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
     fun saveSelectedDate(date: String) {
         selectedDate = date
     }
+
+    /* ____________________________________________________________________________________________ */
+    /* ____________________________________________________________________________________________ */
+    /* ____________________________________________________________________________________________ */
+    /* This handles basic EntryTable data only */
+    /* Is also used in displaying basic data in UI when selecting a day */
+    /* it was too much trouble to try and transfer this code elsewhere */
+
+    private val _dateEntries = mutableStateOf<List<EntryTable>>(emptyList())
+    val dateEntries: State<List<EntryTable>> = _dateEntries
+
+    fun loadEntriesForDate(date: String) {
+        viewModelScope.launch {
+            _dateEntries.value = entryDao.getEntriesByDate(date)
+        }
+    }
+
+    fun updateBasicEntry(entry: EntryTable) {
+        viewModelScope.launch {
+            entryDao.update_Entry(entry)
+            // Refresh the current view
+            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
+            currentDate?.let { loadEntriesForDate(it) }
+        }
+    }
+
+    /* ____________________________________________________________________________________________ */
+    /* ____________________________________________________________________________________________ */
+    /* ____________________________________________________________________________________________ */
 
     fun updateEntry(
         entryTable: EntryTable,

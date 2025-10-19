@@ -36,7 +36,6 @@ fun ScreenNavigation() {
         composable("EditEntry") {
             EditEntry(
                 navController = navController,
-                //newEntryViewModel = newEntryViewModel,
                 editEntryViewModel = editEntryViewModel
             )
         }

@@ -1,6 +1,7 @@
 package com.bignerdranch.android.calendarapp3.ui_composables.entry_view
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -112,10 +113,15 @@ fun NewEntry(
                     null
                 }
 
+
+                // val nonNullableString: String = repeatDetails ?: "default value"
+
+
+
                 newEntryViewModel.insertEntry(
                     date = editEntryViewModel.selectedDate,
                     content = viewModel.newEventText,
-                    exDaBo = selectedReminderType != "None", // Enable extra data only if reminder is not "None"
+                    exDaBo = selectedReminderType != "None" || selectedRepeatType != "Never", // Enable extra data only if reminder is not "None"
                     timeMinutes = selectedTimeMinutes,
                     reminderType = if (selectedReminderType != "None") selectedReminderType else null,
                     repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,

@@ -29,9 +29,19 @@ fun repeatEventListener(
     if (repeatDetails.isBlank()) return
 
     CoroutineScope(Dispatchers.IO).launch {
+        var occurrenceCount = 0
+        val occurrenceDates = mutableListOf<String>()
+
         try {
+            Log.d("RepeatEvent", "=== STARTING RECURRENCE GENERATION ===")
+            Log.d("RepeatEvent", "Entry ID: $entryId")
+            Log.d("RepeatEvent", "Start Date: $startDate")
+            Log.d("RepeatEvent", "RRule String: $repeatDetails")
+
             // 1. Parse your RRule string into RecurrenceRule object
+            Log.d("RepeatEvent", "Attempting to parse RRule...")
             val recurrenceRule = RecurrenceRule(repeatDetails)
+            Log.d("RepeatEvent", "RRule parsed successfully: $recurrenceRule")
 
             // 2. Convert your start date to DateTime
             val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
@@ -43,25 +53,40 @@ fun repeatEventListener(
                 calendar.get(Calendar.MONTH) + 1,
                 calendar.get(Calendar.DAY_OF_MONTH)
             )
+            Log.d("RepeatEvent", "Start DateTime: $startDateTime")
 
             // 3. Use OfRule with the RecurrenceRule object
+            Log.d("RepeatEvent", "Creating recurrence set...")
             val recurrenceSet = OfRule(recurrenceRule, startDateTime)
             val limitedOccurrences = First(365, recurrenceSet.iterator())
+            Log.d("RepeatEvent", "Recurrence set created, starting iteration...")
 
             // 4. Process occurrences and save to database
             while (limitedOccurrences.hasNext()) {
                 val occurrence = limitedOccurrences.next()
                 val formattedDate = String.format("%04d-%02d-%02d", occurrence.year, occurrence.month, occurrence.dayOfMonth)
 
+                occurrenceCount++
+                occurrenceDates.add(formattedDate)
+                Log.d("RepeatEvent", "Occurrence #$occurrenceCount: $formattedDate")
+
                 // Use the ViewModel to save to database
                 newEntryViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
             }
 
-// In RepeatEventListener.kt - enhance the catch block
         } catch (e: Exception) {
-            e.printStackTrace()
-            // Add Log.d or Log.e for better debugging
-            Log.e("RepeatEvent", "Error generating recurring events: ${e.message}")
+            Log.e("RepeatEvent", "=== ERROR GENERATING RECURRENCES ===")
+            Log.e("RepeatEvent", "Error type: ${e.javaClass.simpleName}")
+            Log.e("RepeatEvent", "Error message: ${e.message}")
+            Log.e("RepeatEvent", "Stack trace:", e)
+        }
+
+// MOVE THE FINAL LOGS HERE - OUTSIDE THE TRY-CATCH BLOCK
+        if (occurrenceCount == 0) {
+            Log.w("RepeatEvent", "No occurrences generated!")
+        } else {
+            Log.d("RepeatEvent", "=== COMPLETED: Generated $occurrenceCount occurrences ===")
+            Log.d("RepeatEvent", "All dates: ${occurrenceDates.joinToString(", ")}")
         }
     }
 }

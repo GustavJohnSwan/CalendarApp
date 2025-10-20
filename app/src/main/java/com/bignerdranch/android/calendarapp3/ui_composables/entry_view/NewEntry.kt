@@ -2,6 +2,8 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view
 
 
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -19,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -46,6 +49,8 @@ fun NewEntry(
 
     var selectedRepeatType by remember { mutableStateOf("Never") } // Default to "None"
     var repeatOptions by remember { mutableStateOf(RepeatOptions()) }
+
+    val context = LocalContext.current
 
     // NEW: LaunchedEffect to load attachments (for this new entry, it will be empty initially)
     LaunchedEffect(Unit) {
@@ -108,10 +113,20 @@ fun NewEntry(
 
                 // Generate RRule string using the new generator
                 val repeatDetails = if (selectedRepeatType != "Never") {
-                    generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
+                    val testRule = "FREQ=DAILY;COUNT=5"
+                    Log.d("RepeatEvent", "Using TEST rule: $testRule")
+                    testRule
+                    // generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
                 } else {
                     null
                 }
+
+                // NEW: Show Toast with repeatDetails
+                Toast.makeText(
+                    context,
+                    "Repeat Details: ${repeatDetails ?: "No repeat"}",
+                    Toast.LENGTH_LONG
+                ).show()
 
 
                 // val nonNullableString: String = repeatDetails ?: "default value"

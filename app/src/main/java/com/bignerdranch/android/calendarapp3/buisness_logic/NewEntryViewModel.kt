@@ -2,6 +2,7 @@ package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import androidx.compose.runtime.State
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,6 +35,7 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
 
     // Add this method to handle recurring events
     suspend fun saveRecurringEventToDatabase(entryId: Int, date: String) {
+        Log.d("RepeatEvent", "Saving recurring event to DB - Original ID: $entryId, Date: $date")
         val recurringEvent = RecurringEvent(
             entryId = entryId,
             occurrenceDate = date

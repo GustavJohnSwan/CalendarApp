@@ -86,7 +86,14 @@ fun generateRRuleString(
         }
     }
 
-    return rule.toRFC5545String()
+    val fullRuleString = rule.toRFC5545String()
+
+    // Remove "RRULE:" prefix if present
+    return if (fullRuleString.startsWith("RRULE:")) {
+        fullRuleString.substring(6) // Remove first 6 characters "RRULE:"
+    } else {
+        fullRuleString
+    }
 }
 
 /*____________________________________________________________________________________________*/

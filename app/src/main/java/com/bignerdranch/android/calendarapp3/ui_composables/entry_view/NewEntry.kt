@@ -113,10 +113,12 @@ fun NewEntry(
 
                 // Generate RRule string using the new generator
                 val repeatDetails = if (selectedRepeatType != "Never") {
+                    /*
                     val testRule = "FREQ=DAILY;COUNT=5"
                     Log.d("RepeatEvent", "Using TEST rule: $testRule")
                     testRule
-                    // generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
+                     */
+                    generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
                 } else {
                     null
                 }

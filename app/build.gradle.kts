@@ -30,8 +30,11 @@ android {
         }
     }
     compileOptions {
+
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
+
     }
     kotlinOptions {
         jvmTarget = "11"
@@ -104,6 +107,11 @@ dependencies {
 
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
+
+
+    // CouchBase Lite dependencies
+
+    implementation("com.couchbase.lite:couchbase-lite-android-ktx:3.3.0")
 
 
 

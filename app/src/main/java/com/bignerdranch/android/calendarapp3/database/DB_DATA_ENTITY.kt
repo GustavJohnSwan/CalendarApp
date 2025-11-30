@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 // main table
 
 // MAIN ENTRY TABLE (parent)
+
 @Entity
 data class EntryTable(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.mavenCentral
+
 pluginManagement {
     repositories {
         google {
@@ -17,6 +19,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven("https://jitpack.io")
+        mavenCentral()
 
     }
 }

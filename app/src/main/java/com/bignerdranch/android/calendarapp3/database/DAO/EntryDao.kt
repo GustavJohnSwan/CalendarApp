@@ -95,3 +95,4 @@ interface AttachmentDao {
     @Delete
     suspend fun delete(attachment: EntryAttachment)
 }
+

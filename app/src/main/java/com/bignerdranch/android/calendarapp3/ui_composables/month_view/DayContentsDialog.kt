@@ -24,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
+import com.bignerdranch.android.calendarapp3.buisness_logic.CouchBaseLiteViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
@@ -34,6 +35,7 @@ fun DayContentsDialog(
     onNewEntry: () -> Unit,
     onEditEntry: (EntryTable) -> Unit, // Changed to accept EntryTable directly
     editEntryViewModel: EditEntryViewModel,
+    couchBaseLiteViewModel: CouchBaseLiteViewModel, // ADD THIS
     eventList: List<EntryTable>,
 ) {
     val filteredEntries = remember(eventList, editEntryViewModel.selectedDate) {
@@ -84,6 +86,15 @@ fun DayContentsDialog(
                             )
                         }
                     }
+                }
+
+                ElevatedButton(
+                    onClick = { couchBaseLiteViewModel.runIt() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    Text("CouchBase Lite")
                 }
 
                 // New Event button

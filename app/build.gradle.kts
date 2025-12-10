@@ -113,6 +113,9 @@ dependencies {
 
     implementation("com.couchbase.lite:couchbase-lite-android-ktx:3.3.0")
 
+    // for json exporting
+    implementation("com.google.code.gson:gson:2.10.1")
+
 
 
 

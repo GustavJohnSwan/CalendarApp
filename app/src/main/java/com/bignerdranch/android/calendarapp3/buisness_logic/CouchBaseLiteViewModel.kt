@@ -10,6 +10,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import android.util.Log
+
+
 class CouchBaseLiteViewModel(application: Application) : AndroidViewModel(application) {
     // LiveData to track replication state
     val replicationState: MutableLiveData<String> = MutableLiveData("Not Started")
@@ -35,6 +38,43 @@ class CouchBaseLiteViewModel(application: Application) : AndroidViewModel(applic
                     "Couchbase operations completed!\nCheck Logcat for details.",
                     Toast.LENGTH_LONG
                 ).show()
+            }
+        }
+    }
+    // Add this ONE method to your existing ViewModel:
+    /*
+    fun logDatabaseContents() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val mgr = CouchBaseLiteDao.getInstance(getApplication())
+            mgr.logDatabaseContents()
+        }
+    }
+
+     */
+
+
+    // Add these methods INSIDE the class:
+
+    // Export to JSON function
+    fun exportToJson() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.shareDatabaseExport(getApplication())
+            } catch (e: Exception) {
+                Log.e("CouchBaseLiteViewModel", "Export failed", e)
+            }
+        }
+    }
+
+    // Log database contents function
+    fun logDatabaseContents() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.logDatabaseContents()
+            } catch (e: Exception) {
+                Log.e("CouchBaseLiteViewModel", "Failed to log database contents", e)
             }
         }
     }

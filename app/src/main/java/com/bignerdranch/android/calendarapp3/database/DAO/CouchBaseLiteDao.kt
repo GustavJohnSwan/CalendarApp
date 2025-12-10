@@ -25,6 +25,13 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.use
 
+// Add these imports at the TOP of the file:
+import android.content.ClipboardManager
+import android.content.ClipData
+import android.os.Handler
+import android.widget.Toast
+import com.google.gson.GsonBuilder
+
 class CouchBaseLiteDao {
     private var database: Database? = null
     private var collection: Collection? = null
@@ -146,6 +153,114 @@ class CouchBaseLiteDao {
                 }
             }
             return INSTANCE.get()!!
+        }
+    }
+
+    // Add this ONE method to your existing CouchBaseLiteDao class:
+    /*
+    fun logDatabaseContents() {
+        val collection = collection ?: return
+
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.collection(collection))
+
+        query.execute().use { resultSet ->
+            Log.d(TAG, "=== DATABASE CONTENTS ===")
+            Log.d(TAG, "Total documents: ${resultSet.allResults().size}")
+
+            resultSet.forEachIndexed { index, result ->
+                Log.d(TAG, "=== Document $index ===")
+                result.toMap().forEach { (key, value) ->
+                    Log.d(TAG, "$key: $value")
+                }
+                Log.d(TAG, "")
+            }
+        }
+    }
+     */
+
+    // 1. Get collection (helper function)
+    fun getCollection(): Collection? {
+        return collection
+    }
+
+    // 2. Export database to JSON string
+    fun exportDatabaseToJson(context: Context): String {
+        val collection = collection ?: throw IllegalStateException("Collection not initialized")
+
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.collection(collection))
+
+        val results = mutableListOf<Map<String, Any>>()
+        query.execute().use { resultSet ->
+            resultSet.forEach { result ->
+                val docMap = mutableMapOf<String, Any>()
+                result.toMap().forEach { (key, value) ->
+                    docMap[key] = value
+                }
+                // Add document ID if available
+                result.getString("id")?.let { docMap["_documentId"] = it }
+                results.add(docMap)
+            }
+        }
+
+        val gson = GsonBuilder().setPrettyPrinting().create()
+        return gson.toJson(results)
+    }
+
+    // 3. Share export (copy to clipboard)
+    fun shareDatabaseExport(context: Context) {
+        try {
+            val jsonContent = exportDatabaseToJson(context)
+
+            // Copy to clipboard
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("Couchbase Export", jsonContent)
+            clipboard.setPrimaryClip(clip)
+
+            // Show toast
+            Handler(context.mainLooper).post {
+                Toast.makeText(
+                    context,
+                    "Database JSON copied to clipboard",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            // Log to console
+            Log.i(TAG, "=== DATABASE JSON EXPORT ===")
+            Log.i(TAG, jsonContent)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to export database", e)
+            Handler(context.mainLooper).post {
+                Toast.makeText(
+                    context,
+                    "Export failed: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    // 4. Log database contents (simple version)
+    fun logDatabaseContents() {
+        val collection = collection ?: return
+
+        val query = QueryBuilder.select(SelectResult.all())
+            .from(DataSource.collection(collection))
+
+        query.execute().use { resultSet ->
+            Log.d(TAG, "=== DATABASE CONTENTS ===")
+            Log.d(TAG, "Total documents: ${resultSet.allResults().size}")
+
+            resultSet.forEachIndexed { index, result ->
+                Log.d(TAG, "=== Document $index ===")
+                result.toMap().forEach { (key, value) ->
+                    Log.d(TAG, "$key: $value")
+                }
+                Log.d(TAG, "")
+            }
         }
     }
 }

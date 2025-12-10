@@ -28,6 +28,11 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.CouchBaseLiteViewMod
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
+// Add these imports at the TOP:
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalContext
+
+
 @Composable
 fun DayContentsDialog(
     modifier: Modifier = Modifier,
@@ -38,6 +43,8 @@ fun DayContentsDialog(
     couchBaseLiteViewModel: CouchBaseLiteViewModel, // ADD THIS
     eventList: List<EntryTable>,
 ) {
+    val context = LocalContext.current
+
     val filteredEntries = remember(eventList, editEntryViewModel.selectedDate) {
         eventList.filter { it.dateDB == editEntryViewModel.selectedDate }
     }
@@ -96,6 +103,51 @@ fun DayContentsDialog(
                 ) {
                     Text("CouchBase Lite")
                 }
+
+                // Add this button in your dialog (after the CouchBase Lite button):
+                ElevatedButton(
+                    onClick = { couchBaseLiteViewModel.logDatabaseContents() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Log DB Contents")
+                }
+
+
+// Inside your Column, add these buttons:
+
+// Log Database Contents button
+                // Log Database Contents button
+                ElevatedButton(
+                    onClick = {
+                        couchBaseLiteViewModel.logDatabaseContents()
+                        // Show toast using Android's Toast
+                        android.widget.Toast.makeText(
+                            context,
+                            "Database contents logged to Logcat",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Log DB Contents")
+                }
+
+                // Export to JSON button
+                ElevatedButton(
+                    onClick = { couchBaseLiteViewModel.exportToJson() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Export to JSON (Clipboard)")
+                }
+
+
+
 
                 // New Event button
                 ElevatedButton(

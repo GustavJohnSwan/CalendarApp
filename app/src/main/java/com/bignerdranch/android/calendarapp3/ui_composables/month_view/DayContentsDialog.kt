@@ -20,8 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.text.style.TextOverflow
 import com.bignerdranch.android.calendarapp3.buisness_logic.CouchBaseLiteViewModel
@@ -31,6 +36,7 @@ import com.bignerdranch.android.calendarapp3.database.EntryTable
 // Add these imports at the TOP:
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalContext
+import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarViewModel
 
 
 @Composable
@@ -42,8 +48,19 @@ fun DayContentsDialog(
     editEntryViewModel: EditEntryViewModel,
     couchBaseLiteViewModel: CouchBaseLiteViewModel, // ADD THIS
     eventList: List<EntryTable>,
+    couchbaseCalendarViewModel: CouchbaseCalendarViewModel,  // ADD THIS
 ) {
     val context = LocalContext.current
+
+    // Optional: Collect toast messages
+    val toastMessage by couchbaseCalendarViewModel.toastMessage.collectAsState()
+
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let { message ->
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+            couchbaseCalendarViewModel.clearToastMessage()
+        }
+    }
 
     val filteredEntries = remember(eventList, editEntryViewModel.selectedDate) {
         eventList.filter { it.dateDB == editEntryViewModel.selectedDate }
@@ -59,6 +76,7 @@ fun DayContentsDialog(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .verticalScroll(rememberScrollState())  // Add vertical scrolling
                     .padding(16.dp)
             ) {
                 // Header with date
@@ -146,6 +164,82 @@ fun DayContentsDialog(
                     Text("Export to JSON (Clipboard)")
                 }
 
+                // Divider/Header for Calendar Operations
+                Text(
+                    text = "Couchbase Calendar Operations:",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                )
+
+                // Initialize Calendar Database button
+                ElevatedButton(
+                    onClick = {
+                        couchbaseCalendarViewModel.initializeCalendarDatabase()
+                        android.widget.Toast.makeText(
+                            context,
+                            "Initializing calendar database...",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Initialize Calendar DB")
+                }
+
+                // Log Calendar Contents button
+                ElevatedButton(
+                    onClick = {
+                        couchbaseCalendarViewModel.logCalendarDatabaseContents()
+                        android.widget.Toast.makeText(
+                            context,
+                            "Calendar contents logged to Logcat",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Log Calendar Contents")
+                }
+
+                // Export Calendar JSON button
+                ElevatedButton(
+                    onClick = { couchbaseCalendarViewModel.exportCalendarToJson() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Export Calendar JSON")
+                }
+
+                // New Event (Couchbase Lite) button (your existing one)
+                ElevatedButton(
+                    onClick = {
+                        couchbaseCalendarViewModel.createCalendarEntry(
+                            date = editEntryViewModel.selectedDate,
+                            content = "Test Couchbase Event",
+                            timeMinutes = 900,
+                            hasExtraData = true,
+                            reminderType = "Notification",
+                            repeat = "Weekly"
+                        )
+                        android.widget.Toast.makeText(
+                            context,
+                            "Couchbase calendar event created!",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                        onDismissRequest()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("New Event (Couchbase Lite)")
+                }
+
 
 
 
@@ -156,7 +250,38 @@ fun DayContentsDialog(
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 ) {
-                    Text("New Event")
+                    Text("New Event (SQLite)")
+                }
+
+                // Add new Couchbase button
+                ElevatedButton(
+                    onClick = {
+                        // Navigate to a new Couchbase entry screen
+                        // For now, just create a test entry
+                        couchbaseCalendarViewModel.createCalendarEntry(
+                            date = editEntryViewModel.selectedDate,
+                            content = "Test Couchbase Event",
+                            timeMinutes = 900,  // 3:00 PM
+                            hasExtraData = true,
+                            reminderType = "Notification",
+                            repeat = "Weekly"
+                        )
+
+                        // Show toast
+                        android.widget.Toast.makeText(
+                            context,
+                            "Couchbase event created!",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Close dialog
+                        onDismissRequest()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("New Event (Couchbase Lite)")
                 }
             }
         }

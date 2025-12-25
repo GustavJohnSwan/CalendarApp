@@ -17,6 +17,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DayConten
 import com.bignerdranch.android.calendarapp3.ui_composables.month_view.YearAndMonthDisplay
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.CouchBaseLiteViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
@@ -33,7 +34,8 @@ fun MainScreen(
     viewModel: CalendarViewModel = viewModel(),
     newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
-    couchBaseLiteViewModel: CouchBaseLiteViewModel = viewModel() // ADD THIS
+    couchBaseLiteViewModel: CouchBaseLiteViewModel = viewModel(), // ADD THIS
+    couchbaseCalendarViewModel: CouchbaseCalendarViewModel = viewModel()  // ADD THIS
 
 ) {
     val currentMonth = remember { YearMonth.now() }
@@ -75,6 +77,7 @@ fun MainScreen(
                 },
                 editEntryViewModel = editEntryViewModel,
                 couchBaseLiteViewModel = couchBaseLiteViewModel, // ADD THIS
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel,  // ADD THIS LINE
                 eventList = dateEntries // Use the date-specific entries
             )
         }

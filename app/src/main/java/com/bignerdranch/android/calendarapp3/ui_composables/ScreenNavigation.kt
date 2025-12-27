@@ -25,7 +25,8 @@ fun ScreenNavigation() {
             MainScreen(
                 navController = navController,
                 newEntryViewModel = newEntryViewModel,
-                editEntryViewModel = editEntryViewModel,                couchbaseCalendarViewModel = couchbaseCalendarViewModel  // ADD THIS
+                editEntryViewModel = editEntryViewModel,
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel  // ADD THIS
             )
         }
         composable("NewEntry") {

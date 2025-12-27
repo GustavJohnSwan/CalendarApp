@@ -12,12 +12,59 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
+import com.bignerdranch.android.calendarapp3.ui_models.UiEvent
+
+
+
 class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val _eventsForSelectedDate = MutableStateFlow<List<UiEvent>>(emptyList())
+    val eventsForSelectedDate: StateFlow<List<UiEvent>> = _eventsForSelectedDate
+
+    private val _isReady = MutableStateFlow(false)
+    val isReady: StateFlow<Boolean> = _isReady
+
+
 
     init {
         // Open/create DB + collections as early as possible so the UI doesn't need an "Initialize" button.
         initializeCalendarDatabase()
     }
+
+    fun loadEntriesForDate(date: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+
+                // Ensure DB + collections exist before querying
+                if (!_isReady.value) {
+                    mgr.createCalendarDb()
+                    mgr.createCalendarCollections()
+                    _isReady.value = true
+                }
+
+                val entries = mgr.getEntriesByDate(date)
+
+                val mapped = entries.map { m ->
+                    UiEvent(
+                        id = (m["_id"] as? String) ?: "",
+                        date = m["dateDB"] as? String,
+                        content = m["entryDB"] as? String,
+                        timeMinutes = when (val t = m["timeMinutes"]) {
+                            is Number -> t.toInt()
+                            else -> null
+                        }
+                    )
+                }
+
+                _eventsForSelectedDate.value = mapped
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to load entries for date", e)
+            }
+        }
+    }
+
+
 
     // Add these methods to the class:
 
@@ -62,9 +109,13 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val mgr = CouchBaseLiteDao.getInstance(getApplication())
+
+
                 mgr.createCalendarDb()
                 mgr.createCalendarCollections()
+                _isReady.value = true
                 Log.i("CouchbaseCalendar", "Calendar database initialized")
+
             } catch (e: Exception) {
                 Log.e("CouchbaseCalendar", "Failed to initialize database", e)
             }

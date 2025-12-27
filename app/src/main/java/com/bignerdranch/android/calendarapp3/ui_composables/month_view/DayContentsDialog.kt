@@ -34,6 +34,20 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarVie
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+
+import com.bignerdranch.android.calendarapp3.ui_models.UiEvent
+
+
+private enum class EventSource { SQLITE, COUCHBASE }
+
+
 @Composable
 fun DayContentsDialog(
     modifier: Modifier = Modifier,
@@ -45,6 +59,10 @@ fun DayContentsDialog(
     couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
 ) {
     val context = LocalContext.current
+
+    var source by rememberSaveable { mutableStateOf(EventSource.SQLITE) }
+    val couchEvents by couchbaseCalendarViewModel.eventsForSelectedDate.collectAsState()
+
 
     // Optional: show toast messages emitted by couchbaseCalendarViewModel
     val toastMessage by couchbaseCalendarViewModel.toastMessage.collectAsState()
@@ -58,6 +76,12 @@ fun DayContentsDialog(
     val filteredEntries = remember(eventList, editEntryViewModel.selectedDate) {
         eventList.filter { it.dateDB == editEntryViewModel.selectedDate }
     }
+
+    LaunchedEffect(editEntryViewModel.selectedDate) {
+        // Preload Couchbase list so toggle is instant
+        couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
+    }
+
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
@@ -78,6 +102,25 @@ fun DayContentsDialog(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    ElevatedButton(onClick = { source = EventSource.SQLITE }) {
+                        Text("SQLite")
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    ElevatedButton(onClick = {
+                        source = EventSource.COUCHBASE
+                        // refresh on demand too
+                        couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
+                    }) {
+                        Text("Couchbase")
+                    }
+                }
+
+
+                /*
                 if (filteredEntries.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -104,8 +147,65 @@ fun DayContentsDialog(
                     }
                 }
 
+                 */
+                /* Replacement */
+                val uiList: List<UiEvent> = if (source == EventSource.SQLITE) {
+                    filteredEntries.map { e ->
+                        UiEvent(
+                            id = e.id.toString(),
+                            date = e.dateDB,
+                            content = e.entryDB,
+                            timeMinutes = e.timeMinutes
+                        )
+                    }
+                } else {
+                    couchEvents
+                }
+
+                if (uiList.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No events for this date")
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(uiList, key = { it.id }) { ev ->
+                            UiEventItem(
+                                ev = ev,
+                                onClick = {
+                                    if (source == EventSource.SQLITE) {
+                                        // Find the SQLite entity and reuse your existing edit flow
+                                        val sqliteEntry = filteredEntries.firstOrNull { it.id.toString() == ev.id }
+                                        if (sqliteEntry != null) {
+                                            editEntryViewModel.onEventSelect(sqliteEntry)
+                                            onEditEntry(sqliteEntry)
+                                        }
+                                    } else {
+                                        // No edit yet for Couchbase
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            "CBL edit not implemented yet",
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+
+
+
                 // --- Minimal Couchbase controls (backbone for 2-day goal) ---
 
+                /*
                 ElevatedButton(
                     onClick = {
                         couchbaseCalendarViewModel.createCalendarEntry(
@@ -154,6 +254,63 @@ fun DayContentsDialog(
                 ) {
                     Text("New Event (SQLite)")
                 }
+                 */
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (source == EventSource.SQLITE) {
+                    ElevatedButton(
+                        onClick = onNewEntry,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("New Event (SQLite)")
+                    }
+                } else {
+                    ElevatedButton(
+                        onClick = {
+                            couchbaseCalendarViewModel.createCalendarEntry(
+                                date = editEntryViewModel.selectedDate,
+                                content = "Couchbase test event",
+                                timeMinutes = 900,
+                                hasExtraData = true,
+                                reminderType = "Notification",
+                                repeat = "Weekly",
+                                onEntryCreated = {
+                                    couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
+                                }
+                            )
+
+                            // refresh list after insert so it shows immediately
+                            couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
+
+                            android.widget.Toast.makeText(
+                                context,
+                                "Created Couchbase event",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("New Event (Couchbase Lite)")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ElevatedButton(
+                        onClick = {
+                            couchbaseCalendarViewModel.logCalendarDatabaseContents()
+                            android.widget.Toast.makeText(
+                                context,
+                                "Couchbase contents logged to Logcat",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Log Couchbase DB (Logcat)")
+                    }
+                }
+
+
             }
         }
     }
@@ -185,6 +342,39 @@ private fun EventItem(
             ) {
                 Text(
                     text = entry.entryDB ?: "",
+                    style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UiEventItem(
+    ev: UiEvent,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = ev.content ?: "",
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

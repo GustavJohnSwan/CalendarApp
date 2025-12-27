@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(application) {
 
+    init {
+        // Open/create DB + collections as early as possible so the UI doesn't need an "Initialize" button.
+        initializeCalendarDatabase()
+    }
 
     // Add these methods to the class:
 

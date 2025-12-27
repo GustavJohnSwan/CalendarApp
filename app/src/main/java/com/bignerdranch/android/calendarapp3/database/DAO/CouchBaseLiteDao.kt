@@ -31,6 +31,7 @@ import android.content.ClipData
 import android.os.Handler
 import android.widget.Toast
 import com.couchbase.lite.Ordering
+import com.couchbase.lite.Meta
 import com.google.gson.GsonBuilder
 
 class CouchBaseLiteDao {
@@ -40,26 +41,25 @@ class CouchBaseLiteDao {
 
     // Create a calendar-specific database (call this instead of createDb)
     fun createCalendarDb() {
-        database = Database("calendar_db")  // Different name from example
-        Log.i(TAG, "Calendar Database created: calendar_db")
+        if (database == null) {
+            database = Database("calendar_db")
+            Log.i(TAG, "Calendar Database opened/created: calendar_db")
+        } else {
+            Log.i(TAG, "Calendar Database already open: calendar_db")
+        }
     }
 
     // Create calendar collections
     fun createCalendarCollections() {
-        // Main entries collection
-        collection = database!!.createCollection("entries")
+    val db = database ?: throw IllegalStateException("Call createCalendarDb() first")
 
-        // Extra data collection
-        database!!.createCollection("extra_data")
+    if (db.getCollection("entries") == null) db.createCollection("entries")
+    if (db.getCollection("extra_data") == null) db.createCollection("extra_data")
+    if (db.getCollection("recurring_events") == null) db.createCollection("recurring_events")
+    if (db.getCollection("attachments") == null) db.createCollection("attachments")
 
-        // Recurring events collection
-        database!!.createCollection("recurring_events")
-
-        // Attachments collection
-        database!!.createCollection("attachments")
-
-        Log.i(TAG, "Calendar collections created")
-    }
+    Log.i(TAG, "Calendar collections ensured")
+}
 
     // Get specific collections
     fun getEntriesCollection(): Collection? {
@@ -74,93 +74,124 @@ class CouchBaseLiteDao {
         return database?.getCollection("recurring_events", "_default")
     }
 
+
+/**
+ * Ensures the calendar DB + required collections exist.
+ * This keeps the UI simple (no separate init button required).
+ *
+ * @return Pair(entriesCollection, extraDataCollection)
+ */
+private fun ensureCalendarReady(): Pair<Collection, Collection> {
+    if (database == null) {
+        database = Database("calendar_db")
+        Log.i(TAG, "Calendar Database opened/created: calendar_db")
+    }
+
+    val db = database!!
+
+    val entries = db.getCollection("entries") ?: db.createCollection("entries")
+    val extra = db.getCollection("extra_data") ?: db.createCollection("extra_data")
+
+    // Optional future collections
+    if (db.getCollection("recurring_events") == null) db.createCollection("recurring_events")
+    if (db.getCollection("attachments") == null) db.createCollection("attachments")
+
+    return entries to extra
+}
+
     // Create a calendar entry (like SQLite insert)
     fun createCalendarEntry(
-        dateDB: String,
-        entryDB: String,
-        timeMinutes: Int? = null
-    ): String {
-        val mutableDocument = MutableDocument()
-            .setString("type", "entry")
-            .setString("dateDB", dateDB)
-            .setString("entryDB", entryDB)
+    dateDB: String,
+    entryDB: String,
+    timeMinutes: Int? = null
+): String {
+    val (entriesCollection, _) = ensureCalendarReady()
 
-        if (timeMinutes != null) {
-            mutableDocument.setInt("timeMinutes", timeMinutes)
-        }
+    val mutableDocument = MutableDocument()
+        .setString("type", "entry")
+        .setString("dateDB", dateDB)
+        .setString("entryDB", entryDB)
 
-        val entriesCollection = getEntriesCollection()
-        entriesCollection?.save(mutableDocument)
-        Log.i(TAG, "Calendar entry created with ID: ${mutableDocument.id}")
-        return mutableDocument.id
+    if (timeMinutes != null) {
+        mutableDocument.setInt("timeMinutes", timeMinutes)
     }
+
+    entriesCollection.save(mutableDocument)
+    Log.i(TAG, "Calendar entry created with ID: ${mutableDocument.id}")
+    return mutableDocument.id
+}
+
 
     // Add extra data to an entry
     fun addExtraDataToEntry(
-        entryId: String,
-        reminderType: String? = null,
-        repeat: String? = null,
-        repeatDetails: String? = null
-    ): String {
-        val mutableDocument = MutableDocument()
-            .setString("type", "extra_data")
-            .setString("entryId", entryId)
+    entryId: String,
+    reminderType: String? = null,
+    repeat: String? = null,
+    repeatDetails: String? = null
+): String {
+    val (entriesCollection, extraDataCollection) = ensureCalendarReady()
 
-        if (reminderType != null) {
-            mutableDocument.setString("reminderType", reminderType)
-        }
+    val mutableDocument = MutableDocument()
+        .setString("type", "extra_data")
+        .setString("entryId", entryId)
 
-        if (repeat != null) {
-            mutableDocument.setString("repeat", repeat)
-        }
-
-        if (repeatDetails != null) {
-            mutableDocument.setString("repeatDetails", repeatDetails)
-        }
-
-        val extraDataCollection = getExtraDataCollection()
-        extraDataCollection?.save(mutableDocument)
-
-        // Update the entry with extra data reference
-        val entriesCollection = getEntriesCollection()
-        entriesCollection?.getDocument(entryId)?.let { entryDoc ->
-            entriesCollection.save(
-                entryDoc.toMutable().setString("extraDataId", mutableDocument.id)
-            )
-        }
-
-        Log.i(TAG, "Extra data added for entry: $entryId")
-        return mutableDocument.id
+    if (reminderType != null) {
+        mutableDocument.setString("reminderType", reminderType)
     }
+
+    if (repeat != null) {
+        mutableDocument.setString("repeat", repeat)
+    }
+
+    if (repeatDetails != null) {
+        mutableDocument.setString("repeatDetails", repeatDetails)
+    }
+
+    extraDataCollection.save(mutableDocument)
+
+    // Link from entry -> extra_data doc id
+    entriesCollection.getDocument(entryId)?.let { entryDoc ->
+        entriesCollection.save(
+            entryDoc.toMutable().setString("extraDataId", mutableDocument.id)
+        )
+    }
+
+    Log.i(TAG, "Extra data added for entry: $entryId (extraDataId=${mutableDocument.id})")
+    return mutableDocument.id
+}
+
 
     // Query entries by date (like SQLite getEntriesByDate)
     fun getEntriesByDate(date: String): List<Map<String, Any>> {
-        val entriesCollection = getEntriesCollection() ?: return emptyList()
+    val (entriesCollection, _) = ensureCalendarReady()
 
-        val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.collection(entriesCollection))
-            .where(
-                Expression.property("dateDB").equalTo(Expression.string(date))
-                    .and(Expression.property("type").equalTo(Expression.string("entry")))
-            )
-            .orderBy(Ordering.property("timeMinutes").ascending())
+    val query = QueryBuilder
+        .select(
+            SelectResult.expression(Meta.id).`as`("id"),
+            SelectResult.all()
+        )
+        .from(DataSource.collection(entriesCollection))
+        .where(
+            Expression.property("dateDB").equalTo(Expression.string(date))
+                .and(Expression.property("type").equalTo(Expression.string("entry")))
+        )
+        .orderBy(Ordering.property("timeMinutes").ascending())
 
-        val results = mutableListOf<Map<String, Any>>()
-        query.execute().use { resultSet ->
-            resultSet.forEach { result ->
-                val docMap = mutableMapOf<String, Any>()
-                result.toMap().forEach { (key, value) ->
-                    docMap[key] = value
-                }
-                // Add document ID
-                result.getString("id")?.let { docMap["_id"] = it }
-                results.add(docMap)
-            }
+    val results = mutableListOf<Map<String, Any>>()
+    query.execute().use { resultSet ->
+        resultSet.forEach { result ->
+            val docMap = mutableMapOf<String, Any>()
+            val props = result.getDictionary(entriesCollection.name)?.toMap() ?: emptyMap()
+            docMap.putAll(props)
+            result.getString("id")?.let { docMap["_id"] = it }
+            results.add(docMap)
         }
-
-        Log.i(TAG, "Found ${results.size} entries for date: $date")
-        return results
     }
+
+    Log.i(TAG, "Found ${results.size} entries for date: $date")
+    return results
+}
+
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________
@@ -397,38 +428,40 @@ class CouchBaseLiteDao {
     }
     // Add this method to export calendar-specific data
     fun exportCalendarDatabaseToJson(context: Context): String {
-        val entriesCollection = getEntriesCollection() ?: throw IllegalStateException("Entries collection not initialized")
+    val (entriesCollection, extraDataCollection) = ensureCalendarReady()
 
-        val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.collection(entriesCollection))
-            .where(Expression.property("type").equalTo(Expression.string("entry")))
+    val query = QueryBuilder
+        .select(
+            SelectResult.expression(Meta.id).`as`("id"),
+            SelectResult.all()
+        )
+        .from(DataSource.collection(entriesCollection))
+        .where(Expression.property("type").equalTo(Expression.string("entry")))
 
-        val results = mutableListOf<Map<String, Any>>()
-        query.execute().use { resultSet ->
-            resultSet.forEach { result ->
-                val docMap = mutableMapOf<String, Any>()
-                result.toMap().forEach { (key, value) ->
-                    docMap[key] = value
+    val results = mutableListOf<Map<String, Any>>()
+    query.execute().use { resultSet ->
+        resultSet.forEach { result ->
+            val docMap = mutableMapOf<String, Any>()
+            val props = result.getDictionary(entriesCollection.name)?.toMap() ?: emptyMap()
+            docMap.putAll(props)
+            val id = result.getString("id")
+            if (id != null) docMap["_id"] = id
+
+            val extraDataId = props["extraDataId"] as? String
+            if (extraDataId != null) {
+                extraDataCollection.getDocument(extraDataId)?.let { extraDoc ->
+                    docMap["extraData"] = extraDoc.toMap()
                 }
-                // Add document ID if available
-                result.getString("id")?.let { docMap["_id"] = it }
-
-                // Get related extra data if exists
-                val extraDataId = result.getString("extraDataId")
-                if (extraDataId != null) {
-                    val extraDataCollection = getExtraDataCollection()
-                    extraDataCollection?.getDocument(extraDataId)?.let { extraDoc ->
-                        docMap["extraData"] = extraDoc.toMap()
-                    }
-                }
-
-                results.add(docMap)
             }
-        }
 
-        val gson = GsonBuilder().setPrettyPrinting().create()
-        return gson.toJson(results)
+            results.add(docMap)
+        }
     }
+
+    val gson = GsonBuilder().setPrettyPrinting().create()
+    return gson.toJson(results)
+}
+
 
     // Add this method to share calendar export
     fun shareCalendarDatabaseExport(context: Context) {
@@ -467,38 +500,41 @@ class CouchBaseLiteDao {
 
     // Add this method to log calendar contents
     fun logCalendarDatabaseContents() {
-        val entriesCollection = getEntriesCollection() ?: return
-        val extraDataCollection = getExtraDataCollection()
+    val (entriesCollection, extraDataCollection) = ensureCalendarReady()
 
-        val query = QueryBuilder.select(SelectResult.all())
-            .from(DataSource.collection(entriesCollection))
-            .where(Expression.property("type").equalTo(Expression.string("entry")))
+    val query = QueryBuilder
+        .select(
+            SelectResult.expression(Meta.id).`as`("id"),
+            SelectResult.all()
+        )
+        .from(DataSource.collection(entriesCollection))
+        .where(Expression.property("type").equalTo(Expression.string("entry")))
 
-        query.execute().use { resultSet ->
-            Log.d(TAG, "=== CALENDAR DATABASE CONTENTS ===")
-            Log.d(TAG, "Total calendar entries: ${resultSet.allResults().size}")
+    query.execute().use { resultSet ->
+        val all = resultSet.allResults()
+        Log.d(TAG, "=== CALENDAR DATABASE CONTENTS ===")
+        Log.d(TAG, "Total calendar entries: ${all.size}")
 
-            resultSet.forEachIndexed { index, result ->
-                Log.d(TAG, "=== Calendar Entry $index ===")
-                Log.d(TAG, "ID: ${result.getString("id")}")
-                Log.d(TAG, "Date: ${result.getString("dateDB")}")
-                Log.d(TAG, "Content: ${result.getString("entryDB")}")
-                Log.d(TAG, "Time: ${result.getInt("timeMinutes")}")
+        all.forEachIndexed { index, result ->
+            val props = result.getDictionary(entriesCollection.name)?.toMap() ?: emptyMap()
+            val id = result.getString("id")
+            Log.d(TAG, "=== Calendar Entry $index ===")
+            Log.d(TAG, "ID: $id")
+            Log.d(TAG, "Date: ${props["dateDB"]}")
+            Log.d(TAG, "Content: ${props["entryDB"]}")
+            Log.d(TAG, "Time: ${props["timeMinutes"]}")
 
-                // Show extra data if exists
-                val extraDataId = result.getString("extraDataId")
-                if (extraDataId != null && extraDataCollection != null) {
-                    extraDataCollection.getDocument(extraDataId)?.let { extraDoc ->
-                        Log.d(TAG, "--- Extra Data ---")
-                        extraDoc.toMap().forEach { (key, value) ->
-                            if (key != "id") {
-                                Log.d(TAG, "$key: $value")
-                            }
-                        }
+            val extraDataId = props["extraDataId"] as? String
+            if (extraDataId != null) {
+                extraDataCollection.getDocument(extraDataId)?.let { extraDoc ->
+                    Log.d(TAG, "--- Extra Data ---")
+                    extraDoc.toMap().forEach { (key, value) ->
+                        if (key != "id") Log.d(TAG, "$key: $value")
                     }
                 }
-                Log.d(TAG, "")
             }
+            Log.d(TAG, "")
         }
     }
+}
 }

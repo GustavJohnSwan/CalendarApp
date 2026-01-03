@@ -34,7 +34,186 @@ import com.couchbase.lite.Ordering
 import com.couchbase.lite.Meta
 import com.google.gson.GsonBuilder
 
+
+import android.database.Cursor
+import android.net.Uri
+import android.provider.OpenableColumns
+import com.couchbase.lite.Blob
+import com.couchbase.lite.MutableArray
+import com.couchbase.lite.MutableDictionary
+import java.io.File
+import java.io.FileOutputStream
+import java.util.UUID
+
+
 class CouchBaseLiteDao {
+
+
+
+
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
+
+    /* Data model + mechanics for option 1 - attachment functionality one document = entry data + blob */
+
+
+    data class CblAttachmentMeta(
+        val id: String,
+        val name: String,
+        val mime: String,
+        val size: Long
+    )
+
+    private val FIELD_ATTACHMENTS = "attachments"
+    private val BLOB_KEY_PREFIX = "att_"
+    private val BLOB_KEY_SUFFIX = "_blob"
+
+    private fun blobKey(id: String) = "$BLOB_KEY_PREFIX$id$BLOB_KEY_SUFFIX"
+
+
+    private fun getFileName(context: Context, uri: Uri): String {
+        var name = "attachment"
+        val cursor: Cursor? = context.contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            val idx = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && it.moveToFirst()) name = it.getString(idx)
+        }
+        return name
+    }
+
+
+    fun listAttachmentsForEntry(entryId: String): List<CblAttachmentMeta> {
+        val (entriesCollection, _) = ensureCalendarReady()
+        val doc = entriesCollection.getDocument(entryId) ?: return emptyList()
+
+        val arr = doc.getArray(FIELD_ATTACHMENTS) ?: return emptyList()
+        val out = mutableListOf<CblAttachmentMeta>()
+
+        for (i in 0 until arr.count()) {
+            val d = arr.getDictionary(i) ?: continue
+            val id = d.getString("id") ?: continue
+            out.add(
+                CblAttachmentMeta(
+                    id = id,
+                    name = d.getString("name") ?: "attachment",
+                    mime = d.getString("mime") ?: "*/*",
+                    size = d.getLong("size")
+                )
+            )
+        }
+        return out
+    }
+
+    fun addAttachmentToEntry(entryId: String, context: Context, uri: Uri): CblAttachmentMeta {
+        val (entriesCollection, _) = ensureCalendarReady()
+
+        val doc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        val mutable = doc.toMutable()
+
+        val name = getFileName(context, uri)
+        val mime = context.contentResolver.getType(uri) ?: "*/*"
+
+        // Read bytes on IO (caller should already be on Dispatchers.IO)
+        val bytes = context.contentResolver.openInputStream(uri)?.use { it.readBytes() }
+            ?: throw IllegalStateException("Unable to read attachment bytes")
+
+        val id = UUID.randomUUID().toString()
+        val meta = CblAttachmentMeta(id = id, name = name, mime = mime, size = bytes.size.toLong())
+
+        // 1) Update metadata array
+        val attachments = (mutable.getArray(FIELD_ATTACHMENTS)?.toMutable() ?: MutableArray())
+        val md = MutableDictionary()
+            .setString("id", meta.id)
+            .setString("name", meta.name)
+            .setString("mime", meta.mime)
+            .setLong("size", meta.size)
+        attachments.addDictionary(md)
+        mutable.setArray(FIELD_ATTACHMENTS, attachments)
+
+        // 2) Store blob inside the same entry document
+        mutable.setBlob(blobKey(meta.id), Blob(meta.mime, bytes))
+
+        entriesCollection.save(mutable)
+        Log.i(TAG, "CBL attachment added to entry=$entryId attachmentId=${meta.id}")
+        return meta
+    }
+
+    fun removeAttachmentFromEntry(entryId: String, attachmentId: String) {
+        val (entriesCollection, _) = ensureCalendarReady()
+
+        val doc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        val mutable = doc.toMutable()
+
+        // Remove metadata from array
+        val arr = mutable.getArray(FIELD_ATTACHMENTS)
+        if (arr != null) {
+            val newArr = MutableArray()
+            for (i in 0 until arr.count()) {
+                val d = arr.getDictionary(i)
+                val id = d?.getString("id")
+                if (id != attachmentId && d != null) newArr.addDictionary(d)
+            }
+            mutable.setArray(FIELD_ATTACHMENTS, newArr)
+        }
+
+        // Remove blob property
+        mutable.remove(blobKey(attachmentId))
+
+        entriesCollection.save(mutable)
+        Log.i(TAG, "CBL attachment removed from entry=$entryId attachmentId=$attachmentId")
+    }
+
+    /**
+     * Writes the blob to a temp file and returns that file.
+     * UI can share/open it via FileProvider.
+     */
+    fun materializeAttachmentToTempFile(
+        entryId: String,
+        attachmentId: String,
+        context: Context
+    ): File {
+        val (entriesCollection, _) = ensureCalendarReady()
+        val doc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        val blob = doc.getBlob(blobKey(attachmentId))
+            ?: throw IllegalArgumentException("No blob for attachmentId=$attachmentId")
+
+        val metas = listAttachmentsForEntry(entryId)
+        val meta = metas.firstOrNull { it.id == attachmentId }
+
+        val safeName = meta?.name ?: "attachment"
+        val outDir = File(context.cacheDir, "cbl_attachments")
+        if (!outDir.exists()) outDir.mkdirs()
+
+        // Ensure unique filename to avoid collisions
+        val outFile = File(outDir, "${UUID.randomUUID()}_$safeName")
+
+        val input = blob.contentStream
+            ?: throw IllegalStateException("Blob has no contentStream for attachmentId=$attachmentId")
+
+        input.use { stream ->
+            FileOutputStream(outFile).use { output ->
+                stream.copyTo(output)
+            }
+        }
+
+
+        return outFile
+    }
+
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
+
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
+    /* _________________________________________________________________________________________ */
 
 
     // Add these methods to CouchBaseLiteDao class:

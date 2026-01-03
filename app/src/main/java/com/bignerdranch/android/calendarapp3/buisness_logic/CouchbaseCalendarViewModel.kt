@@ -1,7 +1,9 @@
 package com.bignerdranch.android.calendarapp3.buisness_logic
 
 import android.app.Application
+import android.net.Uri
 import android.util.Log
+import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.DAO.CouchBaseLiteDao
@@ -27,12 +29,72 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     private val _isReady = MutableStateFlow(false)
     val isReady: StateFlow<Boolean> = _isReady
 
+    private val _attachmentsForSelectedEntry =
+        MutableStateFlow<List<CouchBaseLiteDao.CblAttachmentMeta>>(emptyList())
+    val attachmentsForSelectedEntry: StateFlow<List<CouchBaseLiteDao.CblAttachmentMeta>> =
+        _attachmentsForSelectedEntry
+
+
 
 
     init {
         // Open/create DB + collections as early as possible so the UI doesn't need an "Initialize" button.
         initializeCalendarDatabase()
     }
+
+    fun loadAttachmentsForEntry(entryId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                val list = mgr.listAttachmentsForEntry(entryId)
+                _attachmentsForSelectedEntry.value = list
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to load attachments", e)
+            }
+        }
+    }
+
+    fun addAttachmentToEntry(entryId: String, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.addAttachmentToEntry(entryId, getApplication(), uri)
+                // refresh
+                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to add attachment", e)
+            }
+        }
+    }
+
+    fun removeAttachmentFromEntry(entryId: String, attachmentId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.removeAttachmentFromEntry(entryId, attachmentId)
+                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to remove attachment", e)
+            }
+        }
+    }
+
+    /**
+     * Returns a FileProvider URI for opening/sharing.
+     * Caller should launch intent on Main thread.
+     */
+    suspend fun getOpenableUriForAttachment(entryId: String, attachmentId: String): Uri {
+        return withContext(Dispatchers.IO) {
+            val mgr = CouchBaseLiteDao.getInstance(getApplication())
+            val file = mgr.materializeAttachmentToTempFile(entryId, attachmentId, getApplication())
+            FileProvider.getUriForFile(
+                getApplication(),
+                "${getApplication<Application>().packageName}.provider",
+                file
+            )
+        }
+    }
+
 
     fun loadEntriesForDate(date: String) {
         viewModelScope.launch(Dispatchers.IO) {

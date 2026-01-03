@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,6 +49,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 import androidx.compose.ui.res.painterResource
 import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarViewModel
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.generateRRuleString
 import kotlinx.coroutines.launch
 
@@ -61,6 +63,14 @@ fun EditEntry(
     source: String
 
 ) {
+
+
+
+    val cblId = editEntryViewModel.selectedCouchbaseId
+    val cblUi by couchbaseCalendarViewModel.editingEntry.collectAsState()
+
+
+
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
     var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
@@ -77,18 +87,27 @@ fun EditEntry(
 
     val entryId = selectedEntry?.id ?: -1
 
+    val status by couchbaseCalendarViewModel.editLoadStatus.collectAsState()
+
+
 
     // Update local state when ViewModel changes
     LaunchedEffect(editEntryViewModel.selectedReminderType) {
-        selectedReminderType = editEntryViewModel.selectedReminderType
+        if (source == "sqlite" && selectedEntry != null) {
+            selectedReminderType = editEntryViewModel.selectedReminderType
+        }
     }
 
     LaunchedEffect(editEntryViewModel.selectedRepeatType) {
-        selectedRepeatType = editEntryViewModel.selectedRepeatType
+        if (source == "sqlite" && selectedEntry != null) {
+            selectedRepeatType = editEntryViewModel.selectedRepeatType
+        }
     }
 
     LaunchedEffect(editEntryViewModel.repeatOptions) {
-        repeatOptions = editEntryViewModel.repeatOptions
+        if (source == "sqlite" && selectedEntry != null) {
+            repeatOptions = editEntryViewModel.repeatOptions
+        }
     }
 
     // NEW: Load attachments when the entry is selected
@@ -104,6 +123,31 @@ fun EditEntry(
     val sqliteEntryId = selectedEntry?.id ?: -1
     val couchbaseEntryId = editEntryViewModel.selectedCouchbaseId
 
+    LaunchedEffect(source, cblId) {
+        if (source == "couchbase" && !cblId.isNullOrBlank()) {
+            couchbaseCalendarViewModel.loadEntryForEdit(cblId)
+        }
+    }
+
+    if (source == "couchbase" && cblUi == null) {
+        Column {
+            Row {
+                Text("Loading...", modifier = Modifier.padding(16.dp))
+            }
+            Row {
+                Text("cblId = ${editEntryViewModel.selectedCouchbaseId}", modifier = Modifier.padding(16.dp))
+            }
+            Row {
+                Text("status = ${status ?: "(none)"}", modifier = Modifier.padding(16.dp))
+            }
+        }
+        Text("Loading...", modifier = Modifier.padding(16.dp))
+        Text("cblId = ${editEntryViewModel.selectedCouchbaseId}", modifier = Modifier.padding(16.dp))
+        Text("status = ${status ?: "(none)"}", modifier = Modifier.padding(16.dp))
+        return
+    }
+
+
     LaunchedEffect(source, sqliteEntryId, couchbaseEntryId) {
         if (source == "sqlite") {
             if (sqliteEntryId != -1) attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
@@ -111,6 +155,29 @@ fun EditEntry(
             if (!couchbaseEntryId.isNullOrBlank()) couchbaseCalendarViewModel.loadAttachmentsForEntry(couchbaseEntryId)
         }
     }
+
+
+
+
+    LaunchedEffect(cblUi) {
+        if (source == "couchbase" && cblUi != null) {
+            entryContent = cblUi!!.content
+            selectedTimeMinutes = cblUi!!.timeMinutes ?: 0
+            selectedRepeatType = cblUi!!.repeat ?: "Never"
+            selectedReminderType = cblUi!!.reminderType ?: "None"
+
+            // Important: prevent stale SQLite repeat settings
+            repeatOptions = RepeatOptions()
+            editEntryViewModel.repeatOptions = RepeatOptions()
+        }
+    }
+
+
+
+
+
+
+
 
     val sqliteAttachments by attachmentViewModel.attachments
     val cblAttachments by couchbaseCalendarViewModel.attachmentsForSelectedEntry.collectAsState()
@@ -265,10 +332,30 @@ fun EditEntry(
 
         Button(
             onClick = {
+
+                if (source == "couchbase") {
+                    val id = editEntryViewModel.selectedCouchbaseId
+                    if (id.isNullOrBlank()) {
+                        Toast.makeText(context, "Missing Couchbase ID", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    couchbaseCalendarViewModel.updateCalendarEntry(
+                        entryId = id,
+                        date = editEntryViewModel.selectedDate,
+                        content = entryContent,
+                        timeMinutes = selectedTimeMinutes,
+                        onUpdated = { navController.popBackStack() }
+                    )
+                } else {
+
+                }
                 if (entryContent.isBlank()) {
                     errorMessage = "Event cannot be empty"
                     return@Button
                 }
+
+
 
                 selectedEntry?.let { entry ->
                     // Update the entry with new content and time
@@ -314,7 +401,9 @@ fun EditEntry(
                     )
 
                     navController.popBackStack()
-                }
+                        Log.d("EditEntry", "source=$source cblId=$cblId")
+
+                    }
                 }
             },
             modifier = Modifier.padding(16.dp)

@@ -82,6 +82,22 @@ class CouchBaseLiteDao {
         return name
     }
 
+    fun getEntryById(entryId: String): Map<String, Any?>? {
+        val (entriesCollection, _) = ensureCalendarReady()
+        val doc = entriesCollection.getDocument(entryId) ?: return null
+
+        return mapOf(
+            "id" to doc.id,
+            "entryDB" to doc.getString("entryDB"),
+            "timeMinutes" to (doc.getValue("timeMinutes") as? Number)?.toInt(),
+            "repeat" to doc.getString("repeat"),
+            "reminderType" to doc.getString("reminderType")
+        )
+    }
+
+
+
+
 
     fun listAttachmentsForEntry(entryId: String): List<CblAttachmentMeta> {
         val (entriesCollection, _) = ensureCalendarReady()

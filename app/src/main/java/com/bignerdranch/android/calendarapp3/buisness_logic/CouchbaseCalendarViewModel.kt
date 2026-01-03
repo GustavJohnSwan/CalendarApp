@@ -34,6 +34,10 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     val attachmentsForSelectedEntry: StateFlow<List<CouchBaseLiteDao.CblAttachmentMeta>> =
         _attachmentsForSelectedEntry
 
+    private val _editLoadStatus = MutableStateFlow<String?>(null)
+    val editLoadStatus: StateFlow<String?> = _editLoadStatus
+
+
 
 
 
@@ -41,6 +45,49 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
         // Open/create DB + collections as early as possible so the UI doesn't need an "Initialize" button.
         initializeCalendarDatabase()
     }
+
+    data class CblEditUi(
+        val content: String,
+        val timeMinutes: Int?,
+        val repeat: String?,
+        val reminderType: String?
+    )
+
+    private val _editingEntry = MutableStateFlow<CblEditUi?>(null)
+    val editingEntry: StateFlow<CblEditUi?> = _editingEntry
+
+
+    fun loadEntryForEdit(entryId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _editLoadStatus.value = "Loading id=$entryId"
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                val map = mgr.getEntryById(entryId)
+
+                if (map == null) {
+                    _editingEntry.value = null
+                    _editLoadStatus.value = "NOT FOUND id=$entryId"
+                    return@launch
+                }
+
+                _editingEntry.value = CblEditUi(
+                    content = map["entryDB"] as? String ?: "",
+                    timeMinutes = map["timeMinutes"] as? Int,
+                    repeat = map["repeat"] as? String,
+                    reminderType = map["reminderType"] as? String
+                )
+
+                _editLoadStatus.value = "Loaded OK"
+            } catch (e: Exception) {
+                _editingEntry.value = null
+                _editLoadStatus.value = "Error: ${e.message}"
+                Log.e("CouchbaseCalendar", "loadEntryForEdit failed", e)
+            }
+        }
+    }
+
+
+
 
     fun loadAttachmentsForEntry(entryId: String) {
         viewModelScope.launch(Dispatchers.IO) {

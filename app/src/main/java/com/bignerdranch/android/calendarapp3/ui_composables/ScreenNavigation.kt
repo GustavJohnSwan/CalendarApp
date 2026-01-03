@@ -29,19 +29,27 @@ fun ScreenNavigation() {
                 couchbaseCalendarViewModel = couchbaseCalendarViewModel  // ADD THIS
             )
         }
-        composable("NewEntry") {
+        composable("NewEntry/{source}") { backStackEntry ->
+            val source = backStackEntry.arguments?.getString("source") ?: "sqlite"
             NewEntry(
                 navController = navController,
                 newEntryViewModel = newEntryViewModel,
-                editEntryViewModel = editEntryViewModel
+                editEntryViewModel = editEntryViewModel,
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel,
+                source = source
             )
         }
-        composable("EditEntry") {
+
+        composable("EditEntry/{source}") { backStackEntry ->
+            val source = backStackEntry.arguments?.getString("source") ?: "sqlite"
             EditEntry(
                 navController = navController,
-                editEntryViewModel = editEntryViewModel
+                editEntryViewModel = editEntryViewModel,
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel,
+                source = source
             )
         }
+
     }
 
 }

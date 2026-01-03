@@ -67,15 +67,26 @@ fun MainScreen(
                 },
                 onNewEntry = {
                     viewModel.toggleDayContentDialog(false)
-                    navController.navigate("NewEntry")
+                    navController.navigate("NewEntry/sqlite")
                 },
                 onEditEntry = { entry ->  // Now receives the entry directly
                     editEntryViewModel.selectedEntry = entry
-                    navController.navigate("EditEntry")
+                    navController.navigate("EditEntry/sqlite")
                 },
-                editEntryViewModel = editEntryViewModel,                couchbaseCalendarViewModel = couchbaseCalendarViewModel,  // ADD THIS LINE
-                eventList = dateEntries // Use the date-specific entries
-            )
+                editEntryViewModel = editEntryViewModel,
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel,  // ADD THIS LINE
+                eventList = dateEntries,// Use the date-specific entries
+
+                        onNewEntryCouchbase = {
+                    viewModel.toggleDayContentDialog(false)
+                    navController.navigate("NewEntry/couchbase")
+                },
+                onEditEntryCouchbase = { ev ->
+                    editEntryViewModel.selectedCouchbaseId = ev.id   // you’ll add this field
+                    navController.navigate("EditEntry/couchbase")
+                },
+
+                )
         }
 
         HorizontalCalendar(

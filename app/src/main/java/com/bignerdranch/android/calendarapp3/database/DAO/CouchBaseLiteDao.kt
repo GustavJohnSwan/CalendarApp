@@ -192,6 +192,34 @@ private fun ensureCalendarReady(): Pair<Collection, Collection> {
     return results
 }
 
+    fun updateCalendarEntry(
+        entryId: String,
+        dateDB: String,
+        entryDB: String,
+        timeMinutes: Int?
+    ) {
+        val (entriesCollection, _) = ensureCalendarReady()
+
+        val doc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        val mutable = doc.toMutable()
+            .setString("type", "entry")      // keep stable
+            .setString("dateDB", dateDB)
+            .setString("entryDB", entryDB)
+
+        if (timeMinutes != null) {
+            mutable.setInt("timeMinutes", timeMinutes)
+        } else {
+            mutable.remove("timeMinutes")
+        }
+
+        entriesCollection.save(mutable)
+        Log.i(TAG, "Calendar entry updated: $entryId")
+    }
+
+
+
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________

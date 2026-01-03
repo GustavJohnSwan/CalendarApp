@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 import com.bignerdranch.android.calendarapp3.ui_models.UiEvent
 
+import kotlinx.coroutines.withContext
+
+
 
 
 class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(application) {
@@ -101,6 +104,45 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     }
 
 
+    fun updateCalendarEntry(
+        entryId: String,
+        date: String,
+        content: String,
+        timeMinutes: Int?,
+        onUpdated: () -> Unit = {}
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+
+                // Ensure ready (same logic you already used in loadEntriesForDate)
+                if (!_isReady.value) {
+                    mgr.createCalendarDb()
+                    mgr.createCalendarCollections()
+                    _isReady.value = true
+                }
+
+                mgr.updateCalendarEntry(
+                    entryId = entryId,
+                    dateDB = date,
+                    entryDB = content,
+                    timeMinutes = timeMinutes
+                )
+
+
+                withContext(Dispatchers.Main) {
+                    onUpdated()
+                }
+
+                Log.i("CouchbaseCalendar", "Calendar entry updated: $entryId")
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to update calendar entry", e)
+            }
+        }
+    }
+
+
+
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________
     //______________________________________________________________________________________________
@@ -141,7 +183,10 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
                     mgr.addExtraDataToEntry(entryId, reminderType, repeat, repeatDetails)
                 }
 
-                onEntryCreated(entryId)
+                withContext(Dispatchers.Main) {
+                    onEntryCreated(entryId)
+                }
+
                 Log.i("CouchbaseCalendar", "Calendar entry created: $entryId")
             } catch (e: Exception) {
                 Log.e("CouchbaseCalendar", "Failed to create calendar entry", e)

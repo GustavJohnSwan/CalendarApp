@@ -45,6 +45,9 @@ import androidx.compose.foundation.layout.width
 import com.bignerdranch.android.calendarapp3.ui_models.UiEvent
 
 
+
+
+
 private enum class EventSource { SQLITE, COUCHBASE }
 
 
@@ -57,11 +60,15 @@ fun DayContentsDialog(
     editEntryViewModel: EditEntryViewModel,
     eventList: List<EntryTable>,
     couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
+    onNewEntryCouchbase: () -> Unit,
+    onEditEntryCouchbase: (UiEvent) -> Unit
 ) {
     val context = LocalContext.current
 
     var source by rememberSaveable { mutableStateOf(EventSource.SQLITE) }
     val couchEvents by couchbaseCalendarViewModel.eventsForSelectedDate.collectAsState()
+
+
 
 
     // Optional: show toast messages emitted by couchbaseCalendarViewModel
@@ -181,21 +188,16 @@ fun DayContentsDialog(
                                 ev = ev,
                                 onClick = {
                                     if (source == EventSource.SQLITE) {
-                                        // Find the SQLite entity and reuse your existing edit flow
                                         val sqliteEntry = filteredEntries.firstOrNull { it.id.toString() == ev.id }
                                         if (sqliteEntry != null) {
                                             editEntryViewModel.onEventSelect(sqliteEntry)
                                             onEditEntry(sqliteEntry)
                                         }
                                     } else {
-                                        // No edit yet for Couchbase
-                                        android.widget.Toast.makeText(
-                                            context,
-                                            "CBL edit not implemented yet",
-                                            android.widget.Toast.LENGTH_SHORT
-                                        ).show()
+                                        onEditEntryCouchbase(ev)
                                     }
                                 }
+
                             )
                         }
                     }
@@ -266,32 +268,12 @@ fun DayContentsDialog(
                     }
                 } else {
                     ElevatedButton(
-                        onClick = {
-                            couchbaseCalendarViewModel.createCalendarEntry(
-                                date = editEntryViewModel.selectedDate,
-                                content = "Couchbase test event",
-                                timeMinutes = 900,
-                                hasExtraData = true,
-                                reminderType = "Notification",
-                                repeat = "Weekly",
-                                onEntryCreated = {
-                                    couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
-                                }
-                            )
-
-                            // refresh list after insert so it shows immediately
-                            couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
-
-                            android.widget.Toast.makeText(
-                                context,
-                                "Created Couchbase event",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        },
+                        onClick = onNewEntryCouchbase,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("New Event (Couchbase Lite)")
                     }
+
 
                     Spacer(modifier = Modifier.height(8.dp))
 

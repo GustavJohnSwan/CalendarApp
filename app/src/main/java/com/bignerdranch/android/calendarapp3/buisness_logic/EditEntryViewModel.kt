@@ -28,6 +28,9 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
     var selectedRepeatType by mutableStateOf("Never")
     var repeatOptions by mutableStateOf(RepeatOptions())
 
+    var selectedCouchbaseId: String? = null
+
+
     fun onEventSelect(entry: EntryTable) {
         selectedEntry = entry
         // Load reminder status and repeat details when entry is selected

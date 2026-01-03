@@ -43,6 +43,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.RepeatSelector
 
 import androidx.compose.ui.res.painterResource
+import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarViewModel
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.generateRRuleString
 
@@ -51,7 +52,10 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 fun EditEntry(
     navController: NavController,
     editEntryViewModel: EditEntryViewModel,
-    attachmentViewModel: AttachmentViewModel = viewModel()
+    attachmentViewModel: AttachmentViewModel = viewModel(),
+    couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
+    source: String
+
 ) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
@@ -149,6 +153,7 @@ fun EditEntry(
             }
         )
 
+        if (source == "sqlite") {
         // NEW: Attachment Section
         Text("Attachments", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleSmall)
 
@@ -158,6 +163,13 @@ fun EditEntry(
             modifier = Modifier.padding(horizontal = 16.dp)
         ) {
             Text("Add Attachment")
+        }
+
+        } else {
+            Text(
+                "Attachments are not supported for Couchbase entries yet.",
+                modifier = Modifier.padding(16.dp)
+            )
         }
 
         // List of Attachments
@@ -207,8 +219,21 @@ fun EditEntry(
                     }
 
                     // Determine if we need extra data (has reminder OR repeat)
-                    val needsExtraData = selectedReminderType != "None" || selectedRepeatType != "Never"
+                    val needsExtraData =
+                        selectedReminderType != "None" || selectedRepeatType != "Never"
 
+                    if (source == "couchbase") {
+                        val id = editEntryViewModel.selectedCouchbaseId
+                        if (id != null) {
+                            couchbaseCalendarViewModel.updateCalendarEntry(
+                                entryId = id,
+                                date = editEntryViewModel.selectedDate,
+                                content = entryContent,
+                                timeMinutes = selectedTimeMinutes,
+                                onUpdated = { navController.popBackStack() }
+                            )
+                        }
+                    } else {
                     // Update the entry in database
                     editEntryViewModel.updateBasicEntry(updatedEntry)
 
@@ -223,6 +248,7 @@ fun EditEntry(
                     )
 
                     navController.popBackStack()
+                }
                 }
             },
             modifier = Modifier.padding(16.dp)

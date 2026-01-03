@@ -27,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.buisness_logic.CalendarViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.ReminderSelector
@@ -42,7 +43,10 @@ fun NewEntry(
     viewModel: CalendarViewModel = viewModel(),
     newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
-) {
+    couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
+    source: String
+)
+ {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedTimeMinutes by remember { mutableStateOf<Int?>(null) }
     var selectedReminderType by remember { mutableStateOf("None") } // Default to "None"
@@ -99,10 +103,18 @@ fun NewEntry(
             onRepeatOptionsChange = { newOptions -> repeatOptions = newOptions }
         )
 
+        if (source == "sqlite") {
         // NEW: Attachment Section
         Text("Attachments", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleSmall)
         // For a new entry, we'll keep it simple and suggest adding attachments after saving.
         Text("Add attachments after saving the event.", modifier = Modifier.padding(horizontal = 16.dp))
+
+        } else {
+            Text(
+                "Attachments are not supported for Couchbase entries yet.",
+                modifier = Modifier.padding(16.dp)
+            )
+        }
 
         Button(
             onClick = {
@@ -135,26 +147,42 @@ fun NewEntry(
 
 
 
-                newEntryViewModel.insertEntry(
-                    date = editEntryViewModel.selectedDate,
-                    content = viewModel.newEventText,
-                    exDaBo = selectedReminderType != "None" || selectedRepeatType != "Never", // Enable extra data only if reminder is not "None"
-                    timeMinutes = selectedTimeMinutes,
-                    reminderType = if (selectedReminderType != "None") selectedReminderType else null,
-                    repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
-                    repeatDetails = repeatDetails, // Store the RRule string
-                    onEntryInserted = { entryId ->
-                        if (repeatDetails != null) {
-                            repeatEventListener(
-                                entryId = entryId,
-                                repeatDetails = repeatDetails,
-                                startDate = editEntryViewModel.selectedDate,
-                                newEntryViewModel = newEntryViewModel // ADD THIS
-                            )
+                if (source == "couchbase") {
+                    couchbaseCalendarViewModel.createCalendarEntry(
+                        date = editEntryViewModel.selectedDate,
+                        content = viewModel.newEventText,
+                        timeMinutes = selectedTimeMinutes,
+                        hasExtraData = selectedReminderType != "None" || selectedRepeatType != "Never",
+                        reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                        repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                        repeatDetails = repeatDetails,
+                        onEntryCreated = {
+                            navController.popBackStack()
                         }
-                        navController.popBackStack()
-                    }
-                )
+                    )
+                } else {
+                    newEntryViewModel.insertEntry(
+                        date = editEntryViewModel.selectedDate,
+                        content = viewModel.newEventText,
+                        exDaBo = selectedReminderType != "None" || selectedRepeatType != "Never",
+                        timeMinutes = selectedTimeMinutes,
+                        reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                        repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                        repeatDetails = repeatDetails,
+                        onEntryInserted = { entryId ->
+                            if (repeatDetails != null) {
+                                repeatEventListener(
+                                    entryId = entryId,
+                                    repeatDetails = repeatDetails,
+                                    startDate = editEntryViewModel.selectedDate,
+                                    newEntryViewModel = newEntryViewModel
+                                )
+                            }
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
             },
             modifier = Modifier.padding(16.dp)
         ) {

@@ -83,17 +83,75 @@ class CouchBaseLiteDao {
     }
 
     fun getEntryById(entryId: String): Map<String, Any?>? {
-        val (entriesCollection, _) = ensureCalendarReady()
+        val (entriesCollection, extraDataCollection) = ensureCalendarReady()
+
         val doc = entriesCollection.getDocument(entryId) ?: return null
+
+        // Default values (if no extra_data exists)
+        var reminderType: String? = null
+        var repeat: String? = null
+        var repeatDetails: String? = null
+
+        // Read linked extra_data doc (if present)
+        val extraId = doc.getString("extraDataId")
+        if (!extraId.isNullOrBlank()) {
+            val extraDoc = extraDataCollection.getDocument(extraId)
+            reminderType = extraDoc?.getString("reminderType")
+            repeat = extraDoc?.getString("repeat")
+            repeatDetails = extraDoc?.getString("repeatDetails")
+        }
 
         return mapOf(
             "id" to doc.id,
             "entryDB" to doc.getString("entryDB"),
             "timeMinutes" to (doc.getValue("timeMinutes") as? Number)?.toInt(),
-            "repeat" to doc.getString("repeat"),
-            "reminderType" to doc.getString("reminderType")
+            "reminderType" to reminderType,
+            "repeat" to repeat,
+            "repeatDetails" to repeatDetails
         )
     }
+
+    fun upsertExtraDataForEntry(
+        entryId: String,
+        reminderType: String?,
+        repeat: String?,
+        repeatDetails: String?
+    ) {
+        val (entriesCollection, extraDataCollection) = ensureCalendarReady()
+
+        val entryDoc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        val existingExtraId = entryDoc.getString("extraDataId")
+
+        val extraMutable = if (!existingExtraId.isNullOrBlank()) {
+            extraDataCollection.getDocument(existingExtraId)?.toMutable() ?: MutableDocument(existingExtraId)
+        } else {
+            MutableDocument()
+        }
+
+        extraMutable.setString("type", "extra_data")
+        extraMutable.setString("entryId", entryId)
+
+        // Store nulls by removing fields (keeps docs clean)
+        if (reminderType.isNullOrBlank()) extraMutable.remove("reminderType")
+        else extraMutable.setString("reminderType", reminderType)
+
+        if (repeat.isNullOrBlank() || repeat == "Never") extraMutable.remove("repeat")
+        else extraMutable.setString("repeat", repeat)
+
+        if (repeatDetails.isNullOrBlank()) extraMutable.remove("repeatDetails")
+        else extraMutable.setString("repeatDetails", repeatDetails)
+
+        extraDataCollection.save(extraMutable)
+
+        // Ensure entry links to extra_data doc
+        if (existingExtraId.isNullOrBlank()) {
+            entriesCollection.save(entryDoc.toMutable().setString("extraDataId", extraMutable.id))
+        }
+    }
+
+
 
 
 

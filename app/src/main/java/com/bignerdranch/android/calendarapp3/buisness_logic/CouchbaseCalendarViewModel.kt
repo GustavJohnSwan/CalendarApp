@@ -50,8 +50,10 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
         val content: String,
         val timeMinutes: Int?,
         val repeat: String?,
-        val reminderType: String?
+        val reminderType: String?,
+        val repeatDetails: String?
     )
+
 
     private val _editingEntry = MutableStateFlow<CblEditUi?>(null)
     val editingEntry: StateFlow<CblEditUi?> = _editingEntry
@@ -74,8 +76,10 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
                     content = map["entryDB"] as? String ?: "",
                     timeMinutes = map["timeMinutes"] as? Int,
                     repeat = map["repeat"] as? String,
-                    reminderType = map["reminderType"] as? String
+                    reminderType = map["reminderType"] as? String,
+                    repeatDetails = map["repeatDetails"] as? String
                 )
+
 
                 _editLoadStatus.value = "Loaded OK"
             } catch (e: Exception) {

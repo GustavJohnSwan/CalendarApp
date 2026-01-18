@@ -340,7 +340,21 @@ fun EditEntry(
 
         Button(
             onClick = {
+                if (entryContent.isBlank()) {
+                    errorMessage = "Event cannot be empty"
+                    return@Button
+                }
 
+                // ✅ Compute these for BOTH SQLite and Couchbase
+                val repeatDetails = if (selectedRepeatType != "Never") {
+                    generateRRuleString(repeatOptions, selectedRepeatType)
+                } else {
+                    null
+                }
+
+                val needsExtraData = selectedReminderType != "None" || selectedRepeatType != "Never"
+
+                // ✅ COUCHBASE SAVE (does NOT depend on selectedEntry)
                 if (source == "couchbase") {
                     val id = editEntryViewModel.selectedCouchbaseId
                     if (id.isNullOrBlank()) {
@@ -353,53 +367,27 @@ fun EditEntry(
                         date = editEntryViewModel.selectedDate,
                         content = entryContent,
                         timeMinutes = selectedTimeMinutes,
+
+                        // 👇 these must exist in the updated ViewModel function signature
+                        hasExtraData = needsExtraData,
+                        reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                        repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                        repeatDetails = repeatDetails,
+
                         onUpdated = { navController.popBackStack() }
                     )
-                } else {
-
-                }
-                if (entryContent.isBlank()) {
-                    errorMessage = "Event cannot be empty"
                     return@Button
                 }
 
-
-
+                // ✅ SQLITE SAVE (still uses selectedEntry)
                 selectedEntry?.let { entry ->
-                    // Update the entry with new content and time
                     val updatedEntry = entry.copy(
                         entryDB = entryContent,
                         timeMinutes = selectedTimeMinutes
                     )
 
-                    // Generate RRule string using the new generator
-                    val repeatDetails = if (selectedRepeatType != "Never") {
-                        generateRRuleString(repeatOptions, selectedRepeatType) // ← CHANGE THIS LINE
-                    } else {
-                        null
-                    }
-
-                    // Determine if we need extra data (has reminder OR repeat)
-                    val needsExtraData =
-                        selectedReminderType != "None" || selectedRepeatType != "Never"
-
-                    if (source == "couchbase") {
-                        val id = editEntryViewModel.selectedCouchbaseId
-                        if (id != null) {
-                            couchbaseCalendarViewModel.updateCalendarEntry(
-                                entryId = id,
-                                date = editEntryViewModel.selectedDate,
-                                content = entryContent,
-                                timeMinutes = selectedTimeMinutes,
-                                onUpdated = { navController.popBackStack() }
-                            )
-                        }
-                    } else {
-                    // Update the entry in database
                     editEntryViewModel.updateBasicEntry(updatedEntry)
 
-
-                    // Update extra data with repeat details
                     editEntryViewModel.updateEntry(
                         updatedEntry,
                         needsExtraData,
@@ -409,11 +397,10 @@ fun EditEntry(
                     )
 
                     navController.popBackStack()
-                        Log.d("EditEntry", "source=$source cblId=$cblId")
-
-                    }
+                    Log.d("EditEntry", "source=$source cblId=$cblId")
                 }
-            },
+            }
+,
             modifier = Modifier.padding(16.dp)
         ) {
             Text("Save Changes")

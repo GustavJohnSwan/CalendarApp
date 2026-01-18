@@ -222,19 +222,23 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
         date: String,
         content: String,
         timeMinutes: Int?,
+        hasExtraData: Boolean,
+        reminderType: String?,
+        repeat: String?,
+        repeatDetails: String?,
         onUpdated: () -> Unit = {}
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val mgr = CouchBaseLiteDao.getInstance(getApplication())
 
-                // Ensure ready (same logic you already used in loadEntriesForDate)
                 if (!_isReady.value) {
                     mgr.createCalendarDb()
                     mgr.createCalendarCollections()
                     _isReady.value = true
                 }
 
+                // 1) Update the entry doc
                 mgr.updateCalendarEntry(
                     entryId = entryId,
                     dateDB = date,
@@ -242,17 +246,27 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
                     timeMinutes = timeMinutes
                 )
 
-
-                withContext(Dispatchers.Main) {
-                    onUpdated()
+                // 2) Update/insert extra_data doc
+                if (hasExtraData) {
+                    mgr.upsertExtraDataForEntry(
+                        entryId = entryId,
+                        reminderType = reminderType,
+                        repeat = repeat,
+                        repeatDetails = repeatDetails
+                    )
+                } else {
+                    // Optional: if you support clearing extra data when user sets None/Never
+                    // mgr.deleteExtraDataForEntry(entryId)
                 }
 
-                Log.i("CouchbaseCalendar", "Calendar entry updated: $entryId")
+                withContext(Dispatchers.Main) { onUpdated() }
+                Log.i("CouchbaseCalendar", "Calendar entry updated (with extra): $entryId")
             } catch (e: Exception) {
                 Log.e("CouchbaseCalendar", "Failed to update calendar entry", e)
             }
         }
     }
+
 
 
 

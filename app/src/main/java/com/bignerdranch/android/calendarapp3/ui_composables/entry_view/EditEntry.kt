@@ -51,6 +51,7 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarVie
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.InputTimePicker
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.generateRRuleString
+import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
 
 
@@ -162,13 +163,20 @@ fun EditEntry(
     LaunchedEffect(cblUi) {
         if (source == "couchbase" && cblUi != null) {
             entryContent = cblUi!!.content
-            selectedTimeMinutes = cblUi!!.timeMinutes ?: 0
+            selectedTimeMinutes = cblUi!!.timeMinutes // don’t force 0 unless you really want that
             selectedRepeatType = cblUi!!.repeat ?: "Never"
             selectedReminderType = cblUi!!.reminderType ?: "None"
 
-            // Important: prevent stale SQLite repeat settings
-            repeatOptions = RepeatOptions()
-            editEntryViewModel.repeatOptions = RepeatOptions()
+            // ✅ NEW: parse repeatDetails into RepeatOptions
+            repeatOptions =
+                if (!cblUi!!.repeatDetails.isNullOrBlank() && selectedRepeatType != "Never") {
+                    parseRRuleToRepeatOptions(cblUi!!.repeatDetails!!, selectedRepeatType)
+                } else {
+                    RepeatOptions()
+                }
+
+            // keep VM in sync
+            editEntryViewModel.repeatOptions = repeatOptions
         }
     }
 

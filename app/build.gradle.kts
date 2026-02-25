@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp")
 
+    // Apply the ObjectBox plugin
+    alias(libs.plugins.objectbox)
 }
 
 android {

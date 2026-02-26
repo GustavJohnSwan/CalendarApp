@@ -1,0 +1,150 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:8531665906953692833",
+      "lastPropertyId": "5:5426070179345885243",
+      "name": "EntryOb",
+      "properties": [
+        {
+          "id": "1:2197155866295082695",
+          "name": "dateOb",
+          "type": 9
+        },
+        {
+          "id": "2:8922620473736875561",
+          "name": "entryOb",
+          "type": 9
+        },
+        {
+          "id": "3:3963994597991504164",
+          "name": "timeMinutesOb",
+          "type": 5
+        },
+        {
+          "id": "4:1314030778413097578",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "5:5426070179345885243",
+          "name": "extraDataObId",
+          "indexId": "3:3126453801016685974",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "ExtraDataOb"
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:7505069022564735037",
+          "name": "attachmentsOb",
+          "targetId": "3:9143768684276663885"
+        }
+      ]
+    },
+    {
+      "id": "2:8271016775815951282",
+      "lastPropertyId": "6:8263889545111377220",
+      "name": "ExtraDataOb",
+      "properties": [
+        {
+          "id": "1:4021513944219609716",
+          "name": "reminderTypeOb",
+          "type": 9
+        },
+        {
+          "id": "2:7036495806468832124",
+          "name": "repeatOb",
+          "type": 9
+        },
+        {
+          "id": "3:4486577428310788711",
+          "name": "repeatDetailsOb",
+          "type": 9
+        },
+        {
+          "id": "4:3325320993312586816",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "5:3152281018171480695",
+          "name": "entryObId",
+          "indexId": "1:3239179133683807070",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EntryOb"
+        },
+        {
+          "id": "6:8263889545111377220",
+          "name": "attachmentIdOb",
+          "type": 6
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:9143768684276663885",
+      "lastPropertyId": "7:7876702853765385588",
+      "name": "EntryAttachmentOb",
+      "properties": [
+        {
+          "id": "1:5141476678808333734",
+          "name": "fileName",
+          "type": 9
+        },
+        {
+          "id": "2:3754488304046204386",
+          "name": "mimeType",
+          "type": 9
+        },
+        {
+          "id": "3:3734709304217175603",
+          "name": "fileSize",
+          "type": 6
+        },
+        {
+          "id": "4:489597061304254432",
+          "name": "uriPath",
+          "type": 9
+        },
+        {
+          "id": "5:4437739874338953706",
+          "name": "dateAdded",
+          "type": 6
+        },
+        {
+          "id": "6:7953773430048606805",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "7:7876702853765385588",
+          "name": "entryObId",
+          "indexId": "2:1685709458851205995",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EntryOb"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "3:9143768684276663885",
+  "lastIndexId": "3:3126453801016685974",
+  "lastRelationId": "1:7505069022564735037",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

@@ -95,34 +95,9 @@
     },
     {
       "id": "3:9143768684276663885",
-      "lastPropertyId": "7:7876702853765385588",
+      "lastPropertyId": "12:7172139561383978494",
       "name": "EntryAttachmentOb",
       "properties": [
-        {
-          "id": "1:5141476678808333734",
-          "name": "fileName",
-          "type": 9
-        },
-        {
-          "id": "2:3754488304046204386",
-          "name": "mimeType",
-          "type": 9
-        },
-        {
-          "id": "3:3734709304217175603",
-          "name": "fileSize",
-          "type": 6
-        },
-        {
-          "id": "4:489597061304254432",
-          "name": "uriPath",
-          "type": 9
-        },
-        {
-          "id": "5:4437739874338953706",
-          "name": "dateAdded",
-          "type": 6
-        },
         {
           "id": "6:7953773430048606805",
           "name": "id",
@@ -136,6 +111,31 @@
           "type": 11,
           "flags": 520,
           "relationTarget": "EntryOb"
+        },
+        {
+          "id": "8:1052282570264005831",
+          "name": "fileNameOb",
+          "type": 9
+        },
+        {
+          "id": "9:7728348012391695938",
+          "name": "mimeTypeOb",
+          "type": 9
+        },
+        {
+          "id": "10:917966088689754482",
+          "name": "fileSizeOb",
+          "type": 6
+        },
+        {
+          "id": "11:3768456741766172046",
+          "name": "uriPathOb",
+          "type": 9
+        },
+        {
+          "id": "12:7172139561383978494",
+          "name": "dateAddedOb",
+          "type": 6
         }
       ],
       "relations": []
@@ -182,7 +182,12 @@
   "retiredEntityUids": [],
   "retiredIndexUids": [],
   "retiredPropertyUids": [
-    8806307348459020301
+    8806307348459020301,
+    5141476678808333734,
+    3754488304046204386,
+    3734709304217175603,
+    489597061304254432,
+    4437739874338953706
   ],
   "retiredRelationUids": [],
   "version": 1

@@ -142,14 +142,9 @@
     },
     {
       "id": "4:2355048928369017897",
-      "lastPropertyId": "4:6362623330744495477",
+      "lastPropertyId": "5:558293220794962619",
       "name": "RecurringEventOb",
       "properties": [
-        {
-          "id": "1:8806307348459020301",
-          "name": "occurenceDateOb",
-          "type": 9
-        },
         {
           "id": "2:6924293391579954873",
           "name": "isExceptionOb",
@@ -168,6 +163,11 @@
           "type": 11,
           "flags": 520,
           "relationTarget": "EntryOb"
+        },
+        {
+          "id": "5:558293220794962619",
+          "name": "occurrenceDateOb",
+          "type": 9
         }
       ],
       "relations": []
@@ -181,7 +181,9 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    8806307348459020301
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

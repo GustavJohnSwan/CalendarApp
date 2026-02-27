@@ -8,11 +8,11 @@ import io.objectbox.relation.ToOne
 
 @Entity
 class EntryAttachmentOb(
-    var fileName: String = "",
-    var mimeType: String = "",
-    var fileSize: Long = 0L,
-    var uriPath: String = "",
-    var dateAdded: Long = System.currentTimeMillis()
+    var fileNameOb: String = "",
+    var mimeTypeOb: String = "",
+    var fileSizeOb: Long = 0L,
+    var uriPathOb: String = "",
+    var dateAddedOb: Long = System.currentTimeMillis()
 ) {
     @Id
     var id: Long = 0

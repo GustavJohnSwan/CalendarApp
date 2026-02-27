@@ -43,6 +43,11 @@
           "id": "1:7505069022564735037",
           "name": "attachmentsOb",
           "targetId": "3:9143768684276663885"
+        },
+        {
+          "id": "2:9182496213153922962",
+          "name": "recurringEventsOb",
+          "targetId": "4:2355048928369017897"
         }
       ]
     },
@@ -134,11 +139,43 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "4:2355048928369017897",
+      "lastPropertyId": "4:6362623330744495477",
+      "name": "RecurringEventOb",
+      "properties": [
+        {
+          "id": "1:8806307348459020301",
+          "name": "occurenceDateOb",
+          "type": 9
+        },
+        {
+          "id": "2:6924293391579954873",
+          "name": "isExceptionOb",
+          "type": 1
+        },
+        {
+          "id": "3:6327411134673489393",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "4:6362623330744495477",
+          "name": "entryObId",
+          "indexId": "4:3429230822916942693",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "EntryOb"
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "3:9143768684276663885",
-  "lastIndexId": "3:3126453801016685974",
-  "lastRelationId": "1:7505069022564735037",
+  "lastEntityId": "4:2355048928369017897",
+  "lastIndexId": "4:3429230822916942693",
+  "lastRelationId": "2:9182496213153922962",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

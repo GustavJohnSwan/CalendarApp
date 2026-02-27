@@ -6,7 +6,7 @@ import io.objectbox.relation.ToOne
 
 @Entity
 class RecurringEventOb(
-    var occurenceDateOb: String = "",
+    var occurrenceDateOb: String = "",
     var isExceptionOb: Boolean = false
 ) {
     @Id

@@ -54,6 +54,9 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
 
+import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
+import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachment.ObjectBoxAttachmentViewModel
+
 
 @Composable
 fun EditEntry(
@@ -61,6 +64,8 @@ fun EditEntry(
     editEntryViewModel: EditEntryViewModel,
     attachmentViewModel: AttachmentViewModel = viewModel(),
     couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
+    objectBoxEditEntryViewModel: ObjectBoxEditEntryViewModel,
+    objectBoxAttachmentViewModel: ObjectBoxAttachmentViewModel,
     source: String
 
 ) {
@@ -70,12 +75,39 @@ fun EditEntry(
     val cblId = editEntryViewModel.selectedCouchbaseId
     val cblUi by couchbaseCalendarViewModel.editingEntry.collectAsState()
 
+    val obIdStr = editEntryViewModel.selectedObjectBoxId
+    val obSelectedEntry = objectBoxEditEntryViewModel.selectedEntry
+
+    val objectBoxEditEntryViewModel: ObjectBoxEditEntryViewModel = viewModel()
+
 
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
-    var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
-    var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
+    //var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
+    //var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
+
+    val roomEntry = editEntryViewModel.selectedEntry
+    val obEntry = objectBoxEditEntryViewModel.selectedEntry
+
+    val initialContent = when (source) {
+        "sqlite" -> roomEntry?.entryDB ?: ""
+        "objectbox" -> obEntry?.entryOb ?: ""
+        "couchbase" -> "" // will be filled from cblUi in your existing LaunchedEffect
+        else -> ""
+    }
+
+    val initialTime = when (source) {
+        "sqlite" -> roomEntry?.timeMinutes
+        "objectbox" -> obEntry?.timeMinutesOb
+        else -> null
+    }
+
+    var entryContent by remember { mutableStateOf(initialContent) }
+    var selectedTimeMinutes by remember { mutableStateOf(initialTime) }
+
+
+
     val context = LocalContext.current
 
     val scope = rememberCoroutineScope()
@@ -130,6 +162,19 @@ fun EditEntry(
         }
     }
 
+    LaunchedEffect(source, obIdStr) {
+
+        if (source == "objectbox" && !obIdStr.isNullOrBlank()) {
+            val id = obIdStr.toLongOrNull()
+            if (id != null) {
+                val entry = objectBoxEditEntryViewModel.getEntryById(id) // we’ll add this helper next
+                if (entry != null) {
+                    objectBoxEditEntryViewModel.onEventSelect(entry)
+                }
+            }
+        }
+    }
+
     if (source == "couchbase" && cblUi == null) {
         Column {
             Row {
@@ -177,6 +222,18 @@ fun EditEntry(
 
             // keep VM in sync
             editEntryViewModel.repeatOptions = repeatOptions
+        }
+    }
+
+    LaunchedEffect(obEntry) {
+        if (source == "objectbox" && obEntry != null) {
+            entryContent = obEntry.entryOb ?: ""
+            selectedTimeMinutes = obEntry.timeMinutesOb
+
+            // pull extra-data-driven UI state from objectBoxEditEntryViewModel
+            selectedRepeatType = objectBoxEditEntryViewModel.selectedRepeatType
+            selectedReminderType = objectBoxEditEntryViewModel.selectedReminderType
+            repeatOptions = objectBoxEditEntryViewModel.repeatOptions
         }
     }
 
@@ -340,6 +397,7 @@ fun EditEntry(
 
         Button(
             onClick = {
+                Log.d("ObjectBoxTest", "Save clicked, source=$source")
                 if (entryContent.isBlank()) {
                     errorMessage = "Event cannot be empty"
                     return@Button
@@ -398,6 +456,36 @@ fun EditEntry(
 
                     navController.popBackStack()
                     Log.d("EditEntry", "source=$source cblId=$cblId")
+                }
+
+                // OBJECTBOX SAVE (does NOT depend on Room selectedEntry)
+                if (source == "objectbox") {
+                    Log.d("ObjectBoxTest", "Saving ObjectBox entry...")
+
+                    val obEntry = objectBoxEditEntryViewModel.selectedEntry
+                    if (obEntry == null) {
+                        Toast.makeText(context, "Missing ObjectBox selected entry", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    // Update fields (EntryOb is a class, so mutate)
+                    obEntry.entryOb = entryContent
+                    obEntry.timeMinutesOb = selectedTimeMinutes
+
+                    // Save basic entry
+                    objectBoxEditEntryViewModel.updateBasicEntry(obEntry)
+
+                    // Save extra data (reminder/repeat)
+                    objectBoxEditEntryViewModel.updateEntry(
+                        entry = obEntry,
+                        hasReminder = needsExtraData,
+                        reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                        repeatType = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                        repeatDetails = repeatDetails
+                    )
+
+                    navController.popBackStack()
+                    return@Button
                 }
             }
 ,

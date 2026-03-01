@@ -8,6 +8,7 @@ import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxEnt
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxExtraDataRepository
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxRecurringEventRepository
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
+import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb_.id
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.ExtraDataOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.RecurringEventOb
@@ -72,6 +73,7 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
         repeatDetails: String? = null,
         onEntryInserted: (Int) -> Unit = {}
     ) {
+        Log.d("ObjectBoxTest", "Inserted EntryOb id=$id date=$date content=$content")
         viewModelScope.launch {
             val entryId = insertEntryWithExtraData(
                 dateDB = date,

@@ -29,6 +29,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
     var repeatOptions by mutableStateOf(RepeatOptions())
 
     var selectedCouchbaseId: String? = null
+    var selectedObjectBoxId: String? = null
 
 
     fun onEventSelect(entry: EntryTable) {

@@ -20,6 +20,8 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarVie
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
+import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
+
 /*
 I implemented viewModel to seperate the UI design elements (composablse) from business logic elements.
 I also make sure the app remembers (saves) certain state data when recomposition and/or system changes
@@ -33,7 +35,8 @@ fun MainScreen(
     viewModel: CalendarViewModel = viewModel(),
     newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
-    couchbaseCalendarViewModel: CouchbaseCalendarViewModel = viewModel()  // ADD THIS
+    couchbaseCalendarViewModel: CouchbaseCalendarViewModel = viewModel(),
+    objectBoxEditEntryViewModel: ObjectBoxEditEntryViewModel = viewModel()
 
 ) {
     val currentMonth = remember { YearMonth.now() }
@@ -74,6 +77,7 @@ fun MainScreen(
                     navController.navigate("EditEntry/sqlite")
                 },
                 editEntryViewModel = editEntryViewModel,
+                objectBoxEditEntryViewModel = objectBoxEditEntryViewModel,
                 couchbaseCalendarViewModel = couchbaseCalendarViewModel,  // ADD THIS LINE
                 eventList = dateEntries,// Use the date-specific entries
 
@@ -84,6 +88,16 @@ fun MainScreen(
                 onEditEntryCouchbase = { ev ->
                     editEntryViewModel.selectedCouchbaseId = ev.id   // you’ll add this field
                     navController.navigate("EditEntry/couchbase")
+                },
+
+                onNewEntryObjectBox = {
+                    viewModel.toggleDayContentDialog(false)
+                    navController.navigate("NewEntry/objectbox")
+                },
+                onEditEntryObjectBox = { ev ->
+                    // store the selected ObjectBox id somewhere (similar to Couchbase)
+                    editEntryViewModel.selectedObjectBoxId = ev.id
+                    navController.navigate("EditEntry/objectbox")
                 },
 
                 )
@@ -106,6 +120,7 @@ fun MainScreen(
                         editEntryViewModel.saveSelectedDate(selectedDate.toString())
                         // Load entries immediately when date is selected
                         editEntryViewModel.loadEntriesForDate(selectedDate.toString())
+                        objectBoxEditEntryViewModel.loadEntriesForDate(selectedDate.toString())
                     }
                 ) { day ->
                     viewModel.onDateSelected(day.date)

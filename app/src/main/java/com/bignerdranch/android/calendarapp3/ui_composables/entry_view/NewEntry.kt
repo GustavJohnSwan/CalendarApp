@@ -36,6 +36,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeatEventListener
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.generateRRuleString
 // import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.repeatEventListener
+import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxNewEntryViewModel
 
 @Composable
 fun NewEntry(
@@ -44,6 +45,8 @@ fun NewEntry(
     newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
     couchbaseCalendarViewModel: CouchbaseCalendarViewModel,
+    objectBoxNewEntryViewModel: ObjectBoxNewEntryViewModel,
+    //source = source,
     source: String
 )
  {
@@ -147,6 +150,7 @@ fun NewEntry(
 
 
 
+                /*
                 if (source == "couchbase") {
                     couchbaseCalendarViewModel.createCalendarEntry(
                         date = editEntryViewModel.selectedDate,
@@ -181,6 +185,64 @@ fun NewEntry(
                             navController.popBackStack()
                         }
                     )
+                }
+
+                 */
+
+                when (source) {
+                    "couchbase" -> {
+                        couchbaseCalendarViewModel.createCalendarEntry(
+                            date = editEntryViewModel.selectedDate,
+                            content = viewModel.newEventText,
+                            timeMinutes = selectedTimeMinutes,
+                            hasExtraData = selectedReminderType != "None" || selectedRepeatType != "Never",
+                            reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                            repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                            repeatDetails = repeatDetails,
+                            onEntryCreated = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+
+                    "objectbox" -> {
+                        objectBoxNewEntryViewModel.insertEntry(
+                            date = editEntryViewModel.selectedDate,
+                            content = viewModel.newEventText,
+                            exDaBo = selectedReminderType != "None" || selectedRepeatType != "Never",
+                            timeMinutes = selectedTimeMinutes,
+                            reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                            repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                            repeatDetails = repeatDetails,
+                            onEntryInserted = { _ ->
+                                // for now we skip repeatEventListener for ObjectBox until recurring is wired
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+
+                    else -> { // "sqlite"
+                        newEntryViewModel.insertEntry(
+                            date = editEntryViewModel.selectedDate,
+                            content = viewModel.newEventText,
+                            exDaBo = selectedReminderType != "None" || selectedRepeatType != "Never",
+                            timeMinutes = selectedTimeMinutes,
+                            reminderType = if (selectedReminderType != "None") selectedReminderType else null,
+                            repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
+                            repeatDetails = repeatDetails,
+                            onEntryInserted = { entryId ->
+                                if (repeatDetails != null) {
+                                    repeatEventListener(
+                                        entryId = entryId,
+                                        repeatDetails = repeatDetails,
+                                        startDate = editEntryViewModel.selectedDate,
+                                        newEntryViewModel = newEntryViewModel
+                                    )
+                                }
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                 }
 
             },

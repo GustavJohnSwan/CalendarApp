@@ -4,6 +4,7 @@ package com.bignerdranch.android.calendarapp3.buisness_logic.objectbox
 
 
 import android.app.Application
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -38,6 +39,7 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
     // Load entries by date
     // -----------------------------
     fun loadEntriesForDate(date: String) {
+        Log.d("ObjectBoxTest", "Loaded ${_dateEntries.value.size} entries for $date")
         viewModelScope.launch {
             _dateEntries.value = entryRepo.getEntriesByDate(date)
         }
@@ -135,5 +137,13 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
                 existingExtra?.let { extraRepo.delete_ExData(it) }
             }
         }
+    }
+
+    fun getById(id: Long): EntryOb? {
+        return store.boxFor(EntryOb::class.java).get(id)
+    }
+
+    suspend fun getEntryById(id: Long): EntryOb? = withContext(Dispatchers.IO) {
+        entryRepo.getById(id)
     }
 }

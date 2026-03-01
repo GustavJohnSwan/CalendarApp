@@ -1,10 +1,14 @@
 package com.bignerdranch.android.calendarapp3.buisness_logic.objectbox
 
 
+
+
 import android.app.Application
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxEntryRepository
+import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxExtraDataRepository
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.ExtraDataOb
@@ -12,12 +16,7 @@ import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fun
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.parseRRuleToRepeatOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.mutableStateOf
-import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxEntryRepository
-import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxExtraDataRepository
-
-
-
+import kotlinx.coroutines.withContext
 
 class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -51,7 +50,7 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
         selectedEntry = entry
 
         viewModelScope.launch {
-            val extraData = extraRepo.getByEntryId(entry.id)
+            val extraData = extraRepo.getExtraDataByEntryId(entry.id)
 
             hasReminder = extraData != null
             selectedReminderType = extraData?.reminderTypeOb ?: "None"
@@ -96,7 +95,7 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
 
             entryRepo.update_Entry(entry)
 
-            val existingExtra = extraRepo.getByEntryId(entry.id)
+            val existingExtra = extraRepo.getExtraDataByEntryId(entry.id)
 
             if (hasReminder || repeatType != null) {
 

@@ -77,8 +77,8 @@ fun EditEntry(
 
     val obIdStr = editEntryViewModel.selectedObjectBoxId
     val obSelectedEntry = objectBoxEditEntryViewModel.selectedEntry
+    val obEntryId: Long? = obIdStr?.toLongOrNull()
 
-    val objectBoxEditEntryViewModel: ObjectBoxEditEntryViewModel = viewModel()
 
 
 
@@ -193,12 +193,27 @@ fun EditEntry(
         return
     }
 
-
+/*
     LaunchedEffect(source, sqliteEntryId, couchbaseEntryId) {
         if (source == "sqlite") {
             if (sqliteEntryId != -1) attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
         } else {
             if (!couchbaseEntryId.isNullOrBlank()) couchbaseCalendarViewModel.loadAttachmentsForEntry(couchbaseEntryId)
+        }
+    }
+ */
+
+    LaunchedEffect(source, sqliteEntryId, couchbaseEntryId, obEntryId) {
+        when (source) {
+            "sqlite" -> if (sqliteEntryId != -1) {
+                attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
+            }
+            "couchbase" -> if (!couchbaseEntryId.isNullOrBlank()) {
+                couchbaseCalendarViewModel.loadAttachmentsForEntry(couchbaseEntryId)
+            }
+            "objectbox" -> if (obEntryId != null) {
+                objectBoxAttachmentViewModel.loadAttachmentsForEntry(obEntryId)
+            }
         }
     }
 
@@ -246,7 +261,7 @@ fun EditEntry(
 
     val sqliteAttachments by attachmentViewModel.attachments
     val cblAttachments by couchbaseCalendarViewModel.attachmentsForSelectedEntry.collectAsState()
-
+    val obAttachments by objectBoxAttachmentViewModel.attachments
 
     // NEW: File Picker Launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -266,6 +281,17 @@ fun EditEntry(
         val id = couchbaseEntryId
         if (uri != null && !id.isNullOrBlank()) {
             couchbaseCalendarViewModel.addAttachmentToEntry(id, uri)
+        }
+    }
+
+    val obFilePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        val id = obEntryId
+        if (uri != null && id != null) {
+            objectBoxAttachmentViewModel.addAttachment(id, uri)
+            // optional but safe if your VM doesn’t auto-refresh:
+            objectBoxAttachmentViewModel.loadAttachmentsForEntry(id)
         }
     }
 
@@ -322,12 +348,13 @@ fun EditEntry(
 
         Text("Attachments", modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleSmall)
 
+
         Button(
             onClick = {
-                if (source == "sqlite") {
-                    filePickerLauncher.launch("*/*")
-                } else {
-                    cblFilePickerLauncher.launch("*/*")
+                when (source) {
+                    "sqlite" -> filePickerLauncher.launch("*/*")
+                    "couchbase" -> cblFilePickerLauncher.launch("*/*")
+                    "objectbox" -> obFilePickerLauncher.launch("*/*")
                 }
             },
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -337,6 +364,7 @@ fun EditEntry(
 
 
         // List of Attachments
+        /*
         LazyColumn {
             if (source == "sqlite") {
                 items(sqliteAttachments) { attachment ->
@@ -385,7 +413,79 @@ fun EditEntry(
                 }
             }
         }
+         */
 
+        LazyColumn {
+            when (source) {
+                "sqlite" -> {
+                    items(sqliteAttachments) { attachment ->
+                        AttachmentItem(
+                            attachment = attachment,
+                            onViewClick = {
+                                val uri = attachmentViewModel.getUriForAttachment(attachment)
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, attachment.mimeType)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (e: ActivityNotFoundException) {
+                                    Toast.makeText(context, "No app found to open this file type", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onDeleteClick = {
+                                attachmentViewModel.deleteAttachment(attachment.id)
+                                attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
+                            }
+                        )
+                    }
+                }
+
+                "couchbase" -> {
+                    items(cblAttachments) { att ->
+                        CouchbaseAttachmentItem(
+                            name = att.name,
+                            mime = att.mime,
+                            size = att.size,
+                            onOpen = {
+                                val id = couchbaseEntryId ?: return@CouchbaseAttachmentItem
+                                scope.launch {
+                                    val uri = couchbaseCalendarViewModel.getOpenableUriForAttachment(id, att.id)
+                                    openUri(context, uri, att.mime)
+                                }
+                            },
+                            onDelete = {
+                                val id = couchbaseEntryId ?: return@CouchbaseAttachmentItem
+                                couchbaseCalendarViewModel.removeAttachmentFromEntry(id, att.id)
+                            }
+                        )
+                    }
+                }
+
+                "objectbox" -> {
+                    items(obAttachments, key = { it.id }) { att ->
+                        // IMPORTANT: field names must match your EntryAttachmentOb entity.
+                        // If you renamed them to fileNameOb/mimeTypeOb/etc, use those.
+                        CouchbaseAttachmentItem(
+                            name = att.fileNameOb,
+                            mime = att.mimeTypeOb,
+                            size = att.fileSizeOb,
+                            onOpen = {
+                                // Prefer: use a FileProvider URI (recommended).
+                                // If you don’t have it yet, the quick hack is Uri.parse(att.uriPath)
+                                // but this often breaks when permissions expire.
+                                val uri = Uri.parse(att.uriPathOb)
+                                openUri(context, uri, att.mimeTypeOb)
+                            },
+                            onDelete = {
+                                val id = obEntryId ?: return@CouchbaseAttachmentItem
+                                objectBoxAttachmentViewModel.deleteAttachment(att.id, id)
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
 
 

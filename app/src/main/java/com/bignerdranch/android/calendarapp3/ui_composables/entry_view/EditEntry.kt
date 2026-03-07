@@ -471,11 +471,24 @@ fun EditEntry(
                             mime = att.mimeTypeOb,
                             size = att.fileSizeOb,
                             onOpen = {
-                                // Prefer: use a FileProvider URI (recommended).
-                                // If you don’t have it yet, the quick hack is Uri.parse(att.uriPath)
-                                // but this often breaks when permissions expire.
-                                val uri = Uri.parse(att.uriPathOb)
-                                openUri(context, uri, att.mimeTypeOb)
+                                try {
+                                    val uri = objectBoxAttachmentViewModel.getUriForAttachment(att)
+
+                                    Log.d("ObjectBoxOpen", "uriPathOb = ${att.uriPathOb}")
+                                    Log.d("ObjectBoxOpen", "mimeTypeOb = ${att.mimeTypeOb}")
+                                    Log.d("ObjectBoxOpen", "generatedUri = $uri")
+                                    Log.d("ObjectBoxOpen", "fileExists = ${java.io.File(att.uriPathOb).exists()}")
+
+                                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                                        setDataAndType(uri, att.mimeTypeOb)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Log.e("ObjectBoxOpen", "Failed to open attachment", e)
+                                    Toast.makeText(context, "Failed to open attachment: ${e.message}", Toast.LENGTH_LONG).show()
+                                }
                             },
                             onDelete = {
                                 val id = obEntryId ?: return@CouchbaseAttachmentItem

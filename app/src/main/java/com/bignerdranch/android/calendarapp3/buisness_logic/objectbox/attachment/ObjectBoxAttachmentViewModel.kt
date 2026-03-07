@@ -50,7 +50,7 @@ class ObjectBoxAttachmentViewModel(application: Application) : AndroidViewModel(
         val file = File(attachment.uriPathOb)
         return FileProvider.getUriForFile(
             getApplication(),
-            "${getApplication<Application>().packageName}.provider",
+            "${getApplication<Application>().packageName}.fileprovider",
             file
         )
     }

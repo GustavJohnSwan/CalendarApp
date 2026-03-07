@@ -140,7 +140,8 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
             val file = mgr.materializeAttachmentToTempFile(entryId, attachmentId, getApplication())
             FileProvider.getUriForFile(
                 getApplication(),
-                "${getApplication<Application>().packageName}.provider",
+                //"${getApplication<Application>().packageName}.provider",
+                "${getApplication<Application>().packageName}.fileprovider",
                 file
             )
         }

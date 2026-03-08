@@ -71,7 +71,7 @@ fun repeatEventListener(
                 Log.d("RepeatEvent", "Occurrence #$occurrenceCount: $formattedDate")
 
                 // Use the ViewModel to save to database
-                newEntryViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
+                //newEntryViewModel.saveRecurringEventToDatabase(entryId, formattedDate)
             }
 
         } catch (e: Exception) {

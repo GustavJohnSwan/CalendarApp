@@ -231,6 +231,8 @@ fun NewEntry(
                             repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
                             repeatDetails = repeatDetails,
                             onEntryInserted = { entryId ->
+                                // we will not perform recurring event edits, so this is removed
+                                /*
                                 if (repeatDetails != null) {
                                     repeatEventListener(
                                         entryId = entryId,
@@ -239,6 +241,8 @@ fun NewEntry(
                                         newEntryViewModel = newEntryViewModel
                                     )
                                 }
+
+                                 */
                                 navController.popBackStack()
                             }
                         )

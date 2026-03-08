@@ -34,6 +34,7 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
      */
 
     // Add this method to handle recurring events
+    /*
     suspend fun saveRecurringEventToDatabase(entryId: Int, date: String) {
         Log.d("RepeatEvent", "Saving recurring event to DB - Original ID: $entryId, Date: $date")
         val recurringEvent = RecurringEvent(
@@ -42,6 +43,8 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
         )
         recurringEventDao.insert(recurringEvent)
     }
+
+     */
 /*
     fun loadEntriesForDate(date: String) {
         viewModelScope.launch {

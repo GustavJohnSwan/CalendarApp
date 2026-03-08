@@ -7,11 +7,11 @@ import androidx.room.RoomDatabase
 import com.bignerdranch.android.calendarapp3.database.DAO.AttachmentDao
 import com.bignerdranch.android.calendarapp3.database.DAO.EntryDao
 import com.bignerdranch.android.calendarapp3.database.DAO.ExtraDataDao
-import com.bignerdranch.android.calendarapp3.database.DAO.RecurringEventDao
+//import com.bignerdranch.android.calendarapp3.database.DAO.RecurringEventDao
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed
-@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, RecurringEvent::class], version = 11)
+@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class], version = 12)
 abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabase
     // returns DAO interfaces
     abstract fun entryDao(): EntryDao
@@ -19,7 +19,7 @@ abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabas
     abstract fun attachmentDao(): AttachmentDao // <- NEW DAO
 
     // Add this method to your database class
-    abstract fun recurringEventDao(): RecurringEventDao
+    //abstract fun recurringEventDao(): RecurringEventDao
 
     // this creates a shared, static variable called INSTANCE. It holds the only copy of the database. It is a SINGLETON that allows only one INSTANCE to exist in the whole app
     companion object {

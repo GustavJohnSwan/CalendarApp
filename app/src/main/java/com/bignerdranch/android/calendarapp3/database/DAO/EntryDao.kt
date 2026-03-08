@@ -5,7 +5,7 @@ import androidx.room.*
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
-import com.bignerdranch.android.calendarapp3.database.RecurringEvent
+//import com.bignerdranch.android.calendarapp3.database.RecurringEvent
 
 // these are Data Access Objects (DAOs), they define methods that interact with the database
 @Dao
@@ -66,6 +66,7 @@ interface ExtraDataDao {
 }
 
 // Add to EntryDao.kt
+/*
 @Dao
 interface RecurringEventDao {
     @Insert
@@ -80,6 +81,8 @@ interface RecurringEventDao {
     @Query("SELECT * FROM recurring_events WHERE occurrence_date = :date")
     suspend fun getEventsByDate(date: String): List<RecurringEvent>
 }
+
+ */
 
 @Dao
 interface AttachmentDao {

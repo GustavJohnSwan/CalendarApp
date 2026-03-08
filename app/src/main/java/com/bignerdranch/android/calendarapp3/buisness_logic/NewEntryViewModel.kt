@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
-import com.bignerdranch.android.calendarapp3.database.RecurringEvent
+//import com.bignerdranch.android.calendarapp3.database.RecurringEvent
 import kotlinx.coroutines.launch
 
 // this is the second viewModel - a class that functions as a business logic or screen level state holder.
@@ -19,7 +19,7 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
     private val entryDao = db.entryDao()
     private val extraDataDao = db.extraDataDao()  // Add this line
 
-    private val recurringEventDao = db.recurringEventDao() // ADD THIS
+    // private val recurringEventDao = db.recurringEventDao() // ADD THIS
 
     // For all entries
     private val _entryList = mutableStateOf<List<EntryTable>>(emptyList())

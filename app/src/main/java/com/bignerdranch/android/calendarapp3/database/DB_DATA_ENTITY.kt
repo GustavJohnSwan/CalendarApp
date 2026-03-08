@@ -50,6 +50,7 @@ data class ExtraDataTable(
 
 // Add to DB_DATA_ENTITY.kt
 
+/*
 @Entity(
     tableName = "recurring_events",
     foreignKeys = [ForeignKey(
@@ -65,6 +66,8 @@ data class RecurringEvent(
     @ColumnInfo(name = "occurrence_date") val occurrenceDate: String,
     @ColumnInfo(name = "is_exception") val isException: Boolean = false
 )
+
+ */
 
 @Entity(
     tableName = "attachments",

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -557,7 +558,7 @@ fun EditEntry(
                         timeMinutes = selectedTimeMinutes
                     )
 
-                    //editEntryViewModel.updateBasicEntry(updatedEntry)
+
 
                     editEntryViewModel.updateEntry(
                         updatedEntry,
@@ -600,12 +601,31 @@ fun EditEntry(
                     navController.popBackStack()
                     return@Button
                 }
-            }
-,
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF476810)),
             modifier = Modifier.padding(16.dp)
         ) {
             Text("Save Changes")
         }
+
+
+        if (source == "sqlite") {
+            Button(
+                onClick = {
+                    selectedEntry?.let { entry ->
+                        editEntryViewModel.deleteEntry(entry)
+                        navController.popBackStack()
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            ) {
+                Text("Delete")
+            }
+        }
+
     }
 }
 

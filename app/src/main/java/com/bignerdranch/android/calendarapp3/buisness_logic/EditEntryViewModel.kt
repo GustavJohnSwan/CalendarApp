@@ -139,4 +139,15 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
         }
 
     }
+
+    fun deleteEntry(entryTable: EntryTable) {
+        viewModelScope.launch {
+            val existingExtraData = extraDataDao.getExtraDataByEntryId(entryTable.id)
+            existingExtraData?.let { extraDataDao.delete_ExData(it) }
+
+            entryDao.delete_Entry(entryTable)
+
+            entryTable.dateDB?.let { loadEntriesForDate(it) }
+        }
+    }
 }

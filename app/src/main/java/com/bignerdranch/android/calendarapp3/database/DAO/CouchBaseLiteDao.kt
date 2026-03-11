@@ -242,6 +242,18 @@ class CouchBaseLiteDao {
         Log.i(TAG, "CBL attachment removed from entry=$entryId attachmentId=$attachmentId")
     }
 
+
+    fun deleteEntry(entryId: String) {
+        val (entriesCollection, _) = ensureCalendarReady()
+
+        val doc = entriesCollection.getDocument(entryId)
+            ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
+
+        entriesCollection.delete(doc)
+
+        Log.i(TAG, "CBL entry deleted id=$entryId")
+    }
+
     /**
      * Writes the blob to a temp file and returns that file.
      * UI can share/open it via FileProvider.

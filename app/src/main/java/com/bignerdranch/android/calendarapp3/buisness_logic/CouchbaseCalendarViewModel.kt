@@ -333,4 +333,18 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
             }
         }
     }
+
+
+    fun deleteEntry(entryId: String, date: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.deleteEntry(entryId)
+                loadEntriesForDate(date)
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to delete entry", e)
+            }
+        }
+    }
+
 }

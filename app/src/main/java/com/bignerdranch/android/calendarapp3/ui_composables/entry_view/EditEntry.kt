@@ -644,6 +644,29 @@ fun EditEntry(
             }
         }
 
+        if (source == "couchbase") {
+            Button(
+                onClick = {
+                    val id = editEntryViewModel.selectedCouchbaseId
+                    if (!id.isNullOrBlank()) {
+                        couchbaseCalendarViewModel.deleteEntry(
+                            entryId = id,
+                            date = editEntryViewModel.selectedDate
+                        )
+                        navController.popBackStack()
+                    } else {
+                        Toast.makeText(context, "Missing Couchbase entry ID", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            ) {
+                Text("Delete")
+            }
+        }
+
     }
 }
 

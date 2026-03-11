@@ -9,14 +9,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb
-import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachment.ObjectBoxAttachmentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
 class ObjectBoxAttachmentViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repo = ObjectBoxAttachmentRepository(
+    private val repo = ObjectBoxAttachmentService(
         store = ObjectBoxProvider.get(),
         appContext = application.applicationContext
     )

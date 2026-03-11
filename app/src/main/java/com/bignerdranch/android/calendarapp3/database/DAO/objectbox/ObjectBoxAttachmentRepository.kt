@@ -1,5 +1,6 @@
 package com.bignerdranch.android.calendarapp3.database.DAO.objectbox
 
+import android.util.Log
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb_
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb

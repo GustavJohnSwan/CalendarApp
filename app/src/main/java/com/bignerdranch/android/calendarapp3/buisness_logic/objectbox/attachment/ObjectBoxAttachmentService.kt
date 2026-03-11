@@ -4,6 +4,7 @@ package com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachmen
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb_
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
@@ -11,7 +12,7 @@ import io.objectbox.BoxStore
 import java.io.File
 import java.util.UUID
 
-class ObjectBoxAttachmentRepository(
+class ObjectBoxAttachmentService(
     private val store: BoxStore,
     private val appContext: Context
 ) {
@@ -40,7 +41,11 @@ class ObjectBoxAttachmentRepository(
         // Important: relation is ToOne<EntryOb>
         ob.entryOb.target = entry
 
+        // Save attachment to ObjectBox
         attachBox.put(ob)
+
+        logAllAttachments()
+
         return ob
     }
 
@@ -66,7 +71,11 @@ class ObjectBoxAttachmentRepository(
             runCatching { File(path).delete() }
         }
 
-        return attachBox.remove(attachmentId)
+        val removed = attachBox.remove(attachmentId)
+
+        logAllAttachments()
+
+        return removed
     }
 
     // -------------------------
@@ -116,4 +125,38 @@ class ObjectBoxAttachmentRepository(
             sizeBytes = sizeBytes
         )
     }
+
+    private fun logAllAttachments() {
+        val attachments = attachBox.all
+
+        Log.d("ObjectBoxTest", "----- OBJECTBOX ATTACHMENT DUMP -----")
+        Log.d("ObjectBoxTest", "Total attachments: ${attachments.size}")
+
+        attachments.forEach { att ->
+            Log.d(
+                "ObjectBoxTest",
+                "AttachmentOb(id=${att.id}, entryId=${att.entryOb.targetId}, name=${att.fileNameOb}, mime=${att.mimeTypeOb}, path=${att.uriPathOb})"
+            )
+        }
+
+        Log.d("ObjectBoxTest", "-------------------------------------")
+    }
+
+
+    fun deleteAttachmentsForEntry(entryId: Long) {
+        val attachments = attachBox.query(
+            EntryAttachmentOb_.entryObId.equal(entryId)
+        ).build().find()
+
+        attachments.forEach { att ->
+            val path = att.uriPathOb
+            if (!path.isNullOrBlank()) {
+                runCatching { File(path).delete() }
+            }
+            attachBox.remove(att.id)
+        }
+
+        logAllAttachments()
+    }
+
 }

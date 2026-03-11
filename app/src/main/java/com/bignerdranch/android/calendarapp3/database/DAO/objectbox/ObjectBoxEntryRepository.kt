@@ -1,5 +1,6 @@
 package com.bignerdranch.android.calendarapp3.database.DAO.objectbox
 
+import android.util.Log
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb_
 import io.objectbox.BoxStore
@@ -38,6 +39,23 @@ class ObjectBoxEntryRepository (store: BoxStore) {
 
     fun getById(entryId: Long): EntryOb? =
         entryBox.get(entryId)
+
+
+    fun logAllEntries() {
+        val entries = entryBox.all
+
+        Log.d("ObjectBoxTest", "----- OBJECTBOX ENTRY DUMP -----")
+        Log.d("ObjectBoxTest", "Total entries: ${entries.size}")
+
+        entries.forEach { entry ->
+            Log.d(
+                "ObjectBoxTest",
+                "EntryOb(id=${entry.id}, date=${entry.dateOb}, time=${entry.timeMinutesOb}, text=${entry.entryOb})"
+            )
+        }
+
+        Log.d("ObjectBoxTest", "--------------------------------")
+    }
 
 }
 

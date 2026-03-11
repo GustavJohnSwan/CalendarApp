@@ -84,6 +84,13 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
                 repeat = repeat,
                 repeatDetails = repeatDetails
             )
+
+            // Correct place for the log
+            Log.d("ObjectBoxTest", "Inserted EntryOb id=$entryId date=$date content=$content")
+
+            // Dump the whole ObjectBox state
+            entryRepo.logAllEntries()
+
             onEntryInserted(entryId)
         }
     }

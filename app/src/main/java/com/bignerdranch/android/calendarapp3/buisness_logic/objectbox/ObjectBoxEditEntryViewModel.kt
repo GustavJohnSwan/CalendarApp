@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachment.ObjectBoxAttachmentService
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxEntryRepository
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxExtraDataRepository
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
@@ -34,6 +35,8 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
 
     private val _dateEntries = mutableStateOf<List<EntryOb>>(emptyList())
     val dateEntries: State<List<EntryOb>> = _dateEntries
+
+    private val attachmentService = ObjectBoxAttachmentService(store, application)
 
     // -----------------------------
     // Load entries by date
@@ -152,5 +155,22 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
 
     suspend fun getEntryById(id: Long): EntryOb? = withContext(Dispatchers.IO) {
         entryRepo.getById(id)
+    }
+
+
+    fun deleteEntry(entry: EntryOb) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val existingExtra = extraRepo.getExtraDataByEntryId(entry.id)
+            existingExtra?.let { extraRepo.delete_ExData(it) }
+
+            attachmentService.deleteAttachmentsForEntry(entry.id)
+
+            entryRepo.delete_Entry(entry)
+
+            // for logs
+            entryRepo.logAllEntries()
+
+            entry.dateOb?.let { loadEntriesForDate(it) }
+        }
     }
 }

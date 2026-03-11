@@ -586,8 +586,7 @@ fun EditEntry(
                     obEntry.entryOb = entryContent
                     obEntry.timeMinutesOb = selectedTimeMinutes
 
-                    // Save basic entry
-                    //objectBoxEditEntryViewModel.updateBasicEntry(obEntry)
+
 
                     // Save extra data (reminder/repeat)
                     objectBoxEditEntryViewModel.updateEntry(
@@ -615,6 +614,25 @@ fun EditEntry(
                     selectedEntry?.let { entry ->
                         editEntryViewModel.deleteEntry(entry)
                         navController.popBackStack()
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            ) {
+                Text("Delete")
+            }
+        }
+        if (source == "objectbox") {
+            Button(
+                onClick = {
+                    val obEntry = objectBoxEditEntryViewModel.selectedEntry
+                    if (obEntry != null) {
+                        objectBoxEditEntryViewModel.deleteEntry(obEntry)
+                        navController.popBackStack()
+                    } else {
+                        Toast.makeText(context, "Missing ObjectBox selected entry", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.padding(horizontal = 16.dp),

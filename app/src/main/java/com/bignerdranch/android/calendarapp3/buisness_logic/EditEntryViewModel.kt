@@ -71,6 +71,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+/*
     fun updateBasicEntry(entry: EntryTable) {
         viewModelScope.launch {
             entryDao.update_Entry(entry)
@@ -79,6 +80,8 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
             currentDate?.let { loadEntriesForDate(it) }
         }
     }
+
+ */
 
     /* ____________________________________________________________________________________________ */
     /* ____________________________________________________________________________________________ */
@@ -130,6 +133,10 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
                 // Remove extra data if it exists and no reminder/repeat is needed
                 existingExtraData?.let { extraDataDao.delete_ExData(it) }
             }
+            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
+            currentDate?.let { loadEntriesForDate(it) }
+
         }
+
     }
 }

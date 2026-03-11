@@ -75,6 +75,8 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
     // -----------------------------
     // Update basic entry only
     // -----------------------------
+
+/*
     fun updateBasicEntry(entry: EntryOb) {
         viewModelScope.launch {
             entryRepo.update_Entry(entry)
@@ -82,6 +84,8 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
             currentDate?.let { loadEntriesForDate(it) }
         }
     }
+
+ */
 
     // -----------------------------
     // Full update logic (mirror of Room)
@@ -136,7 +140,10 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
             } else {
                 existingExtra?.let { extraRepo.delete_ExData(it) }
             }
+            val currentDate = entry.dateOb
+            currentDate?.let { loadEntriesForDate(it) }
         }
+
     }
 
     fun getById(id: Long): EntryOb? {

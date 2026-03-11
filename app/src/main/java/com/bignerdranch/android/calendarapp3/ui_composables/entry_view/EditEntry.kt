@@ -557,7 +557,7 @@ fun EditEntry(
                         timeMinutes = selectedTimeMinutes
                     )
 
-                    editEntryViewModel.updateBasicEntry(updatedEntry)
+                    //editEntryViewModel.updateBasicEntry(updatedEntry)
 
                     editEntryViewModel.updateEntry(
                         updatedEntry,
@@ -586,7 +586,7 @@ fun EditEntry(
                     obEntry.timeMinutesOb = selectedTimeMinutes
 
                     // Save basic entry
-                    objectBoxEditEntryViewModel.updateBasicEntry(obEntry)
+                    //objectBoxEditEntryViewModel.updateBasicEntry(obEntry)
 
                     // Save extra data (reminder/repeat)
                     objectBoxEditEntryViewModel.updateEntry(

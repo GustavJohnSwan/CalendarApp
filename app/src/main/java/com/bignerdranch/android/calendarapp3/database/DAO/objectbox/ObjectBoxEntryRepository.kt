@@ -4,6 +4,7 @@ import android.util.Log
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb_
 import io.objectbox.BoxStore
+import io.objectbox.query.QueryBuilder
 
 class ObjectBoxEntryRepository (store: BoxStore) {
 
@@ -17,11 +18,20 @@ class ObjectBoxEntryRepository (store: BoxStore) {
     fun get_AllEntries(): List<EntryOb> =
         entryBox.all
 
+    /*
     fun getEntriesByDate(date: String): List<EntryOb> =
         entryBox.query(EntryOb_.dateOb.equal(date))
             .build()
             .find()
             .sortedBy { it.timeMinutesOb ?: Int.MAX_VALUE }
+
+     */
+
+    fun getEntriesByDate(date: String): List<EntryOb> =
+        entryBox.query(EntryOb_.dateOb.equal(date))
+            .order(EntryOb_.timeMinutesOb, QueryBuilder.NULLS_LAST)
+            .build()
+            .find()
 
     fun update_Entry(entry: EntryOb) {
         entryBox.put(entry)

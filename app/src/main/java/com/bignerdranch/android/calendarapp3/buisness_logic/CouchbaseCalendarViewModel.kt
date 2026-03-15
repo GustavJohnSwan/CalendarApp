@@ -28,16 +28,21 @@ import kotlinx.coroutines.withContext
  *  ________________________________________________________________________________________________
  */
 
-/**
- Observable UI state
- */
+
 class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(application) {
+
+
+
+
+
+    /**
+    Observable UI state
+     */
 
     private val _eventsForSelectedDate = MutableStateFlow<List<UiEvent>>(emptyList())
     val eventsForSelectedDate: StateFlow<List<UiEvent>> = _eventsForSelectedDate
 
     private val _isReady = MutableStateFlow(false)
-    val isReady: StateFlow<Boolean> = _isReady
 
     private val _attachmentsForSelectedEntry =
         MutableStateFlow<List<CouchBaseLiteDao.CblAttachmentMeta>>(emptyList())
@@ -370,20 +375,6 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     }
 
 
-    // SEEMS_UNUSED
-    fun getEntriesForDate(date: String, onEntriesLoaded: (List<Map<String, Any>>) -> Unit = {}) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                val entries = mgr.getEntriesByDate(date)
-                onEntriesLoaded(entries)
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to get entries for date", e)
-            }
-        }
-    }
-
-
     /** ________________________________________________________________________________________________
      *  ________________________________________________________________________________________________
      *  ________________________________________________________________________________________________
@@ -397,18 +388,6 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
 
 
 
-    // SEEMS_UNUSED
-    // Export calendar data to JSON
-    fun exportCalendarToJson() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.shareCalendarDatabaseExport(getApplication())
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Calendar export failed", e)
-            }
-        }
-    }
 
     // Log calendar database contents
     fun logCalendarDatabaseContents() {
@@ -423,30 +402,10 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     }
 
 
-    // SEEMS_UNUSED
-    // Optional: Add toast message tracking
 
 
     fun clearToastMessage() {
         _toastMessage.value = null
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

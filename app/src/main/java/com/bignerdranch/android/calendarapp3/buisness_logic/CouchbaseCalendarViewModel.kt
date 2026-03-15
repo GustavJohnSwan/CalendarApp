@@ -19,8 +19,18 @@ import com.bignerdranch.android.calendarapp3.ui_models.UiEvent
 import kotlinx.coroutines.withContext
 
 
+/**
+ This ViewModel centralizes Couchbase Lite calendar operations
+ */
 
+/** ________________________________________________________________________________________________
+ *  ________________________________________________________________________________________________
+ *  ________________________________________________________________________________________________
+ */
 
+/**
+ Observable UI state
+ */
 class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _eventsForSelectedDate = MutableStateFlow<List<UiEvent>>(emptyList())
@@ -34,17 +44,62 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     val attachmentsForSelectedEntry: StateFlow<List<CouchBaseLiteDao.CblAttachmentMeta>> =
         _attachmentsForSelectedEntry
 
+
     private val _editLoadStatus = MutableStateFlow<String?>(null)
     val editLoadStatus: StateFlow<String?> = _editLoadStatus
 
 
+    private val _editingEntry = MutableStateFlow<CblEditUi?>(null)
+    val editingEntry: StateFlow<CblEditUi?> = _editingEntry
 
 
+
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage
+
+/** ________________________________________________________________________________________________
+ *  ________________________________________________________________________________________________
+ *  ________________________________________________________________________________________________
+ */
+
+
+    /**
+    Initialization
+     */
 
     init {
         // Open/create DB + collections as early as possible so the UI doesn't need an "Initialize" button.
         initializeCalendarDatabase()
     }
+
+
+    fun initializeCalendarDatabase() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+
+
+                mgr.createCalendarDb()
+                mgr.createCalendarCollections()
+                _isReady.value = true
+                Log.i("CouchbaseCalendar", "Calendar database initialized")
+
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to initialize database", e)
+            }
+        }
+    }
+
+    /** ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     */
+
+
+
+    /**
+    EditEvent
+     */
 
     data class CblEditUi(
         val content: String,
@@ -55,8 +110,7 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     )
 
 
-    private val _editingEntry = MutableStateFlow<CblEditUi?>(null)
-    val editingEntry: StateFlow<CblEditUi?> = _editingEntry
+
 
 
     fun loadEntryForEdit(entryId: String) {
@@ -88,133 +142,6 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
                 Log.e("CouchbaseCalendar", "loadEntryForEdit failed", e)
             }
         }
-    }
-
-
-
-
-    fun loadAttachmentsForEntry(entryId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                val list = mgr.listAttachmentsForEntry(entryId)
-                _attachmentsForSelectedEntry.value = list
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to load attachments", e)
-            }
-        }
-    }
-
-    fun addAttachmentToEntry(entryId: String, uri: Uri) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.addAttachmentToEntry(entryId, getApplication(), uri)
-                // refresh
-                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to add attachment", e)
-            }
-        }
-    }
-
-    fun removeAttachmentFromEntry(entryId: String, attachmentId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.removeAttachmentFromEntry(entryId, attachmentId)
-                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to remove attachment", e)
-            }
-        }
-    }
-
-    /**
-     * Returns a FileProvider URI for opening/sharing.
-     * Caller should launch intent on Main thread.
-     */
-    suspend fun getOpenableUriForAttachment(entryId: String, attachmentId: String): Uri {
-        return withContext(Dispatchers.IO) {
-            val mgr = CouchBaseLiteDao.getInstance(getApplication())
-            val file = mgr.materializeAttachmentToTempFile(entryId, attachmentId, getApplication())
-            FileProvider.getUriForFile(
-                getApplication(),
-                //"${getApplication<Application>().packageName}.provider",
-                "${getApplication<Application>().packageName}.fileprovider",
-                file
-            )
-        }
-    }
-
-
-    fun loadEntriesForDate(date: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-
-                // Ensure DB + collections exist before querying
-                if (!_isReady.value) {
-                    mgr.createCalendarDb()
-                    mgr.createCalendarCollections()
-                    _isReady.value = true
-                }
-
-                val entries = mgr.getEntriesByDate(date)
-
-                val mapped = entries.map { m ->
-                    UiEvent(
-                        id = (m["_id"] as? String) ?: "",
-                        date = m["dateDB"] as? String,
-                        content = m["entryDB"] as? String,
-                        timeMinutes = when (val t = m["timeMinutes"]) {
-                            is Number -> t.toInt()
-                            else -> null
-                        }
-                    )
-                }
-
-                _eventsForSelectedDate.value = mapped
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to load entries for date", e)
-            }
-        }
-    }
-
-
-
-    // Add these methods to the class:
-
-    // Export calendar data to JSON
-    fun exportCalendarToJson() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.shareCalendarDatabaseExport(getApplication())
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Calendar export failed", e)
-            }
-        }
-    }
-
-    // Log calendar database contents
-    fun logCalendarDatabaseContents() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.logCalendarDatabaseContents()
-            } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to log calendar contents", e)
-            }
-        }
-    }
-
-    // Optional: Add toast message tracking
-    private val _toastMessage = MutableStateFlow<String?>(null)
-    val toastMessage: StateFlow<String?> = _toastMessage
-
-    fun clearToastMessage() {
-        _toastMessage.value = null
     }
 
 
@@ -269,28 +196,101 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     }
 
 
-
-
-    //______________________________________________________________________________________________
-    //______________________________________________________________________________________________
-    //______________________________________________________________________________________________
-
-    fun initializeCalendarDatabase() {
+    fun deleteEntry(entryId: String, date: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val mgr = CouchBaseLiteDao.getInstance(getApplication())
-
-
-                mgr.createCalendarDb()
-                mgr.createCalendarCollections()
-                _isReady.value = true
-                Log.i("CouchbaseCalendar", "Calendar database initialized")
-
+                mgr.deleteEntry(entryId)
+                loadEntriesForDate(date)
             } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to initialize database", e)
+                Log.e("CouchbaseCalendar", "Failed to delete entry", e)
             }
         }
     }
+
+
+
+
+    /** ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     */
+
+
+
+    /**
+    Attachment
+     */
+
+
+
+
+    fun loadAttachmentsForEntry(entryId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                val list = mgr.listAttachmentsForEntry(entryId)
+                _attachmentsForSelectedEntry.value = list
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to load attachments", e)
+            }
+        }
+    }
+
+    fun addAttachmentToEntry(entryId: String, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.addAttachmentToEntry(entryId, getApplication(), uri)
+                // refresh
+                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to add attachment", e)
+            }
+        }
+    }
+
+    fun removeAttachmentFromEntry(entryId: String, attachmentId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.removeAttachmentFromEntry(entryId, attachmentId)
+                _attachmentsForSelectedEntry.value = mgr.listAttachmentsForEntry(entryId)
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to remove attachment", e)
+            }
+        }
+    }
+
+    /**
+     * Returns a FileProvider URI for opening/sharing.
+     * Caller should launch intent on Main thread.
+     */
+    suspend fun getOpenableUriForAttachment(entryId: String, attachmentId: String): Uri {
+        return withContext(Dispatchers.IO) {
+            val mgr = CouchBaseLiteDao.getInstance(getApplication())
+            val file = mgr.materializeAttachmentToTempFile(entryId, attachmentId, getApplication())
+            FileProvider.getUriForFile(
+                getApplication(),
+
+                "${getApplication<Application>().packageName}.fileprovider",
+                file
+            )
+        }
+    }
+
+
+
+    /** ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     */
+
+
+
+    /**
+    NewEvent
+     */
 
     fun createCalendarEntry(
         date: String,
@@ -322,6 +322,55 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
+
+    /** ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     */
+
+
+
+    /**
+    General event loading
+     */
+
+
+
+    fun loadEntriesForDate(date: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+
+                // Ensure DB + collections exist before querying
+                if (!_isReady.value) {
+                    mgr.createCalendarDb()
+                    mgr.createCalendarCollections()
+                    _isReady.value = true
+                }
+
+                val entries = mgr.getEntriesByDate(date)
+
+                val mapped = entries.map { m ->
+                    UiEvent(
+                        id = (m["_id"] as? String) ?: "",
+                        date = m["dateDB"] as? String,
+                        content = m["entryDB"] as? String,
+                        timeMinutes = when (val t = m["timeMinutes"]) {
+                            is Number -> t.toInt()
+                            else -> null
+                        }
+                    )
+                }
+
+                _eventsForSelectedDate.value = mapped
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to load entries for date", e)
+            }
+        }
+    }
+
+
+    // SEEMS_UNUSED
     fun getEntriesForDate(date: String, onEntriesLoaded: (List<Map<String, Any>>) -> Unit = {}) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -335,16 +384,69 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
     }
 
 
-    fun deleteEntry(entryId: String, date: String) {
+    /** ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     *  ________________________________________________________________________________________________
+     */
+
+
+
+    /**
+    Extra / debug / support
+     */
+
+
+
+    // SEEMS_UNUSED
+    // Export calendar data to JSON
+    fun exportCalendarToJson() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val mgr = CouchBaseLiteDao.getInstance(getApplication())
-                mgr.deleteEntry(entryId)
-                loadEntriesForDate(date)
+                mgr.shareCalendarDatabaseExport(getApplication())
             } catch (e: Exception) {
-                Log.e("CouchbaseCalendar", "Failed to delete entry", e)
+                Log.e("CouchbaseCalendar", "Calendar export failed", e)
             }
         }
     }
+
+    // Log calendar database contents
+    fun logCalendarDatabaseContents() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val mgr = CouchBaseLiteDao.getInstance(getApplication())
+                mgr.logCalendarDatabaseContents()
+            } catch (e: Exception) {
+                Log.e("CouchbaseCalendar", "Failed to log calendar contents", e)
+            }
+        }
+    }
+
+
+    // SEEMS_UNUSED
+    // Optional: Add toast message tracking
+
+
+    fun clearToastMessage() {
+        _toastMessage.value = null
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

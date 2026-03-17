@@ -6,12 +6,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxEntryRepository
 import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxExtraDataRepository
-import com.bignerdranch.android.calendarapp3.database.DAO.objectbox.ObjectBoxRecurringEventRepository
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryAttachmentOb_.id
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.EntryOb
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.ExtraDataOb
-import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.RecurringEventOb
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,14 +21,8 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
 
     private val entryRepo = ObjectBoxEntryRepository(store)
     private val extraRepo = ObjectBoxExtraDataRepository(store)
-    private val recurringRepo = ObjectBoxRecurringEventRepository(store)
 
-    /**
-     * Mirror of Room version:
-     * - Insert Entry
-     * - Optionally insert ExtraData linked to Entry
-     * - Return entryId (as Int for UI compatibility)
-     */
+
     suspend fun insertEntryWithExtraData(
         dateDB: String,
         entryDB: String,
@@ -54,12 +46,12 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
                 reminderTypeOb = reminderType,
                 repeatOb = repeat,
                 repeatDetailsOb = repeatDetails,
-                attachmentIdOb = null // same as your Room insert (you’re not passing it here)
+                attachmentIdOb = null
             )
             extraRepo.insertExtraData(extra, entryIdLong)
         }
 
-        // your UI expects Int ids like Room; convert safely
+
         entryIdLong.toInt()
     }
 
@@ -85,25 +77,14 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
                 repeatDetails = repeatDetails
             )
 
-            // Correct place for the log
+
             Log.d("ObjectBoxTest", "Inserted EntryOb id=$entryId date=$date content=$content")
 
-            // Dump the whole ObjectBox state
+
             entryRepo.logAllEntries()
 
             onEntryInserted(entryId)
         }
     }
 
-    suspend fun saveRecurringEventToDatabase(entryId: Int, date: String) = withContext(Dispatchers.IO) {
-        Log.d("RepeatEvent", "Saving recurring event to ObjectBox - Original ID: $entryId, Date: $date")
-
-        val rec = RecurringEventOb(
-            occurrenceDateOb = date,
-            isExceptionOb = false
-        )
-
-        // ObjectBox ids are Long internally
-        recurringRepo.insert(rec, entryId.toLong())
-    }
 }

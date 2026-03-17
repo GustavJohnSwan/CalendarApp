@@ -15,11 +15,11 @@ class EntryOb(
     @Id
     var id: Long = 0
 
-    // relations
+
 
     lateinit var extraDataOb: ToOne<ExtraDataOb>
     lateinit var attachmentsOb: ToMany<EntryAttachmentOb>
-    lateinit var recurringEventsOb: ToMany<RecurringEventOb>
+
 
 
 }

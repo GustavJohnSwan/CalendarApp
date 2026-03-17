@@ -36,11 +36,7 @@ class AttachmentViewModel(application: Application) : AndroidViewModel(applicati
 
     fun deleteAttachment(attachmentId: Long) {
         viewModelScope.launch {
-            if (repository.deleteAttachment(attachmentId)) {
-                // Successfully deleted, reload the list
-                // We need to know the entryId to reload. You might need to store the current entryId in this VM.
-                // For now, let's assume the UI will handle the refresh by calling loadAttachmentsForEntry again.
-            }
+            repository.deleteAttachment(attachmentId)
         }
     }
 

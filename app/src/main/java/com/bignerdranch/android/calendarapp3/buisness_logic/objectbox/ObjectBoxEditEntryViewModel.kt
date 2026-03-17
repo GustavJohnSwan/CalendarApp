@@ -27,7 +27,6 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
     private val extraRepo = ObjectBoxExtraDataRepository(store)
 
     var selectedEntry by mutableStateOf<EntryOb?>(null)
-    var selectedDate by mutableStateOf("")
     var hasReminder by mutableStateOf(false)
     var selectedReminderType by mutableStateOf("None")
     var selectedRepeatType by mutableStateOf("Never")
@@ -75,23 +74,10 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
         }
     }
 
-    // -----------------------------
-    // Update basic entry only
-    // -----------------------------
 
-/*
-    fun updateBasicEntry(entry: EntryOb) {
-        viewModelScope.launch {
-            entryRepo.update_Entry(entry)
-            val currentDate = entry.dateOb
-            currentDate?.let { loadEntriesForDate(it) }
-        }
-    }
-
- */
 
     // -----------------------------
-    // Full update logic (mirror of Room)
+    // Full update logic
     // -----------------------------
     fun updateEntry(
         entry: EntryOb,

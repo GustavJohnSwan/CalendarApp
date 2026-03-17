@@ -2,7 +2,7 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fu
 
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.getMonthName
 
-// Function to generate display text for the repeat selector (single line version)
+
 // Function to generate display text for the repeat selector
 fun generateRepeatDisplayText(repeatType: String, options: RepeatOptions): String {
     val baseText = when (repeatType) {
@@ -31,7 +31,7 @@ fun generateRepeatDisplayText(repeatType: String, options: RepeatOptions): Strin
         else -> "Repeat: $repeatType"
     }
 
-    // Add end option information
+
     val endText = when (options.endType) {
         "never" -> ""
         "on_date" -> " • Ends on ${options.endDateDay}/${options.endDateMonth}/${options.endDateYear}"

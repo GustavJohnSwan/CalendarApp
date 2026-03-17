@@ -38,7 +38,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
@@ -142,50 +141,7 @@ fun DayContentsDialog(
                 }
 
 
-                /*
-                if (filteredEntries.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No events for this date")
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(filteredEntries) { entry ->
-                            EventItem(
-                                entry = entry,
-                                onClick = {
-                                    editEntryViewModel.onEventSelect(entry)
-                                    onEditEntry(entry)
-                                }
-                            )
-                        }
-                    }
-                }
 
-                 */
-                /* Replacement */
-                /*
-                val uiList: List<UiEvent> = if (source == EventSource.SQLITE) {
-                    filteredEntries.map { e ->
-                        UiEvent(
-                            id = e.id.toString(),
-                            date = e.dateDB,
-                            content = e.entryDB,
-                            timeMinutes = e.timeMinutes
-                        )
-                    }
-                } else {
-                    couchEvents
-                }
-
-                 */
 
                 val uiList: List<UiEvent> = when (source) {
                     EventSource.SQLITE -> {
@@ -207,7 +163,7 @@ fun DayContentsDialog(
                         obEntries.map { e ->
                             UiEvent(
                                 id = e.id.toString(),
-                                date = e.dateOb,          // use your actual EntryOb field names if different
+                                date = e.dateOb,
                                 content = e.entryOb,
                                 timeMinutes = e.timeMinutesOb
                             )
@@ -233,18 +189,7 @@ fun DayContentsDialog(
                             UiEventItem(
                                 ev = ev,
                                 onClick = {
-                                    /*
-                                    if (source == EventSource.SQLITE) {
-                                        val sqliteEntry = filteredEntries.firstOrNull { it.id.toString() == ev.id }
-                                        if (sqliteEntry != null) {
-                                            editEntryViewModel.onEventSelect(sqliteEntry)
-                                            onEditEntry(sqliteEntry)
-                                        }
-                                    } else {
-                                        onEditEntryCouchbase(ev)
-                                    }
 
-                                     */
 
                                     when (source) {
                                         EventSource.SQLITE -> {
@@ -272,76 +217,7 @@ fun DayContentsDialog(
 
 
 
-                // --- Minimal Couchbase controls (backbone for 2-day goal) ---
-
-                /*
-                ElevatedButton(
-                    onClick = {
-                        couchbaseCalendarViewModel.createCalendarEntry(
-                            date = editEntryViewModel.selectedDate,
-                            content = "CBL test event",
-                            timeMinutes = 900,
-                            hasExtraData = true,
-                            reminderType = "Notification",
-                            repeat = "Weekly"
-                        )
-                        android.widget.Toast.makeText(
-                            context,
-                            "Created Couchbase event (check Logcat / export)",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                        onDismissRequest()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                ) {
-                    Text("New Event (Couchbase Lite)")
-                }
-
-                ElevatedButton(
-                    onClick = {
-                        couchbaseCalendarViewModel.logCalendarDatabaseContents()
-                        android.widget.Toast.makeText(
-                            context,
-                            "Couchbase contents logged to Logcat",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    Text("Log Couchbase DB (Logcat)")
-                }
-
-                ElevatedButton(
-                    onClick = onNewEntry,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                ) {
-                    Text("New Event (SQLite)")
-                }
-                 */
                 Spacer(modifier = Modifier.height(16.dp))
-
-                /*
-                if (source == EventSource.SQLITE) {
-                    ElevatedButton(
-                        onClick = onNewEntry,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("New Event (SQLite)")
-                    }
-                } else {
-                    ElevatedButton(
-                        onClick = onNewEntryCouchbase,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("New Event (Couchbase Lite)")
-                    }
-                 */
 
                 when (source) {
                     EventSource.SQLITE -> {
@@ -395,41 +271,6 @@ fun DayContentsDialog(
         }
     }
 
-
-@Composable
-private fun EventItem(
-    entry: EntryTable,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = entry.entryDB ?: "",
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun UiEventItem(

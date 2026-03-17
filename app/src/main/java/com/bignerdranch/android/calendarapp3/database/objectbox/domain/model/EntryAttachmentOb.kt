@@ -3,7 +3,6 @@ package com.bignerdranch.android.calendarapp3.database.objectbox.domain.model
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
-import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 
 @Entity

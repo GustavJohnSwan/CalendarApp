@@ -14,8 +14,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 
-// Add this extension function to the same file
-// CORRECTED EXTENSION FUNCTION (Add proper imports and place it here)
+
+
 fun Context.getFileName(uri: Uri): String {
     var name = ""
     val returnCursor: Cursor? = this.contentResolver.query(uri, null, null, null, null)
@@ -34,7 +34,6 @@ class AttachmentRepository(
 
     companion object {
         private const val TAG = "AttachmentRepository"
-        private const val MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024 // 10MB limit
     }
 
     suspend fun getAttachmentsForEntry(entryId: Int): List<EntryAttachment> {
@@ -46,33 +45,32 @@ class AttachmentRepository(
     suspend fun addAttachment(entryId: Int, originalUri: Uri): EntryAttachment? {
         return withContext(Dispatchers.IO) {
             try {
-                // Step 1: Get file metadata from the original Uri
-                // USE THE FIXED FUNCTION HERE:
-                val fileName = context.getFileName(originalUri) // <- Changed to use the fixed function
+                // Get file metadata from the original Uri
+                val fileName = context.getFileName(originalUri)
                 val mimeType = context.contentResolver.getType(originalUri) ?: "*/*"
 
-                // Step 2: Create a destination directory for this entry's attachments
+                // Create a destination directory for this entry's attachments
                 val entryAttachmentsDir = File(context.filesDir, "attachments/entry_$entryId")
                 if (!entryAttachmentsDir.exists()) {
                     entryAttachmentsDir.mkdirs()
                 }
 
-                // Step 3: Create a unique destination file. Keep the original extension.
+                // Create a unique destination file, keep the original extension
                 val fileExtension = fileName.substringAfterLast('.', "")
                 val uniqueFileName = "${UUID.randomUUID()}.$fileExtension"
                 val destFile = File(entryAttachmentsDir, uniqueFileName)
 
-                // Step 4: Copy the file content
+                // Copy the file content
                 context.contentResolver.openInputStream(originalUri)?.use { inputStream ->
                     FileOutputStream(destFile).use { outputStream ->
                         inputStream.copyTo(outputStream)
                     }
                 }
 
-                // Step 5: Get the size of the new file
+                // Get the size of the new file
                 val fileSize = destFile.length()
 
-                // Step 6: Create and insert the Attachment entity into the database
+                // Create and insert the Attachment entity into the database
                 val newAttachment = EntryAttachment(
                     entryId = entryId,
                     fileName = fileName,

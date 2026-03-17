@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
-// this composable defines the style and content of the currently selected year and month display
+// This composable defines the style and content of the currently selected year and month display
 @Composable
 fun YearAndMonthDisplay(displayedMonth: String, displayedYear: Int) {
     Row(modifier = Modifier.fillMaxWidth()) {

@@ -5,6 +5,7 @@ import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.Ext
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.ExtraDataOb_
 import io.objectbox.BoxStore
 
+// *
 class ObjectBoxExtraDataRepository(store: BoxStore) {
 
     private val extraBox = store.boxFor(ExtraDataOb::class.java)

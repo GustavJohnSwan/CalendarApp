@@ -15,12 +15,14 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxN
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachment.ObjectBoxAttachmentViewModel
 
-// this composable is responsible for navigating between two main composables : MainScreen and NewEntry
+// this composable is responsible for navigating between tree main composables : MainScreen, NewEntry, EditEntry
 @Composable
 fun ScreenNavigation() {
     val navController = rememberNavController()
+
     val newEntryViewModel: NewEntryViewModel = viewModel()
     val editEntryViewModel: EditEntryViewModel = viewModel()
+
     val couchbaseCalendarViewModel: CouchbaseCalendarViewModel = viewModel()
 
     val objectBoxNewEntryViewModel: ObjectBoxNewEntryViewModel = viewModel()

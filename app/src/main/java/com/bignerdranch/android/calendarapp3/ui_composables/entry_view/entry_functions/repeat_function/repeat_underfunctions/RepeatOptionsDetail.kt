@@ -7,9 +7,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-
-
-// Add these imports if not already present
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.repeat_options_underfunctions.EndOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.repeat_types.DailyRepeatOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.repeat_types.MonthlyRepeatOptions
@@ -48,8 +45,8 @@ data class RepeatOptions(
     var month: Int = 1,
     var yearlyDay: Int = 1,
     var endType: String = "never",
-    var endDateDay: Int = 1,        // Make sure these exist
-    var endDateMonth: Int = 1,      // Make sure these exist
-    var endDateYear: Int = 2025,    // Make sure these exist
+    var endDateDay: Int = 1,
+    var endDateMonth: Int = 1,
+    var endDateYear: Int = 2025,
     var occurrences: Int = 10
 )

@@ -12,8 +12,8 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 
-// this composable sets the style and content for the title that hold weekday names in the month view
-@SuppressLint("SuspiciousIndentation") // idk do I need this, an error fix made this automatically
+// this composable sets the style and content for the title that holds weekday names in the month view
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
     Row(modifier = Modifier.fillMaxWidth()) {

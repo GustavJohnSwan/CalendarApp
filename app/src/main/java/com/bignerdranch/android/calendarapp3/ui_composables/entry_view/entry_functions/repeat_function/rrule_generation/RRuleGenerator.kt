@@ -11,9 +11,8 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 
-/**
- * Converts RepeatOptions into a standard RRule string.
- */
+// Converts RepeatOptions into a standard RRule string.
+
 fun generateRRuleString(
     options: RepeatOptions,
     repeatType: String
@@ -39,7 +38,7 @@ fun generateRRuleString(
     // Handle type-specific rules
     when (repeatType) {
         "Weekly" -> {
-            // Convert your day numbers (1=Mon, 7=Sun) to Weekday constants
+            // Convert day numbers (1=Mon, 7=Sun) to Weekday constants
             options.selectedDays.forEach { dayNumber ->
                 val weekday = when (dayNumber) {
                     1 -> Weekday.Monday
@@ -51,14 +50,14 @@ fun generateRRuleString(
                     7 -> Weekday.Sunday
                     else -> throw IllegalArgumentException("Invalid day number: $dayNumber")
                 }
-                rule.byDay.add(WeekdayNum(0, weekday)) // 0 means "every occurrence"
+                rule.byDay.add(WeekdayNum(0, weekday)) // 0 means every occurrence
             }
         }
         "Monthly" -> {
             if (options.monthlyType == "absolute") {
                 rule.byMonthDay.add(options.absoluteDay)
             }
-            // Add relative monthly logic later if needed
+
         }
         "Yearly" -> {
             rule.byMonth.add(options.month)
@@ -69,7 +68,7 @@ fun generateRRuleString(
     // Handle end conditions
     when (options.endType) {
         "never" -> {
-            // No end date - rule continues indefinitely (default)
+            // No end date - rule continues indefinitely
         }
         "on_date" -> {
             // Create UTC date string in format: yyyyMMdd'T'HHmmss'Z'
@@ -88,7 +87,7 @@ fun generateRRuleString(
 
     val fullRuleString = rule.toRFC5545String()
 
-    // Remove "RRULE:" prefix if present
+    // Remove "RRULE:" prefix
     return if (fullRuleString.startsWith("RRULE:")) {
         fullRuleString.substring(6) // Remove first 6 characters "RRULE:"
     } else {
@@ -100,9 +99,8 @@ fun generateRRuleString(
 /*____________________________________________________________________________________________*/
 /*____________________________________________________________________________________________*/
 
-/**
- * Parses an RRULE string back into RepeatOptions for UI editing
- */
+// Parses an RRULE string back into RepeatOptions for UI editing
+
 fun parseRRuleToRepeatOptions(rRuleString: String, repeatType: String): RepeatOptions {
     val options = RepeatOptions()
     val rule = RRule(rRuleString)
@@ -112,7 +110,7 @@ fun parseRRuleToRepeatOptions(rRuleString: String, repeatType: String): RepeatOp
 
     when (repeatType) {
         "Weekly" -> {
-            // Extract days (MO, TU, WE, etc. -> 1, 2, 3, etc.)
+            // Extract days (MO, TU, WE,... -> 1, 2, 3,...)
             options.selectedDays = rule.byDay.map { weekdayNum ->
                 when (weekdayNum.weekday) {
                     Weekday.Monday -> 1
@@ -131,7 +129,7 @@ fun parseRRuleToRepeatOptions(rRuleString: String, repeatType: String): RepeatOp
                 options.monthlyType = "absolute"
                 options.absoluteDay = rule.byMonthDay.first()
             }
-            // Add relative monthly parsing if needed
+
         }
         "Yearly" -> {
             if (rule.byMonth.isNotEmpty()) {

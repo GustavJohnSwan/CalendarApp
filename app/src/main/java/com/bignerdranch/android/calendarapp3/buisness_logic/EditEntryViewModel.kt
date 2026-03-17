@@ -41,9 +41,9 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
             selectedReminderType = extraData?.reminderType ?: "None"
             selectedRepeatType = extraData?.repeat ?: "Never"
 
-            // Load repeat options from extra data - FIXED VERSION
+            // Load repeat options from extra data
             if (extraData != null && !extraData.repeatDetails.isNullOrEmpty() && extraData.repeat != null) {
-                // PARSE the stored RRULE back into RepeatOptions
+                // parse the stored RRULE back into RepeatOptions
                 repeatOptions = parseRRuleToRepeatOptions(extraData.repeatDetails!!, extraData.repeat!!)
             } else {
                 repeatOptions = RepeatOptions() // Reset to default
@@ -58,9 +58,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
     /* ____________________________________________________________________________________________ */
     /* ____________________________________________________________________________________________ */
     /* ____________________________________________________________________________________________ */
-    /* This handles basic EntryTable data only */
-    /* Is also used in displaying basic data in UI when selecting a day */
-    /* it was too much trouble to try and transfer this code elsewhere */
+
 
     private val _dateEntries = mutableStateOf<List<EntryTable>>(emptyList())
     val dateEntries: State<List<EntryTable>> = _dateEntries
@@ -70,18 +68,6 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
             _dateEntries.value = entryDao.getEntriesByDate(date)
         }
     }
-
-/*
-    fun updateBasicEntry(entry: EntryTable) {
-        viewModelScope.launch {
-            entryDao.update_Entry(entry)
-            // Refresh the current view
-            val currentDate = _dateEntries.value.firstOrNull()?.dateDB
-            currentDate?.let { loadEntriesForDate(it) }
-        }
-    }
-
- */
 
     /* ____________________________________________________________________________________________ */
     /* ____________________________________________________________________________________________ */
@@ -97,7 +83,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             entryDao.update_Entry(entryTable)
 
-            // Handle reminder and repeat data
+            // Handles reminder and repeat data
             val existingExtraData = extraDataDao.getExtraDataByEntryId(entryTable.id)
 
             if (hasReminder || repeatType != null) {
@@ -105,7 +91,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
                 val newRepeatType = if (repeatType != "Never") repeatType else null
 
                 if (existingExtraData == null && (newReminderType != null || newRepeatType != null)) {
-                    // Create new extra data
+                    // Creates new extra data
                     extraDataDao.insertExtraData(
                         ExtraDataTable(
                             entryId = entryTable.id,
@@ -116,7 +102,7 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
                     )
                 } else if (existingExtraData != null) {
                     if (newReminderType != null || newRepeatType != null) {
-                        // Update existing extra data
+                        // Updates existing extra data
                         extraDataDao.update_ExData(
                             existingExtraData.copy(
                                 reminderType = newReminderType,
@@ -125,12 +111,12 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
                             )
                         )
                     } else {
-                        // Remove extra data if no longer needed
+                        // Removes extra data if no longer needed
                         extraDataDao.delete_ExData(existingExtraData)
                     }
                 }
             } else {
-                // Remove extra data if it exists and no reminder/repeat is needed
+                // Removes extra data if it exists and no reminder/repeat is needed
                 existingExtraData?.let { extraDataDao.delete_ExData(it) }
             }
             val currentDate = _dateEntries.value.firstOrNull()?.dateDB

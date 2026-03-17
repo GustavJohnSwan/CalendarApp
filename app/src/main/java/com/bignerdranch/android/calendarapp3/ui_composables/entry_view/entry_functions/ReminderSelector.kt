@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
 
-// Add this to your ReminderAndRepeater_V2.kt file
+
 @Composable
 fun ReminderSelector(
     selectedReminderType: String,
@@ -30,7 +30,7 @@ fun ReminderSelector(
 ) {
     var showReminderDialog by remember { mutableStateOf(false) }
 
-    // Display the current selection (show "None" if no reminder is selected)
+    // Display the current selection
     val displayText = if (selectedReminderType == "None") {
         "Reminder: None"
     } else {

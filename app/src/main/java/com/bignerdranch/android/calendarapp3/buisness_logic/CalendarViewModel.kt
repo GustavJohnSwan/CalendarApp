@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-// this is the first viewModel - a class that functions as a business logic or screen level state holder.
+// this is a viewModel - a class that functions as a business logic or screen level state holder.
 // It makes sure that state values are remembered when navigating between activities or following configuration changes (screen rotation)
 class CalendarViewModel : ViewModel() {
     var selectedDate by mutableStateOf<LocalDate?>(null)

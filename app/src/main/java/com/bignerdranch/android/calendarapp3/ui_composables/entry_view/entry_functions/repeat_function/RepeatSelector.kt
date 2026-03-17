@@ -30,7 +30,7 @@ fun RepeatSelector(
 ) {
     val dialogState = rememberRepeatDialogState()
 
-    // Generate display text based on selected options (single line)
+    // Generate display text based on selected options
     val displayText = generateRepeatDisplayText(selectedRepeatType, repeatOptions)
 
     Text(
@@ -165,7 +165,7 @@ fun RadioButtonRepeatType(
             ) {
                 RadioButton(
                     selected = (text == selectedOption),
-                    onClick = null // null recommended for accessibility with screen readers
+                    onClick = null
                 )
 
                 Text(

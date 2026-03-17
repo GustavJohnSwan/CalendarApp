@@ -13,7 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
-import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.TimeUtils
+
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +29,7 @@ fun InputTimePicker(
 
     // Display "Set Time" + formatted time (always shows something)
     Text(
-        text = "Set Time: ${TimeUtils.formatTime(displayTime)}", // ← Always shows "Set Time: HH:mm"
+        text = "Set Time: ${TimeUtils.formatTime(displayTime)}",
         modifier = Modifier
             .clickable { showPicker = true }
             .padding(8.dp)

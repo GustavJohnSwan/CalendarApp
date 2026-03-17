@@ -18,11 +18,11 @@ import java.time.LocalDate
 import androidx.compose.ui.unit.sp
 
 
-// this composable is responsible for the style of the calendar month view content in general
+// This composable is responsible for the style of the calendar month view content in general
 // and both the style of the CURRENT DATE and the SELECTED DATE
 @Composable
 fun Day(onDateClick: () -> Unit, day: CalendarDay, isSelected: Boolean, onDateSelect: (String) -> Unit, onClick: (CalendarDay) -> Unit) {
-    // stores the current date
+    // Stores the current date
     val currentDate = LocalDate.now()
 
     Box(
@@ -39,7 +39,7 @@ fun Day(onDateClick: () -> Unit, day: CalendarDay, isSelected: Boolean, onDateSe
 
             )
 
-            // makes every date clickable in the CURRENTLY SELECTED MONTH
+            // Makes every date clickable in the CURRENTLY SELECTED MONTH
             .clickable(
                 enabled = day.position == DayPosition.MonthDate,
                 onClick = {

@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge() // this enables the app to draw under the system bars (status bar and navigation bar)
         setContent { // this defines the UI of the screen using Jetpack Compose
             CalendarApp3Theme { // this is a custom theme defined in the app
-                ScreenNavigation() // this is a compsable function that handles navigation in the app
+                ScreenNavigation() // this is a composable function that handles navigation in the app
             }
         }
     }

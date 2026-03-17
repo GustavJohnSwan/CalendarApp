@@ -4,6 +4,7 @@ import android.content.Context
 import com.bignerdranch.android.calendarapp3.database.objectbox.domain.model.MyObjectBox
 import io.objectbox.BoxStore
 
+//*
 object ObjectBoxProvider {
     @Volatile private var store: BoxStore? = null
 

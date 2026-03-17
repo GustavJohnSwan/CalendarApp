@@ -20,10 +20,11 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.CouchbaseCalendarVie
 import com.bignerdranch.android.calendarapp3.buisness_logic.EditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
+
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
 
 /*
-I implemented viewModel to seperate the UI design elements (composablse) from business logic elements.
+I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
 I also make sure the app remembers (saves) certain state data when recomposition and/or system changes
 (screen rotation) occur
  */
@@ -33,8 +34,9 @@ I also make sure the app remembers (saves) certain state data when recomposition
 fun MainScreen(
     navController: NavController,
     viewModel: CalendarViewModel = viewModel(),
-    newEntryViewModel: NewEntryViewModel,
     editEntryViewModel: EditEntryViewModel,
+    // it shows newEntryViewModel as unused, this is false, its used in ScreenNavigation
+    newEntryViewModel: NewEntryViewModel,
     couchbaseCalendarViewModel: CouchbaseCalendarViewModel = viewModel(),
     objectBoxEditEntryViewModel: ObjectBoxEditEntryViewModel = viewModel()
 
@@ -72,21 +74,21 @@ fun MainScreen(
                     viewModel.toggleDayContentDialog(false)
                     navController.navigate("NewEntry/sqlite")
                 },
-                onEditEntry = { entry ->  // Now receives the entry directly
+                onEditEntry = { entry ->  // Receives the entry directly
                     editEntryViewModel.selectedEntry = entry
                     navController.navigate("EditEntry/sqlite")
                 },
                 editEntryViewModel = editEntryViewModel,
                 objectBoxEditEntryViewModel = objectBoxEditEntryViewModel,
-                couchbaseCalendarViewModel = couchbaseCalendarViewModel,  // ADD THIS LINE
-                eventList = dateEntries,// Use the date-specific entries
+                couchbaseCalendarViewModel = couchbaseCalendarViewModel,
+                eventList = dateEntries, // Use the date-specific entries
 
                         onNewEntryCouchbase = {
                     viewModel.toggleDayContentDialog(false)
                     navController.navigate("NewEntry/couchbase")
                 },
                 onEditEntryCouchbase = { ev ->
-                    editEntryViewModel.selectedCouchbaseId = ev.id   // you’ll add this field
+                    editEntryViewModel.selectedCouchbaseId = ev.id
                     navController.navigate("EditEntry/couchbase")
                 },
 
@@ -95,7 +97,7 @@ fun MainScreen(
                     navController.navigate("NewEntry/objectbox")
                 },
                 onEditEntryObjectBox = { ev ->
-                    // store the selected ObjectBox id somewhere (similar to Couchbase)
+                    // Store the selected ObjectBox id (Similar to couchbase lite)
                     editEntryViewModel.selectedObjectBoxId = ev.id
                     navController.navigate("EditEntry/objectbox")
                 },
@@ -117,6 +119,7 @@ fun MainScreen(
                     day = day,
                     isSelected = viewModel.selectedDate == day.date,
                     onDateSelect = { selectedDate ->
+                        // saveSelectedDate and loadEntriesForDate both requre a String, so don't delete the converters toString()
                         editEntryViewModel.saveSelectedDate(selectedDate.toString())
                         // Load entries immediately when date is selected
                         editEntryViewModel.loadEntriesForDate(selectedDate.toString())

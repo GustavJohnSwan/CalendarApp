@@ -77,7 +77,7 @@ fun EditEntry(
     val cblUi by couchbaseCalendarViewModel.editingEntry.collectAsState()
 
     val obIdStr = editEntryViewModel.selectedObjectBoxId
-    val obSelectedEntry = objectBoxEditEntryViewModel.selectedEntry
+    objectBoxEditEntryViewModel.selectedEntry
     val obEntryId: Long? = obIdStr?.toLongOrNull()
 
 
@@ -85,8 +85,7 @@ fun EditEntry(
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val selectedEntry = editEntryViewModel.selectedEntry
-    //var entryContent by remember { mutableStateOf(selectedEntry?.entryDB ?: "") }
-    //var selectedTimeMinutes by remember { mutableStateOf(selectedEntry?.timeMinutes) }
+
 
     val roomEntry = editEntryViewModel.selectedEntry
     val obEntry = objectBoxEditEntryViewModel.selectedEntry
@@ -94,7 +93,7 @@ fun EditEntry(
     val initialContent = when (source) {
         "sqlite" -> roomEntry?.entryDB ?: ""
         "objectbox" -> obEntry?.entryOb ?: ""
-        "couchbase" -> "" // will be filled from cblUi in your existing LaunchedEffect
+        "couchbase" -> "" // will be filled from cblUi in LaunchedEffect
         else -> ""
     }
 
@@ -114,7 +113,7 @@ fun EditEntry(
     val scope = rememberCoroutineScope()
 
 
-    // Use the reminder and repeat types from ViewModel
+    // reminder and repeat types from ViewModel
     var selectedReminderType by remember { mutableStateOf(editEntryViewModel.selectedReminderType) }
     var selectedRepeatType by remember { mutableStateOf(editEntryViewModel.selectedRepeatType) }
     var repeatOptions by remember { mutableStateOf(editEntryViewModel.repeatOptions) }
@@ -144,15 +143,6 @@ fun EditEntry(
         }
     }
 
-    // NEW: Load attachments when the entry is selected
-    /*
-    LaunchedEffect(selectedEntry) {
-        if (entryId != -1) {
-            attachmentViewModel.loadAttachmentsForEntry(entryId)
-        }
-    }
-    val attachments by attachmentViewModel.attachments
-     */
 
     val sqliteEntryId = selectedEntry?.id ?: -1
     val couchbaseEntryId = editEntryViewModel.selectedCouchbaseId
@@ -168,7 +158,7 @@ fun EditEntry(
         if (source == "objectbox" && !obIdStr.isNullOrBlank()) {
             val id = obIdStr.toLongOrNull()
             if (id != null) {
-                val entry = objectBoxEditEntryViewModel.getEntryById(id) // we’ll add this helper next
+                val entry = objectBoxEditEntryViewModel.getEntryById(id)
                 if (entry != null) {
                     objectBoxEditEntryViewModel.onEventSelect(entry)
                 }
@@ -194,15 +184,7 @@ fun EditEntry(
         return
     }
 
-/*
-    LaunchedEffect(source, sqliteEntryId, couchbaseEntryId) {
-        if (source == "sqlite") {
-            if (sqliteEntryId != -1) attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
-        } else {
-            if (!couchbaseEntryId.isNullOrBlank()) couchbaseCalendarViewModel.loadAttachmentsForEntry(couchbaseEntryId)
-        }
-    }
- */
+
 
     LaunchedEffect(source, sqliteEntryId, couchbaseEntryId, obEntryId) {
         when (source) {
@@ -224,11 +206,11 @@ fun EditEntry(
     LaunchedEffect(cblUi) {
         if (source == "couchbase" && cblUi != null) {
             entryContent = cblUi!!.content
-            selectedTimeMinutes = cblUi!!.timeMinutes // don’t force 0 unless you really want that
+            selectedTimeMinutes = cblUi!!.timeMinutes
             selectedRepeatType = cblUi!!.repeat ?: "Never"
             selectedReminderType = cblUi!!.reminderType ?: "None"
 
-            // ✅ NEW: parse repeatDetails into RepeatOptions
+            // parses repeatDetails into RepeatOptions
             repeatOptions =
                 if (!cblUi!!.repeatDetails.isNullOrBlank() && selectedRepeatType != "Never") {
                     parseRRuleToRepeatOptions(cblUi!!.repeatDetails!!, selectedRepeatType)
@@ -236,7 +218,7 @@ fun EditEntry(
                     RepeatOptions()
                 }
 
-            // keep VM in sync
+            // keeps VM in sync
             editEntryViewModel.repeatOptions = repeatOptions
         }
     }
@@ -246,7 +228,7 @@ fun EditEntry(
             entryContent = obEntry.entryOb ?: ""
             selectedTimeMinutes = obEntry.timeMinutesOb
 
-            // pull extra-data-driven UI state from objectBoxEditEntryViewModel
+            // pulls extra-data-driven UI state from objectBoxEditEntryViewModel
             selectedRepeatType = objectBoxEditEntryViewModel.selectedRepeatType
             selectedReminderType = objectBoxEditEntryViewModel.selectedReminderType
             repeatOptions = objectBoxEditEntryViewModel.repeatOptions
@@ -264,12 +246,12 @@ fun EditEntry(
     val cblAttachments by couchbaseCalendarViewModel.attachmentsForSelectedEntry.collectAsState()
     val obAttachments by objectBoxAttachmentViewModel.attachments
 
-    // NEW: File Picker Launcher
+    // File Picker Launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // Now we have an entryId, so we can add the attachment
+            // entryId exists now, so the attachment can be added
             if (entryId != -1) {
                 attachmentViewModel.addAttachment(entryId, selectedUri)
             }
@@ -291,7 +273,6 @@ fun EditEntry(
         val id = obEntryId
         if (uri != null && id != null) {
             objectBoxAttachmentViewModel.addAttachment(id, uri)
-            // optional but safe if your VM doesn’t auto-refresh:
             objectBoxAttachmentViewModel.loadAttachmentsForEntry(id)
         }
     }
@@ -364,57 +345,7 @@ fun EditEntry(
         }
 
 
-        // List of Attachments
-        /*
-        LazyColumn {
-            if (source == "sqlite") {
-                items(sqliteAttachments) { attachment ->
-                    AttachmentItem(
-                        attachment = attachment,
-                        onViewClick = {
-                            val uri = attachmentViewModel.getUriForAttachment(attachment)
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                setDataAndType(uri, attachment.mimeType)
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: ActivityNotFoundException) {
-                                Toast.makeText(context, "No app found to open this file type", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        onDeleteClick = {
-                            attachmentViewModel.deleteAttachment(attachment.id)
-                            attachmentViewModel.loadAttachmentsForEntry(sqliteEntryId)
-                        }
-                    )
 
-                }
-            } else {
-                items(cblAttachments) { att ->
-                    // You can reuse the same visual row, but it expects EntryAttachment.
-                    // Fastest is to make a small Couchbase row below (copy of AttachmentItem).
-                    CouchbaseAttachmentItem(
-                        name = att.name,
-                        mime = att.mime,
-                        size = att.size,
-                        onOpen = {
-                            val id = couchbaseEntryId ?: return@CouchbaseAttachmentItem
-                            scope.launch {
-                                val uri = couchbaseCalendarViewModel.getOpenableUriForAttachment(id, att.id)
-                                openUri(context, uri, att.mime)
-                            }
-                        }
-,
-                        onDelete = {
-                            val id = couchbaseEntryId ?: return@CouchbaseAttachmentItem
-                            couchbaseCalendarViewModel.removeAttachmentFromEntry(id, att.id)
-                        }
-                    )
-                }
-            }
-        }
-         */
 
         LazyColumn {
             when (source) {
@@ -465,8 +396,6 @@ fun EditEntry(
 
                 "objectbox" -> {
                     items(obAttachments, key = { it.id }) { att ->
-                        // IMPORTANT: field names must match your EntryAttachmentOb entity.
-                        // If you renamed them to fileNameOb/mimeTypeOb/etc, use those.
                         CouchbaseAttachmentItem(
                             name = att.fileNameOb,
                             mime = att.mimeTypeOb,
@@ -517,7 +446,7 @@ fun EditEntry(
                     return@Button
                 }
 
-                // ✅ Compute these for BOTH SQLite and Couchbase
+
                 val repeatDetails = if (selectedRepeatType != "Never") {
                     generateRRuleString(repeatOptions, selectedRepeatType)
                 } else {
@@ -526,7 +455,7 @@ fun EditEntry(
 
                 val needsExtraData = selectedReminderType != "None" || selectedRepeatType != "Never"
 
-                // ✅ COUCHBASE SAVE (does NOT depend on selectedEntry)
+                // COUCHBASE SAVE (does NOT depend on selectedEntry)
                 if (source == "couchbase") {
                     val id = editEntryViewModel.selectedCouchbaseId
                     if (id.isNullOrBlank()) {
@@ -539,8 +468,6 @@ fun EditEntry(
                         date = editEntryViewModel.selectedDate,
                         content = entryContent,
                         timeMinutes = selectedTimeMinutes,
-
-                        // 👇 these must exist in the updated ViewModel function signature
                         hasExtraData = needsExtraData,
                         reminderType = if (selectedReminderType != "None") selectedReminderType else null,
                         repeat = if (selectedRepeatType != "Never") selectedRepeatType else null,
@@ -551,7 +478,7 @@ fun EditEntry(
                     return@Button
                 }
 
-                // ✅ SQLITE SAVE (still uses selectedEntry)
+                // SQLITE SAVE (still uses selectedEntry)
                 selectedEntry?.let { entry ->
                     val updatedEntry = entry.copy(
                         entryDB = entryContent,
@@ -582,7 +509,7 @@ fun EditEntry(
                         return@Button
                     }
 
-                    // Update fields (EntryOb is a class, so mutate)
+                    // Update fields
                     obEntry.entryOb = entryContent
                     obEntry.timeMinutesOb = selectedTimeMinutes
 
@@ -670,13 +597,8 @@ fun EditEntry(
     }
 }
 
-// NEW: Composable to display a single attachment
-// NEW: Composable to display a single attachment
-// NEW: Composable to display a single attachment
-// Add these imports at the top
 
-
-// NEW: Composable to display a single attachment
+// Composable to display a single attachment
 @Composable
 fun AttachmentItem(
     attachment: EntryAttachment,

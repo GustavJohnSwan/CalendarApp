@@ -18,14 +18,6 @@ class ObjectBoxEntryRepository (store: BoxStore) {
     fun get_AllEntries(): List<EntryOb> =
         entryBox.all
 
-    /*
-    fun getEntriesByDate(date: String): List<EntryOb> =
-        entryBox.query(EntryOb_.dateOb.equal(date))
-            .build()
-            .find()
-            .sortedBy { it.timeMinutesOb ?: Int.MAX_VALUE }
-
-     */
 
     fun getEntriesByDate(date: String): List<EntryOb> =
         entryBox.query(EntryOb_.dateOb.equal(date))

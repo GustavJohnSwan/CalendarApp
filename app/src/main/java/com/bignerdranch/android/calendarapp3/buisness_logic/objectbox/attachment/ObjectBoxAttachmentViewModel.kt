@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
+// *
 class ObjectBoxAttachmentViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repo = ObjectBoxAttachmentService(

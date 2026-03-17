@@ -5,7 +5,7 @@ import androidx.room.*
 import com.bignerdranch.android.calendarapp3.database.EntryAttachment
 import com.bignerdranch.android.calendarapp3.database.EntryTable
 import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
-//import com.bignerdranch.android.calendarapp3.database.RecurringEvent
+
 
 // these are Data Access Objects (DAOs), they define methods that interact with the database
 @Dao
@@ -16,12 +16,11 @@ interface EntryDao {
     @Query("SELECT * FROM EntryTable")
     suspend fun get_AllEntries(): List<EntryTable>
 
-    // ADD THIS METHOD to get extra data by entry ID
+    // get extra data by entry ID
     @Query("SELECT * FROM ExtraDataTable WHERE entry_id = :entryId")
     suspend fun getExtraDataByEntryId(entryId: Int): ExtraDataTable?
 
-    // Add this new query to get entries by specific date
-    // UPDATED QUERY: Added ORDER BY for proper time sorting
+    // get entries by specific date
     @Query("SELECT * FROM EntryTable WHERE date = :date ORDER BY time_minutes ASC")
     suspend fun getEntriesByDate(date: String): List<EntryTable>
 
@@ -38,9 +37,9 @@ interface EntryDao {
     suspend fun updateEntryWithExtraId(entryTable: EntryTable)
 
     @Update
-    suspend fun updateExtraData(extraDataTable: ExtraDataTable) // ADD THIS METHOD
+    suspend fun updateExtraData(extraDataTable: ExtraDataTable)
 
-    // ADD THIS NEW METHOD for updating time only
+    // updates time only
     @Query("UPDATE EntryTable SET time_minutes = :timeMinutes WHERE id = :entryId")
     suspend fun updateTime(entryId: Int, timeMinutes: Int)
 }
@@ -60,29 +59,11 @@ interface ExtraDataDao {
     @Delete
     suspend fun delete_ExData(extraDataTable: ExtraDataTable)
 
-    // ADD THIS METHOD if you don't have it
     @Query("SELECT * FROM ExtraDataTable WHERE entry_id = :entryId")
     suspend fun getExtraDataByEntryId(entryId: Int): ExtraDataTable?
 }
 
-// Add to EntryDao.kt
-/*
-@Dao
-interface RecurringEventDao {
-    @Insert
-    suspend fun insert(recurringEvent: RecurringEvent)
 
-    @Query("SELECT * FROM recurring_events WHERE entry_id = :entryId")
-    suspend fun getRecurringEventsByEntryId(entryId: Int): List<RecurringEvent>
-
-    @Query("DELETE FROM recurring_events WHERE entry_id = :entryId")
-    suspend fun deleteByEntryId(entryId: Int)
-
-    @Query("SELECT * FROM recurring_events WHERE occurrence_date = :date")
-    suspend fun getEventsByDate(date: String): List<RecurringEvent>
-}
-
- */
 
 @Dao
 interface AttachmentDao {

@@ -20,10 +20,9 @@ class ObjectBoxAttachmentService(
     private val entryBox = store.boxFor(EntryOb::class.java)
 
     /**
-     * Mirrors Room AttachmentRepository.addAttachment(entryId, uri)
-     * 1) Copy content Uri -> app storage file
-     * 2) Store metadata + local path in ObjectBox
-     * 3) Return created attachment or null if failed
+     1) Copy content Uri -> app storage file
+     2) Store metadata + local path in ObjectBox
+     3) Return created attachment or null if failed
      */
     fun addAttachment(entryId: Long, uri: Uri): EntryAttachmentOb? {
         val entry = entryBox.get(entryId) ?: return null
@@ -38,7 +37,7 @@ class ObjectBoxAttachmentService(
             dateAddedOb = System.currentTimeMillis()
         )
 
-        // Important: relation is ToOne<EntryOb>
+
         ob.entryOb.target = entry
 
         // Save attachment to ObjectBox
@@ -54,14 +53,8 @@ class ObjectBoxAttachmentService(
             .build()
             .find()
 
-    fun getAttachmentById(attachmentId: Long): EntryAttachmentOb? =
-        attachBox.get(attachmentId)
 
-    /**
-     * Deletes both:
-     * - DB record
-     * - local file (best-effort)
-     */
+
     fun deleteAttachment(attachmentId: Long): Boolean {
         val ob = attachBox.get(attachmentId) ?: return false
 
@@ -79,7 +72,7 @@ class ObjectBoxAttachmentService(
     }
 
     // -------------------------
-    // Internal: file handling
+    // File handling
     // -------------------------
 
     private data class SavedFile(

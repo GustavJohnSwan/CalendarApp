@@ -1,9 +1,16 @@
 package com.bignerdranch.android.calendarapp3.ui_composables
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.daysOfWeek
@@ -11,6 +18,9 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.YearMonth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.benchmark.adapter.RoomCrudBenchmarkAdapter
+import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.runner.BenchmarkRunner
 import com.bignerdranch.android.calendarapp3.ui_composables.month_view.Day
 import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DaysOfWeekTitle
 import com.bignerdranch.android.calendarapp3.ui_composables.month_view.DayContentsDialog
@@ -22,6 +32,8 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 
 
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
+import com.bignerdranch.android.calendarapp3.database.AppDatabase
+import kotlinx.coroutines.launch
 
 /*
 I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
@@ -57,6 +69,12 @@ fun MainScreen(
     )
 
     val daysOfWeek = daysOfWeek()
+
+
+    // for benchmarking
+    var benchmarkStatus by remember { mutableStateOf("Idle") }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Column {
         val displayedYear = state.firstVisibleMonth.yearMonth.year
@@ -133,6 +151,42 @@ fun MainScreen(
                 DaysOfWeekTitle(daysOfWeek = daysOfWeek)
             }
         )
+
+        Button(
+            onClick = {
+                scope.launch {
+                    benchmarkStatus = "Running benchmark..."
+
+                    try {
+                        val db = AppDatabase.getDatabase(context)
+                        val dao = db.benchmarkRoomDao()
+                        val adapter = RoomCrudBenchmarkAdapter(dao)
+                        val runner = BenchmarkRunner(
+                            databaseName = "Room",
+                            adapter = adapter
+                        )
+
+                        val result = runner.runBasicCrudBenchmark(
+                            BenchmarkConfig(
+                                entryCount = 100,
+                                warmupRuns = 1,
+                                measuredRuns = 3
+                            )
+                        )
+
+                        benchmarkStatus =
+                            "Done. Insert avg: ${result.insertAverageMs} ms, Read avg: ${result.readAllAverageMs} ms"
+                    } catch (e: Exception) {
+                        benchmarkStatus = "Failed: ${e.message}"
+                        Log.e("BENCHMARK_UI", "Benchmark failed", e)
+                    }
+                }
+            }
+        ) {
+            Text("Run Room Benchmark")
+        }
+
+        Text(text = benchmarkStatus)
     }
 }
 

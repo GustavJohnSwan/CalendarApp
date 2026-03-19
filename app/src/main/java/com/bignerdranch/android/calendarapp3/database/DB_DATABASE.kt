@@ -4,19 +4,24 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.bignerdranch.android.calendarapp3.benchmark.room.BenchmarkRoomDao
 import com.bignerdranch.android.calendarapp3.database.DAO.AttachmentDao
 import com.bignerdranch.android.calendarapp3.database.DAO.EntryDao
 import com.bignerdranch.android.calendarapp3.database.DAO.ExtraDataDao
+import com.bignerdranch.android.calendarapp3.benchmark.room.BenchmarkRoomEntity
 
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed
-@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class], version = 12)
+@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, BenchmarkRoomEntity::class], version = 13)
 abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabase
     // returns DAO interfaces
     abstract fun entryDao(): EntryDao
     abstract fun extraDataDao(): ExtraDataDao
     abstract fun attachmentDao(): AttachmentDao
+
+    // for testing basic CRUD for Room
+    abstract fun benchmarkRoomDao(): BenchmarkRoomDao
 
 
     // this creates a shared, static variable called INSTANCE. It holds the only copy of the database. It is a SINGLETON that allows only one INSTANCE to exist in the whole app

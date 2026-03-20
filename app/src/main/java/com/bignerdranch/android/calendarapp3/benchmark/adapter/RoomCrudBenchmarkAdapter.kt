@@ -38,4 +38,8 @@ class RoomCrudBenchmarkAdapter(
     override suspend fun countEntries(): Int {
         return dao.countAll()
     }
+
+    override suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry> {
+        return dao.getAllOrderedByStartMillis().map { it.toBenchmarkEntry() }
+    }
 }

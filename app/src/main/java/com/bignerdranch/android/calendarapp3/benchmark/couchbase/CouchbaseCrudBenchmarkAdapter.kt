@@ -34,4 +34,8 @@ class CouchbaseCrudBenchmarkAdapter(
     override suspend fun countEntries(): Int {
         return dao.countBenchmarkEntries()
     }
+
+    override suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry> {
+        return dao.readAllBenchmarkEntriesOrderedByStartMillis()
+    }
 }

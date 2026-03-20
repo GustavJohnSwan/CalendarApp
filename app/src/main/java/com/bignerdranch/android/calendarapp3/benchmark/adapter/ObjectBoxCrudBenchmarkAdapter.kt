@@ -63,4 +63,13 @@ class ObjectBoxCrudBenchmarkAdapter(
     override suspend fun countEntries(): Int {
         return box.count().toInt()
     }
+
+    override suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry> {
+        return box.query()
+            .order(BenchmarkObjectBoxEntity_.startMillis)
+            .build()
+            .use { query ->
+                query.find().map { it.toBenchmarkEntry() }
+            }
+    }
 }

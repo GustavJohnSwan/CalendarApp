@@ -11,4 +11,6 @@ interface CrudBenchmarkAdapter {
     suspend fun updateEntries(entries: List<BenchmarkEntry>)
     suspend fun deleteEntriesByIds(ids: List<String>)
     suspend fun countEntries(): Int
+
+    suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry>
 }

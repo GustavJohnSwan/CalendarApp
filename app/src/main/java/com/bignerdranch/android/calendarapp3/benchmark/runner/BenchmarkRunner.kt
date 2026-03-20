@@ -9,6 +9,12 @@ import com.bignerdranch.android.calendarapp3.benchmark.util.measureNanos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadByIdBenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadByIdBenchmarkResult
+
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadOrderedBenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadOrderedBenchmarkResult
+
 class BenchmarkRunner(
     private val databaseName: String,
     private val adapter: CrudBenchmarkAdapter
@@ -104,4 +110,121 @@ class BenchmarkRunner(
         val updateNs: Long,
         val deleteNs: Long
     )
+
+
+
+    //______________________________________________________________________________________________
+
+    suspend fun runReadByIdBenchmark(config: ReadByIdBenchmarkConfig): ReadByIdBenchmarkResult =
+        withContext(Dispatchers.IO) {
+            val lookupRunsNs = mutableListOf<Long>()
+
+            repeat(config.warmupRuns) {
+                runSingleReadByIdCycle(
+                    entryCount = config.entryCount,
+                    lookupsPerRun = config.lookupsPerRun
+                )
+            }
+
+            repeat(config.measuredRuns) {
+                val lookupNs = runSingleReadByIdCycle(
+                    entryCount = config.entryCount,
+                    lookupsPerRun = config.lookupsPerRun
+                )
+                lookupRunsNs += lookupNs
+            }
+
+            val result = ReadByIdBenchmarkResult(
+                databaseName = databaseName,
+                entryCount = config.entryCount,
+                lookupsPerRun = config.lookupsPerRun,
+                lookupRunsNs = lookupRunsNs
+            )
+
+            logReadByIdResult(result)
+
+            result
+        }
+
+    private suspend fun runSingleReadByIdCycle(
+        entryCount: Int,
+        lookupsPerRun: Int
+    ): Long {
+        adapter.clearAll()
+
+        val entries = BenchmarkDataFactory.createEntries(entryCount)
+        adapter.insertEntries(entries)
+
+        val idsToLookup = entries
+            .take(lookupsPerRun)
+            .map { it.benchmarkId }
+
+        return measureNanos {
+            idsToLookup.forEach { id ->
+                adapter.readEntryById(id)
+            }
+        }
+    }
+
+    private fun logReadByIdResult(result: ReadByIdBenchmarkResult) {
+        Log.d(
+            "BENCHMARK_READ_BY_ID",
+            """
+        DB=${result.databaseName}
+        N=${result.entryCount}
+        LOOKUPS_PER_RUN=${result.lookupsPerRun}
+        LOOKUP_RUNS_NS=${result.lookupRunsNs}
+        LOOKUP_AVG_MS=${result.lookupAverageMs}
+        """.trimIndent()
+        )
+    }
+
+    //______________________________________________________________________________________________
+
+    suspend fun runReadOrderedBenchmark(config: ReadOrderedBenchmarkConfig): ReadOrderedBenchmarkResult =
+        withContext(Dispatchers.IO) {
+            val readRunsNs = mutableListOf<Long>()
+
+            repeat(config.warmupRuns) {
+                runSingleReadOrderedCycle(entryCount = config.entryCount)
+            }
+
+            repeat(config.measuredRuns) {
+                val readNs = runSingleReadOrderedCycle(entryCount = config.entryCount)
+                readRunsNs += readNs
+            }
+
+            val result = ReadOrderedBenchmarkResult(
+                databaseName = databaseName,
+                entryCount = config.entryCount,
+                readRunsNs = readRunsNs
+            )
+
+            logReadOrderedResult(result)
+
+            result
+        }
+
+    private suspend fun runSingleReadOrderedCycle(entryCount: Int): Long {
+        adapter.clearAll()
+
+        val entries = BenchmarkDataFactory.createEntries(entryCount)
+        adapter.insertEntries(entries)
+
+        return measureNanos {
+            adapter.readAllEntriesOrderedByStartMillis()
+        }
+    }
+
+    private fun logReadOrderedResult(result: ReadOrderedBenchmarkResult) {
+        Log.d(
+            "BENCHMARK_READ_ORDERED",
+            """
+        DB=${result.databaseName}
+        N=${result.entryCount}
+        READ_RUNS_NS=${result.readRunsNs}
+        READ_AVG_MS=${result.readAverageMs}
+        """.trimIndent()
+        )
+    }
 }

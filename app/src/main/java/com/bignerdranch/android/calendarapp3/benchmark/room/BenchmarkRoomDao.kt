@@ -29,4 +29,7 @@ interface BenchmarkRoomDao {
 
     @Query("SELECT COUNT(*) FROM benchmark_entries")
     suspend fun countAll(): Int
+
+    @Query("SELECT * FROM benchmark_entries ORDER BY startMillis ASC")
+    suspend fun getAllOrderedByStartMillis(): List<BenchmarkRoomEntity>
 }

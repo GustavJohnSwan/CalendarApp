@@ -9,6 +9,7 @@ import com.couchbase.lite.Database
 import com.couchbase.lite.Expression
 import com.couchbase.lite.Meta
 import com.couchbase.lite.MutableDocument
+import com.couchbase.lite.Ordering
 import com.couchbase.lite.QueryBuilder
 import com.couchbase.lite.SelectResult
 import java.util.concurrent.atomic.AtomicReference
@@ -170,5 +171,40 @@ class CouchbaseBenchmarkDao private constructor() {
             }
             return INSTANCE.get()!!
         }
+    }
+
+
+    //______________________________________________________________________________________________
+    fun readAllBenchmarkEntriesOrderedByStartMillis(): List<BenchmarkEntry> {
+        val collection = ensureBenchmarkCollection()
+
+        val query = QueryBuilder
+            .select(SelectResult.all())
+            .from(DataSource.collection(collection))
+            .where(
+                Expression.property("type").equalTo(Expression.string("benchmark"))
+            )
+            .orderBy(Ordering.property("startMillis").ascending())
+
+        val results = mutableListOf<BenchmarkEntry>()
+
+        query.execute().use { resultSet ->
+            resultSet.forEach { result ->
+                val dict = result.getDictionary(collection.name) ?: return@forEach
+
+                results.add(
+                    BenchmarkEntry(
+                        benchmarkId = dict.getString("benchmarkId") ?: "",
+                        title = dict.getString("title") ?: "",
+                        description = dict.getString("description") ?: "",
+                        startMillis = dict.getLong("startMillis"),
+                        endMillis = dict.getLong("endMillis"),
+                        hasReminder = dict.getBoolean("hasReminder")
+                    )
+                )
+            }
+        }
+
+        return results
     }
 }

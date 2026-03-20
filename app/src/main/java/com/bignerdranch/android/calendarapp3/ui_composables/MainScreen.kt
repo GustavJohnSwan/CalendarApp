@@ -175,7 +175,7 @@ fun MainScreen(
 
                         val result = runner.runBasicCrudBenchmark(
                             BenchmarkConfig(
-                                entryCount = 1000,
+                                entryCount = 5000,
                                 warmupRuns = 2,
                                 measuredRuns = 5
                             )
@@ -210,7 +210,7 @@ fun MainScreen(
 
                         val result = runner.runBasicCrudBenchmark(
                             BenchmarkConfig(
-                                entryCount = 1000,
+                                entryCount = 5000,
                                 warmupRuns = 2,
                                 measuredRuns = 5
                             )
@@ -243,7 +243,7 @@ fun MainScreen(
 
                         val result = runner.runBasicCrudBenchmark(
                             BenchmarkConfig(
-                                entryCount = 1000,
+                                entryCount = 5000,
                                 warmupRuns = 2,
                                 measuredRuns = 5
                             )

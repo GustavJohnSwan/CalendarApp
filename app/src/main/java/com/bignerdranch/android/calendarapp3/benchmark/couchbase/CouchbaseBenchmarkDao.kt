@@ -1,7 +1,6 @@
 package com.bignerdranch.android.calendarapp3.benchmark.couchbase
 
 import android.content.Context
-import android.util.Log
 import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkEntry
 import com.couchbase.lite.Collection
 import com.couchbase.lite.CouchbaseLite
@@ -52,21 +51,22 @@ class CouchbaseBenchmarkDao private constructor() {
 
     fun insertBenchmarkEntries(entries: List<BenchmarkEntry>) {
         val collection = ensureBenchmarkCollection()
+        val db = database ?: error("Benchmark database is not initialized")
 
-        entries.forEach { entry ->
-            val doc = MutableDocument(entry.benchmarkId)
-                .setString("type", "benchmark")
-                .setString("benchmarkId", entry.benchmarkId)
-                .setString("title", entry.title)
-                .setString("description", entry.description)
-                .setLong("startMillis", entry.startMillis)
-                .setLong("endMillis", entry.endMillis)
-                .setBoolean("hasReminder", entry.hasReminder)
+        db.inBatch<java.lang.Exception>({
+            entries.forEach { entry ->
+                val doc = MutableDocument(entry.benchmarkId)
+                    .setString("type", "benchmark")
+                    .setString("benchmarkId", entry.benchmarkId)
+                    .setString("title", entry.title)
+                    .setString("description", entry.description)
+                    .setLong("startMillis", entry.startMillis)
+                    .setLong("endMillis", entry.endMillis)
+                    .setBoolean("hasReminder", entry.hasReminder)
 
-            collection.save(doc)
-        }
-
-
+                collection.save(doc)
+            }
+        })
     }
 
     fun readAllBenchmarkEntries(): List<BenchmarkEntry> {
@@ -117,31 +117,37 @@ class CouchbaseBenchmarkDao private constructor() {
 
     fun updateBenchmarkEntries(entries: List<BenchmarkEntry>) {
         val collection = ensureBenchmarkCollection()
+        val db = database ?: error("Benchmark database is not initialized")
 
-        entries.forEach { entry ->
-            val existing = collection.getDocument(entry.benchmarkId) ?: return@forEach
+        db.inBatch<java.lang.Exception>({
+            entries.forEach { entry ->
+                val existing = collection.getDocument(entry.benchmarkId) ?: return@forEach
 
-            val mutable = existing.toMutable()
-                .setString("type", "benchmark")
-                .setString("benchmarkId", entry.benchmarkId)
-                .setString("title", entry.title)
-                .setString("description", entry.description)
-                .setLong("startMillis", entry.startMillis)
-                .setLong("endMillis", entry.endMillis)
-                .setBoolean("hasReminder", entry.hasReminder)
+                val mutable = existing.toMutable()
+                    .setString("type", "benchmark")
+                    .setString("benchmarkId", entry.benchmarkId)
+                    .setString("title", entry.title)
+                    .setString("description", entry.description)
+                    .setLong("startMillis", entry.startMillis)
+                    .setLong("endMillis", entry.endMillis)
+                    .setBoolean("hasReminder", entry.hasReminder)
 
-            collection.save(mutable)
-        }
+                collection.save(mutable)
+            }
+        })
     }
 
     fun deleteBenchmarkEntriesByIds(ids: List<String>) {
         val collection = ensureBenchmarkCollection()
+        val db = database ?: error("Benchmark database is not initialized")
 
-        ids.forEach { id ->
-            collection.getDocument(id)?.let { doc ->
-                collection.delete(doc)
+        db.inBatch<Exception>({
+            ids.forEach { id ->
+                collection.getDocument(id)?.let { doc ->
+                    collection.delete(doc)
+                }
             }
-        }
+        })
     }
 
     fun countBenchmarkEntries(): Int {

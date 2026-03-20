@@ -30,7 +30,9 @@ class RoomCrudBenchmarkAdapter(
     }
 
     override suspend fun deleteEntriesByIds(ids: List<String>) {
-        dao.deleteByIds(ids)
+        ids.chunked(500).forEach { chunk ->
+            dao.deleteByIds(chunk)
+        }
     }
 
     override suspend fun countEntries(): Int {

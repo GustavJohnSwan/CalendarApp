@@ -5,7 +5,7 @@ import com.bignerdranch.android.calendarapp3.benchmark.adapter.CrudBenchmarkAdap
 import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkConfig
 import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkResult
 import com.bignerdranch.android.calendarapp3.benchmark.util.BenchmarkDataFactory
-import com.bignerdranch.android.calendarapp3.benchmark.util.measureMillis
+import com.bignerdranch.android.calendarapp3.benchmark.util.measureNanos
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -16,10 +16,10 @@ class BenchmarkRunner(
 
     suspend fun runBasicCrudBenchmark(config: BenchmarkConfig): BenchmarkResult =
         withContext(Dispatchers.IO) {
-            val insertRuns = mutableListOf<Long>()
-            val readAllRuns = mutableListOf<Long>()
-            val updateRuns = mutableListOf<Long>()
-            val deleteRuns = mutableListOf<Long>()
+            val insertRunsNs = mutableListOf<Long>()
+            val readAllRunsNs = mutableListOf<Long>()
+            val updateRunsNs = mutableListOf<Long>()
+            val deleteRunsNs = mutableListOf<Long>()
 
             repeat(config.warmupRuns) {
                 runSingleCrudCycle(config.entryCount)
@@ -27,19 +27,19 @@ class BenchmarkRunner(
 
             repeat(config.measuredRuns) {
                 val cycleResult = runSingleCrudCycle(config.entryCount)
-                insertRuns += cycleResult.insertMs
-                readAllRuns += cycleResult.readAllMs
-                updateRuns += cycleResult.updateMs
-                deleteRuns += cycleResult.deleteMs
+                insertRunsNs += cycleResult.insertNs
+                readAllRunsNs += cycleResult.readAllNs
+                updateRunsNs += cycleResult.updateNs
+                deleteRunsNs += cycleResult.deleteNs
             }
 
             val result = BenchmarkResult(
                 databaseName = databaseName,
                 entryCount = config.entryCount,
-                insertRunsMs = insertRuns,
-                readAllRunsMs = readAllRuns,
-                updateRunsMs = updateRuns,
-                deleteRunsMs = deleteRuns
+                insertRunsNs = insertRunsNs,
+                readAllRunsNs = readAllRunsNs,
+                updateRunsNs = updateRunsNs,
+                deleteRunsNs = deleteRunsNs
             )
 
             logResult(result)
@@ -52,29 +52,31 @@ class BenchmarkRunner(
 
         val entries = BenchmarkDataFactory.createEntries(entryCount)
 
-        val insertMs = measureMillis {
+        val insertNs = measureNanos {
             adapter.insertEntries(entries)
         }
 
-        val readAllMs = measureMillis {
+        val readAllNs = measureNanos {
             adapter.readAllEntries()
         }
 
-        val updatedEntries = BenchmarkDataFactory.createUpdatedEntries(entries)
+        val updatedEntries = entries.map {
+            it.copy(title = it.title + "_updated")
+        }
 
-        val updateMs = measureMillis {
+        val updateNs = measureNanos {
             adapter.updateEntries(updatedEntries)
         }
 
-        val deleteMs = measureMillis {
+        val deleteNs = measureNanos {
             adapter.deleteEntriesByIds(entries.map { it.benchmarkId })
         }
 
         return CrudCycleTiming(
-            insertMs = insertMs,
-            readAllMs = readAllMs,
-            updateMs = updateMs,
-            deleteMs = deleteMs
+            insertNs = insertNs,
+            readAllNs = readAllNs,
+            updateNs = updateNs,
+            deleteNs = deleteNs
         )
     }
 
@@ -82,24 +84,24 @@ class BenchmarkRunner(
         Log.d(
             "BENCHMARK",
             """
-            DB=${result.databaseName}
-            N=${result.entryCount}
-            INSERT_RUNS_MS=${result.insertRunsMs}
-            READ_ALL_RUNS_MS=${result.readAllRunsMs}
-            UPDATE_RUNS_MS=${result.updateRunsMs}
-            DELETE_RUNS_MS=${result.deleteRunsMs}
-            INSERT_AVG_MS=${result.insertAverageMs}
-            READ_ALL_AVG_MS=${result.readAllAverageMs}
-            UPDATE_AVG_MS=${result.updateAverageMs}
-            DELETE_AVG_MS=${result.deleteAverageMs}
-            """.trimIndent()
+        DB=${result.databaseName}
+        N=${result.entryCount}
+        INSERT_RUNS_NS=${result.insertRunsNs}
+        READ_ALL_RUNS_NS=${result.readAllRunsNs}
+        UPDATE_RUNS_NS=${result.updateRunsNs}
+        DELETE_RUNS_NS=${result.deleteRunsNs}
+        INSERT_AVG_MS=${result.insertAverageMs}
+        READ_ALL_AVG_MS=${result.readAllAverageMs}
+        UPDATE_AVG_MS=${result.updateAverageMs}
+        DELETE_AVG_MS=${result.deleteAverageMs}
+        """.trimIndent()
         )
     }
 
     private data class CrudCycleTiming(
-        val insertMs: Long,
-        val readAllMs: Long,
-        val updateMs: Long,
-        val deleteMs: Long
+        val insertNs: Long,
+        val readAllNs: Long,
+        val updateNs: Long,
+        val deleteNs: Long
     )
 }

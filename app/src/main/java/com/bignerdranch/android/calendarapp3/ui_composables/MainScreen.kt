@@ -18,6 +18,7 @@ import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
 import java.time.YearMonth
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bignerdranch.android.calendarapp3.benchmark.adapter.ObjectBoxCrudBenchmarkAdapter
 import com.bignerdranch.android.calendarapp3.benchmark.adapter.RoomCrudBenchmarkAdapter
 import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkConfig
 import com.bignerdranch.android.calendarapp3.benchmark.runner.BenchmarkRunner
@@ -34,6 +35,12 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
 import com.bignerdranch.android.calendarapp3.database.AppDatabase
 import kotlinx.coroutines.launch
+
+import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
+import com.bignerdranch.android.calendarapp3.benchmark.objectbox.BenchmarkObjectBoxEntity
+
+import com.bignerdranch.android.calendarapp3.benchmark.adapter.CouchbaseCrudBenchmarkAdapter
+import com.bignerdranch.android.calendarapp3.benchmark.couchbase.CouchbaseBenchmarkDao
 
 /*
 I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
@@ -168,9 +175,9 @@ fun MainScreen(
 
                         val result = runner.runBasicCrudBenchmark(
                             BenchmarkConfig(
-                                entryCount = 100,
-                                warmupRuns = 1,
-                                measuredRuns = 3
+                                entryCount = 1000,
+                                warmupRuns = 2,
+                                measuredRuns = 5
                             )
                         )
 
@@ -184,6 +191,74 @@ fun MainScreen(
             }
         ) {
             Text("Run Room Benchmark")
+        }
+
+        Button(
+            onClick = {
+                scope.launch {
+                    benchmarkStatus = "Running ObjectBox benchmark..."
+
+                    try {
+                        val boxStore = ObjectBoxProvider.get()
+                        val box = boxStore.boxFor(BenchmarkObjectBoxEntity::class.java)
+
+                        val adapter = ObjectBoxCrudBenchmarkAdapter(box)
+                        val runner = BenchmarkRunner(
+                            databaseName = "ObjectBox",
+                            adapter = adapter
+                        )
+
+                        val result = runner.runBasicCrudBenchmark(
+                            BenchmarkConfig(
+                                entryCount = 1000,
+                                warmupRuns = 2,
+                                measuredRuns = 5
+                            )
+                        )
+
+                        benchmarkStatus =
+                            "ObjectBox done. Insert avg: ${result.insertAverageMs} ms"
+                    } catch (e: Exception) {
+                        benchmarkStatus = "ObjectBox failed: ${e.message}"
+                        Log.e("BENCHMARK_UI", "ObjectBox benchmark failed", e)
+                    }
+                }
+            }
+        ) {
+            Text("Run ObjectBox Benchmark")
+        }
+
+        Button(
+            onClick = {
+                scope.launch {
+                    benchmarkStatus = "Running Couchbase benchmark..."
+
+                    try {
+                        val dao = CouchbaseBenchmarkDao.getInstance(context)
+                        val adapter = CouchbaseCrudBenchmarkAdapter(dao)
+                        val runner = BenchmarkRunner(
+                            databaseName = "Couchbase",
+                            adapter = adapter
+                        )
+
+                        val result = runner.runBasicCrudBenchmark(
+                            BenchmarkConfig(
+                                entryCount = 1000,
+                                warmupRuns = 2,
+                                measuredRuns = 5
+                            )
+                        )
+
+                        benchmarkStatus =
+                            "Couchbase done. Insert avg: ${result.insertAverageMs} ms"
+                    } catch (e: Exception) {
+                        benchmarkStatus = "Couchbase failed: ${e.message}"
+                        Log.e("BENCHMARK_UI", "Couchbase benchmark failed", e)
+                    }
+                }
+            }
+        ) {
+            Text("Run Couchbase Benchmark")
         }
 
         Text(text = benchmarkStatus)

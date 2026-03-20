@@ -3,20 +3,32 @@ package com.bignerdranch.android.calendarapp3.benchmark.model
 data class BenchmarkResult(
     val databaseName: String,
     val entryCount: Int,
-    val insertRunsMs: List<Long>,
-    val readAllRunsMs: List<Long>,
-    val updateRunsMs: List<Long>,
-    val deleteRunsMs: List<Long>
+    val insertRunsNs: List<Long>,
+    val readAllRunsNs: List<Long>,
+    val updateRunsNs: List<Long>,
+    val deleteRunsNs: List<Long>
 ) {
+    val insertAverageNs: Double
+        get() = insertRunsNs.average()
+
+    val readAllAverageNs: Double
+        get() = readAllRunsNs.average()
+
+    val updateAverageNs: Double
+        get() = updateRunsNs.average()
+
+    val deleteAverageNs: Double
+        get() = deleteRunsNs.average()
+
     val insertAverageMs: Double
-        get() = insertRunsMs.average()
+        get() = insertAverageNs / 1_000_000.0
 
     val readAllAverageMs: Double
-        get() = readAllRunsMs.average()
+        get() = readAllAverageNs / 1_000_000.0
 
     val updateAverageMs: Double
-        get() = updateRunsMs.average()
+        get() = updateAverageNs / 1_000_000.0
 
     val deleteAverageMs: Double
-        get() = deleteRunsMs.average()
+        get() = deleteAverageNs / 1_000_000.0
 }

@@ -59,10 +59,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.saveable.rememberSaveable
 
 import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkConfig
 
 import com.bignerdranch.android.calendarapp3.benchmark.model.DeleteBenchmarkConfig
+
+import com.bignerdranch.android.calendarapp3.benchmark.adapter.RoomIndexedCrudBenchmarkAdapter
+
+
+
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.Row
+
+import com.bignerdranch.android.calendarapp3.benchmark.adapter.ObjectBoxIndexedCrudBenchmarkAdapter
+import com.bignerdranch.android.calendarapp3.benchmark.model.BenchmarkObjectBoxIndexedEntity
+
 
 /*
 I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
@@ -226,7 +238,46 @@ fun MainScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        var showIndexedBenchmarks by rememberSaveable { mutableStateOf(false) }
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (!showIndexedBenchmarks) {
+                Button(
+                    onClick = { showIndexedBenchmarks = false },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("No Index")
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { showIndexedBenchmarks = false },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("No Index")
+                }
+            }
+
+            if (showIndexedBenchmarks) {
+                Button(
+                    onClick = { showIndexedBenchmarks = true },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Indexed")
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { showIndexedBenchmarks = true },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Indexed")
+                }
+            }
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -524,103 +575,225 @@ fun MainScreen(
                 )
             }
 
+
+
             item {
                 BenchmarkSection(
-                    title = "Range Read Benchmark",
-                    buttons = listOf(
-                        "Run Room Range Read" to {
-                            scope.launch {
-                                benchmarkStatus = "Running Room range-read benchmark..."
-                                try {
-                                    val db = AppDatabase.getDatabase(context)
-                                    val dao = db.benchmarkRoomDao()
-                                    val adapter = RoomCrudBenchmarkAdapter(dao)
-                                    val runner = BenchmarkRunner(
-                                        databaseName = "Room",
-                                        adapter = adapter
-                                    )
+                    title = if (showIndexedBenchmarks) {
+                        "Range Read Benchmark (Indexed)"
+                    } else {
+                        "Range Read Benchmark (No Index)"
+                    },
+                    buttons = if (!showIndexedBenchmarks) {
+                        listOf(
+                            "Run Room Range Read" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running Room range-read benchmark..."
 
-                                    val result = runner.runReadInRangeBenchmark(
-                                        ReadInRangeBenchmarkConfig(
-                                            entryCount = 1000,
-                                            rangeStartIndex = 300,
-                                            rangeSize = 100,
-                                            warmupRuns = 2,
-                                            measuredRuns = 5
+                                    try {
+                                        val db = AppDatabase.getDatabase(context)
+                                        val dao = db.benchmarkRoomDao()
+                                        val adapter = RoomCrudBenchmarkAdapter(dao)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "Room_NoIndex",
+                                            adapter = adapter
                                         )
-                                    )
 
-                                    benchmarkStatus =
-                                        "Room range-read done. Avg: ${result.readAverageMs} ms"
-                                } catch (e: Exception) {
-                                    benchmarkStatus = "Room range-read failed: ${e.message}"
-                                    Log.e("BENCHMARK_UI", "Room range-read benchmark failed", e)
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "Room (no index) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "Room (no index) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "Room no-index range-read benchmark failed", e)
+                                    }
+                                }
+                            },
+
+                            "Run ObjectBox Range Read" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running ObjectBox range-read benchmark (no index)..."
+
+                                    try {
+                                        ObjectBoxProvider.init(context)
+                                        val boxStore = ObjectBoxProvider.get()
+                                        val box = boxStore.boxFor(BenchmarkObjectBoxEntity::class.java)
+
+                                        val adapter = ObjectBoxCrudBenchmarkAdapter(box)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "ObjectBox_NoIndex",
+                                            adapter = adapter
+                                        )
+
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "ObjectBox (no index) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "ObjectBox (no index) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "ObjectBox no-index range-read benchmark failed", e)
+                                    }
+                                }
+                            },
+
+                            "Run Couchbase Range Read" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running Couchbase range-read benchmark (no index)..."
+
+                                    try {
+                                        val dao = CouchbaseBenchmarkDao.getInstance(context)
+
+                                        // ensure NO index
+                                        dao.removeStartMillisIndex()
+
+                                        val adapter = CouchbaseCrudBenchmarkAdapter(dao)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "Couchbase_NoIndex",
+                                            adapter = adapter
+                                        )
+
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "Couchbase (no index) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "Couchbase (no index) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "Couchbase no-index range-read benchmark failed", e)
+                                    }
+                                }
+                            },
+
+
+
+
+
+                        )
+                    } else {
+                        listOf(
+                            "Run Room Range Read (Indexed)" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running Room range-read benchmark (indexed)..."
+
+                                    try {
+                                        val db = AppDatabase.getDatabase(context)
+                                        val dao = db.benchmarkRoomIndexedDao()
+                                        val adapter = RoomIndexedCrudBenchmarkAdapter(dao)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "Room_Indexed",
+                                            adapter = adapter
+                                        )
+
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "Room (indexed) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "Room (indexed) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "Room indexed range-read benchmark failed", e)
+                                    }
+                                }
+                            },
+
+                            "Run ObjectBox Range Read (Indexed)" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running ObjectBox range-read benchmark (indexed)..."
+
+                                    try {
+                                        ObjectBoxProvider.init(context)
+                                        val boxStore = ObjectBoxProvider.get()
+                                        val box = boxStore.boxFor(BenchmarkObjectBoxIndexedEntity::class.java)
+
+                                        val adapter = ObjectBoxIndexedCrudBenchmarkAdapter(box)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "ObjectBox_Indexed",
+                                            adapter = adapter
+                                        )
+
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "ObjectBox (indexed) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "ObjectBox (indexed) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "ObjectBox indexed range-read benchmark failed", e)
+                                    }
+                                }
+                            },
+
+                            "Run Couchbase Range Read (Indexed)" to {
+                                scope.launch {
+                                    benchmarkStatus = "Running Couchbase range-read benchmark (indexed)..."
+
+                                    try {
+                                        val dao = CouchbaseBenchmarkDao.getInstance(context)
+                                        dao.ensureStartMillisIndex()
+
+                                        val adapter = CouchbaseCrudBenchmarkAdapter(dao)
+                                        val runner = BenchmarkRunner(
+                                            databaseName = "Couchbase_Indexed",
+                                            adapter = adapter
+                                        )
+
+                                        val result = runner.runReadInRangeBenchmark(
+                                            ReadInRangeBenchmarkConfig(
+                                                entryCount = 5000,
+                                                rangeStartIndex = 1500,
+                                                rangeSize = 500,
+                                                warmupRuns = 2,
+                                                measuredRuns = 5
+                                            )
+                                        )
+
+                                        benchmarkStatus =
+                                            "Couchbase (indexed) range-read done. Avg: ${result.readAverageMs} ms"
+                                    } catch (e: Exception) {
+                                        benchmarkStatus = "Couchbase (indexed) range-read failed: ${e.message}"
+                                        Log.e("BENCHMARK_UI", "Couchbase indexed range-read benchmark failed", e)
+                                    }
                                 }
                             }
-                        },
-                        "Run ObjectBox Range Read" to {
-                            scope.launch {
-                                benchmarkStatus = "Running ObjectBox range-read benchmark..."
-
-                                try {
-                                    ObjectBoxProvider.init(context)
-                                    val boxStore = ObjectBoxProvider.get()
-                                    val box = boxStore.boxFor(BenchmarkObjectBoxEntity::class.java)
-
-                                    val adapter = ObjectBoxCrudBenchmarkAdapter(box)
-                                    val runner = BenchmarkRunner(
-                                        databaseName = "ObjectBox",
-                                        adapter = adapter
-                                    )
-
-                                    val result = runner.runReadInRangeBenchmark(
-                                        ReadInRangeBenchmarkConfig(
-                                            entryCount = 1000,
-                                            rangeStartIndex = 300,
-                                            rangeSize = 100,
-                                            warmupRuns = 2,
-                                            measuredRuns = 5
-                                        )
-                                    )
-
-                                    benchmarkStatus =
-                                        "ObjectBox range-read done. Avg: ${result.readAverageMs} ms"
-                                } catch (e: Exception) {
-                                    benchmarkStatus = "ObjectBox range-read failed: ${e.message}"
-                                    Log.e("BENCHMARK_UI", "ObjectBox range-read benchmark failed", e)
-                                }
-                            }
-                        },
-                        "Run Couchbase Range Read" to {
-                            scope.launch {
-                                benchmarkStatus = "Running Couchbase range-read benchmark..."
-                                try {
-                                    val dao = CouchbaseBenchmarkDao.getInstance(context)
-                                    val adapter = CouchbaseCrudBenchmarkAdapter(dao)
-                                    val runner = BenchmarkRunner(
-                                        databaseName = "Couchbase",
-                                        adapter = adapter
-                                    )
-
-                                    val result = runner.runReadInRangeBenchmark(
-                                        ReadInRangeBenchmarkConfig(
-                                            entryCount = 1000,
-                                            rangeStartIndex = 300,
-                                            rangeSize = 100,
-                                            warmupRuns = 2,
-                                            measuredRuns = 5
-                                        )
-                                    )
-
-                                    benchmarkStatus =
-                                        "Couchbase range-read done. Avg: ${result.readAverageMs} ms"
-                                } catch (e: Exception) {
-                                    benchmarkStatus = "Couchbase range-read failed: ${e.message}"
-                                    Log.e("BENCHMARK_UI", "Couchbase range-read benchmark failed", e)
-                                }
-                            }
-                        }
-                    )
+                        )
+                    }
                 )
             }
 

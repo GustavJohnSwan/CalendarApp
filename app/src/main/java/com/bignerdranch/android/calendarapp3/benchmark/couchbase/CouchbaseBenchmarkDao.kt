@@ -15,6 +15,10 @@ import com.couchbase.lite.SelectResult
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.use
 
+import com.couchbase.lite.*
+
+private const val RANGE_INDEX_NAME = "benchmark_startMillis_index"
+
 class CouchbaseBenchmarkDao private constructor() {
 
     private var database: Database? = null
@@ -248,5 +252,29 @@ class CouchbaseBenchmarkDao private constructor() {
         }
 
         return results
+    }
+
+
+
+
+
+    fun ensureStartMillisIndex() {
+        val collection = ensureBenchmarkCollection()
+
+        val index = IndexBuilder.valueIndex(
+            ValueIndexItem.property("startMillis")
+        )
+
+        collection.createIndex(RANGE_INDEX_NAME, index)
+    }
+
+    fun removeStartMillisIndex() {
+        val collection = ensureBenchmarkCollection()
+
+        try {
+            collection.deleteIndex(RANGE_INDEX_NAME)
+        } catch (e: Exception) {
+            // Ignore if index does not exist
+        }
     }
 }

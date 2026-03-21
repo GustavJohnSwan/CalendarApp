@@ -1,7 +1,8 @@
 package com.bignerdranch.android.calendarapp3.database.objectbox
 
 import android.content.Context
-import com.bignerdranch.android.calendarapp3.MyObjectBox
+
+import com.bignerdranch.android.calendarapp3.benchmark.MyObjectBox
 import io.objectbox.BoxStore
 
 //*

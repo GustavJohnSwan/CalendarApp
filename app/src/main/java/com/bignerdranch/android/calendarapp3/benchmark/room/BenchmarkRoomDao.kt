@@ -32,4 +32,14 @@ interface BenchmarkRoomDao {
 
     @Query("SELECT * FROM benchmark_entries ORDER BY startMillis ASC")
     suspend fun getAllOrderedByStartMillis(): List<BenchmarkRoomEntity>
+
+    @Query("""
+    SELECT * FROM benchmark_entries
+    WHERE startMillis BETWEEN :rangeStartMillis AND :rangeEndMillis
+    ORDER BY startMillis ASC
+""")
+    suspend fun readBenchmarkEntriesInRangeOrderedByStartMillis(
+        rangeStartMillis: Long,
+        rangeEndMillis: Long
+    ): List<BenchmarkRoomEntity>
 }

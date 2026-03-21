@@ -207,4 +207,46 @@ class CouchbaseBenchmarkDao private constructor() {
 
         return results
     }
+
+    fun readBenchmarkEntriesInRangeOrderedByStartMillis(
+        rangeStartMillis: Long,
+        rangeEndMillis: Long
+    ): List<BenchmarkEntry> {
+        val collection = ensureBenchmarkCollection()
+
+        val query = QueryBuilder
+            .select(SelectResult.all())
+            .from(DataSource.collection(collection))
+            .where(
+                Expression.property("type").equalTo(Expression.string("benchmark"))
+                    .and(
+                        Expression.property("startMillis").between(
+                            Expression.longValue(rangeStartMillis),
+                            Expression.longValue(rangeEndMillis)
+                        )
+                    )
+            )
+            .orderBy(Ordering.property("startMillis").ascending())
+
+        val results = mutableListOf<BenchmarkEntry>()
+
+        query.execute().use { resultSet ->
+            resultSet.forEach { result ->
+                val dict = result.getDictionary(collection.name) ?: return@forEach
+
+                results.add(
+                    BenchmarkEntry(
+                        benchmarkId = dict.getString("benchmarkId") ?: "",
+                        title = dict.getString("title") ?: "",
+                        description = dict.getString("description") ?: "",
+                        startMillis = dict.getLong("startMillis"),
+                        endMillis = dict.getLong("endMillis"),
+                        hasReminder = dict.getBoolean("hasReminder")
+                    )
+                )
+            }
+        }
+
+        return results
+    }
 }

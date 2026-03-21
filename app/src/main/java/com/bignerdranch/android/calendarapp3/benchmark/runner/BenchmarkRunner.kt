@@ -15,6 +15,9 @@ import com.bignerdranch.android.calendarapp3.benchmark.model.ReadByIdBenchmarkRe
 import com.bignerdranch.android.calendarapp3.benchmark.model.ReadOrderedBenchmarkConfig
 import com.bignerdranch.android.calendarapp3.benchmark.model.ReadOrderedBenchmarkResult
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadInRangeBenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.model.ReadInRangeBenchmarkResult
+
 class BenchmarkRunner(
     private val databaseName: String,
     private val adapter: CrudBenchmarkAdapter
@@ -222,6 +225,83 @@ class BenchmarkRunner(
             """
         DB=${result.databaseName}
         N=${result.entryCount}
+        READ_RUNS_NS=${result.readRunsNs}
+        READ_AVG_MS=${result.readAverageMs}
+        """.trimIndent()
+        )
+    }
+
+    //______________________________________________________________________________________________
+
+    suspend fun runReadInRangeBenchmark(config: ReadInRangeBenchmarkConfig): ReadInRangeBenchmarkResult =
+        withContext(Dispatchers.IO) {
+            val readRunsNs = mutableListOf<Long>()
+
+            repeat(config.warmupRuns) {
+                runSingleReadInRangeCycle(config)
+            }
+
+            repeat(config.measuredRuns) {
+                val readNs = runSingleReadInRangeCycle(config)
+                readRunsNs += readNs
+            }
+
+            val result = ReadInRangeBenchmarkResult(
+                databaseName = databaseName,
+                entryCount = config.entryCount,
+                rangeStartIndex = config.rangeStartIndex,
+                rangeSize = config.rangeSize,
+                readRunsNs = readRunsNs
+            )
+
+            logReadInRangeResult(result)
+
+            result
+        }
+
+    private suspend fun runSingleReadInRangeCycle(
+        config: ReadInRangeBenchmarkConfig
+    ): Long {
+        adapter.clearAll()
+
+        val entries = BenchmarkDataFactory.createEntries(config.entryCount)
+        adapter.insertEntries(entries)
+
+        require(config.entryCount > 0) { "entryCount must be > 0" }
+        require(config.rangeStartIndex in 0 until config.entryCount) {
+            "rangeStartIndex must be within inserted entries"
+        }
+        require(config.rangeSize > 0) { "rangeSize must be > 0" }
+
+        val rangeEndIndexExclusive = minOf(
+            config.rangeStartIndex + config.rangeSize,
+            entries.size
+        )
+
+        val rangeEntries = entries.subList(
+            config.rangeStartIndex,
+            rangeEndIndexExclusive
+        )
+
+        val rangeStartMillis = rangeEntries.first().startMillis
+        val rangeEndMillis = rangeEntries.last().startMillis
+
+        return measureNanos {
+            adapter.readEntriesInRangeOrderedByStartMillis(
+                rangeStartMillis = rangeStartMillis,
+                rangeEndMillis = rangeEndMillis
+            )
+        }
+    }
+
+    private fun logReadInRangeResult(result: ReadInRangeBenchmarkResult) {
+        Log.d(
+            "BENCHMARK_READ_IN_RANGE",
+            """
+        DB=${result.databaseName}
+        N=${result.entryCount}
+        RANGE_START_INDEX=${result.rangeStartIndex}
+        RANGE_SIZE=${result.rangeSize}
         READ_RUNS_NS=${result.readRunsNs}
         READ_AVG_MS=${result.readAverageMs}
         """.trimIndent()

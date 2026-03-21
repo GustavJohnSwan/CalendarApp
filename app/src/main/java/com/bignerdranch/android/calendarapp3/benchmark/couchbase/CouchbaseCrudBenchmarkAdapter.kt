@@ -38,4 +38,14 @@ class CouchbaseCrudBenchmarkAdapter(
     override suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry> {
         return dao.readAllBenchmarkEntriesOrderedByStartMillis()
     }
+
+    override suspend fun readEntriesInRangeOrderedByStartMillis(
+        rangeStartMillis: Long,
+        rangeEndMillis: Long
+    ): List<BenchmarkEntry> {
+        return dao.readBenchmarkEntriesInRangeOrderedByStartMillis(
+            rangeStartMillis,
+            rangeEndMillis
+        )
+    }
 }

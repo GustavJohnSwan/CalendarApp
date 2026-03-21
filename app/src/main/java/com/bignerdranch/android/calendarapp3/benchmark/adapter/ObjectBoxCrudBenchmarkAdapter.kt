@@ -72,4 +72,18 @@ class ObjectBoxCrudBenchmarkAdapter(
                 query.find().map { it.toBenchmarkEntry() }
             }
     }
+
+    override suspend fun readEntriesInRangeOrderedByStartMillis(
+        rangeStartMillis: Long,
+        rangeEndMillis: Long
+    ): List<BenchmarkEntry> {
+        return box.query(
+            BenchmarkObjectBoxEntity_.startMillis.between(rangeStartMillis, rangeEndMillis)
+        )
+            .order(BenchmarkObjectBoxEntity_.startMillis)
+            .build()
+            .use { query ->
+                query.find().map { it.toBenchmarkEntry() }
+            }
+    }
 }

@@ -13,4 +13,9 @@ interface CrudBenchmarkAdapter {
     suspend fun countEntries(): Int
 
     suspend fun readAllEntriesOrderedByStartMillis(): List<BenchmarkEntry>
+
+    suspend fun readEntriesInRangeOrderedByStartMillis(
+        rangeStartMillis: Long,
+        rangeEndMillis: Long
+    ): List<BenchmarkEntry>
 }

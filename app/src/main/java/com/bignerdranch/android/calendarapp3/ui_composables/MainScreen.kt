@@ -62,6 +62,8 @@ import androidx.compose.material3.MaterialTheme
 
 import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkConfig
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.DeleteBenchmarkConfig
+
 /*
 I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
 I also make sure the app remembers (saves) certain state data when recomposition and/or system changes
@@ -713,6 +715,104 @@ fun MainScreen(
                                 } catch (e: Exception) {
                                     benchmarkStatus = "Couchbase update failed: ${e.message}"
                                     Log.e("BENCHMARK_UI", "Couchbase update benchmark failed", e)
+                                }
+                            }
+                        }
+                    )
+                )
+            }
+
+            item {
+                BenchmarkSection(
+                    title = "Standalone Delete Benchmark",
+                    buttons = listOf(
+                        "Run Room Delete" to {
+                            scope.launch {
+                                benchmarkStatus = "Running Room delete benchmark..."
+
+                                try {
+                                    val db = AppDatabase.getDatabase(context)
+                                    val dao = db.benchmarkRoomDao()
+                                    val adapter = RoomCrudBenchmarkAdapter(dao)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "Room",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runDeleteBenchmark(
+                                        DeleteBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "Room delete done. Avg: ${result.deleteAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "Room delete failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "Room delete benchmark failed", e)
+                                }
+                            }
+                        },
+
+                        "Run ObjectBox Delete" to {
+                            scope.launch {
+                                benchmarkStatus = "Running ObjectBox delete benchmark..."
+
+                                try {
+                                    ObjectBoxProvider.init(context)
+                                    val boxStore = ObjectBoxProvider.get()
+                                    val box = boxStore.boxFor(BenchmarkObjectBoxEntity::class.java)
+
+                                    val adapter = ObjectBoxCrudBenchmarkAdapter(box)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "ObjectBox",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runDeleteBenchmark(
+                                        DeleteBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "ObjectBox delete done. Avg: ${result.deleteAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "ObjectBox delete failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "ObjectBox delete benchmark failed", e)
+                                }
+                            }
+                        },
+
+                        "Run Couchbase Delete" to {
+                            scope.launch {
+                                benchmarkStatus = "Running Couchbase delete benchmark..."
+
+                                try {
+                                    val dao = CouchbaseBenchmarkDao.getInstance(context)
+                                    val adapter = CouchbaseCrudBenchmarkAdapter(dao)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "Couchbase",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runDeleteBenchmark(
+                                        DeleteBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "Couchbase delete done. Avg: ${result.deleteAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "Couchbase delete failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "Couchbase delete benchmark failed", e)
                                 }
                             }
                         }

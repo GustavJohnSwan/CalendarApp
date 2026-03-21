@@ -21,6 +21,9 @@ import com.bignerdranch.android.calendarapp3.benchmark.model.ReadInRangeBenchmar
 import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkConfig
 import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkResult
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.DeleteBenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.model.DeleteBenchmarkResult
+
 class BenchmarkRunner(
     private val databaseName: String,
     private val adapter: CrudBenchmarkAdapter
@@ -365,6 +368,58 @@ class BenchmarkRunner(
             N=${result.entryCount}
             UPDATE_RUNS_NS=${result.updateRunsNs}
             UPDATE_AVG_MS=${result.updateAverageMs}
+            """.trimIndent()
+        )
+    }
+
+    //______________________________________________________________________________________________
+
+    suspend fun runDeleteBenchmark(config: DeleteBenchmarkConfig): DeleteBenchmarkResult =
+        withContext(Dispatchers.IO) {
+            val deleteRunsNs = mutableListOf<Long>()
+
+            repeat(config.warmupRuns) {
+                runSingleDeleteCycle(config)
+            }
+
+            repeat(config.measuredRuns) {
+                val deleteNs = runSingleDeleteCycle(config)
+                deleteRunsNs += deleteNs
+            }
+
+            val result = DeleteBenchmarkResult(
+                databaseName = databaseName,
+                entryCount = config.entryCount,
+                deleteRunsNs = deleteRunsNs
+            )
+
+            logDeleteResult(result)
+            result
+        }
+
+    private suspend fun runSingleDeleteCycle(
+        config: DeleteBenchmarkConfig
+    ): Long {
+        adapter.clearAll()
+
+        val entries = BenchmarkDataFactory.createEntries(config.entryCount)
+        adapter.insertEntries(entries)
+
+        val idsToDelete = entries.map { it.benchmarkId }
+
+        return measureNanos {
+            adapter.deleteEntriesByIds(idsToDelete)
+        }
+    }
+
+    private fun logDeleteResult(result: DeleteBenchmarkResult) {
+        Log.d(
+            "BENCHMARK_DELETE",
+            """
+            DB=${result.databaseName}
+            N=${result.entryCount}
+            DELETE_RUNS_NS=${result.deleteRunsNs}
+            DELETE_AVG_MS=${result.deleteAverageMs}
             """.trimIndent()
         )
     }

@@ -60,6 +60,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.MaterialTheme
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkConfig
+
 /*
 I implemented viewModel to seperate the UI design elements (composables) from business logic elements.
 I also make sure the app remembers (saves) certain state data when recomposition and/or system changes
@@ -613,6 +615,104 @@ fun MainScreen(
                                 } catch (e: Exception) {
                                     benchmarkStatus = "Couchbase range-read failed: ${e.message}"
                                     Log.e("BENCHMARK_UI", "Couchbase range-read benchmark failed", e)
+                                }
+                            }
+                        }
+                    )
+                )
+            }
+
+            item {
+                BenchmarkSection(
+                    title = "Standalone Update Benchmark",
+                    buttons = listOf(
+                        "Run Room Update" to {
+                            scope.launch {
+                                benchmarkStatus = "Running Room update benchmark..."
+
+                                try {
+                                    val db = AppDatabase.getDatabase(context)
+                                    val dao = db.benchmarkRoomDao()
+                                    val adapter = RoomCrudBenchmarkAdapter(dao)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "Room",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runUpdateBenchmark(
+                                        UpdateBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "Room update done. Avg: ${result.updateAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "Room update failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "Room update benchmark failed", e)
+                                }
+                            }
+                        },
+
+                        "Run ObjectBox Update" to {
+                            scope.launch {
+                                benchmarkStatus = "Running ObjectBox update benchmark..."
+
+                                try {
+                                    ObjectBoxProvider.init(context)
+                                    val boxStore = ObjectBoxProvider.get()
+                                    val box = boxStore.boxFor(BenchmarkObjectBoxEntity::class.java)
+
+                                    val adapter = ObjectBoxCrudBenchmarkAdapter(box)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "ObjectBox",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runUpdateBenchmark(
+                                        UpdateBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "ObjectBox update done. Avg: ${result.updateAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "ObjectBox update failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "ObjectBox update benchmark failed", e)
+                                }
+                            }
+                        },
+
+                        "Run Couchbase Update" to {
+                            scope.launch {
+                                benchmarkStatus = "Running Couchbase update benchmark..."
+
+                                try {
+                                    val dao = CouchbaseBenchmarkDao.getInstance(context)
+                                    val adapter = CouchbaseCrudBenchmarkAdapter(dao)
+                                    val runner = BenchmarkRunner(
+                                        databaseName = "Couchbase",
+                                        adapter = adapter
+                                    )
+
+                                    val result = runner.runUpdateBenchmark(
+                                        UpdateBenchmarkConfig(
+                                            entryCount = 1000,
+                                            warmupRuns = 2,
+                                            measuredRuns = 5
+                                        )
+                                    )
+
+                                    benchmarkStatus =
+                                        "Couchbase update done. Avg: ${result.updateAverageMs} ms"
+                                } catch (e: Exception) {
+                                    benchmarkStatus = "Couchbase update failed: ${e.message}"
+                                    Log.e("BENCHMARK_UI", "Couchbase update benchmark failed", e)
                                 }
                             }
                         }

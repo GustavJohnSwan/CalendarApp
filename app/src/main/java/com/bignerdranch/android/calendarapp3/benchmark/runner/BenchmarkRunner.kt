@@ -18,6 +18,9 @@ import com.bignerdranch.android.calendarapp3.benchmark.model.ReadOrderedBenchmar
 import com.bignerdranch.android.calendarapp3.benchmark.model.ReadInRangeBenchmarkConfig
 import com.bignerdranch.android.calendarapp3.benchmark.model.ReadInRangeBenchmarkResult
 
+import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkConfig
+import com.bignerdranch.android.calendarapp3.benchmark.model.UpdateBenchmarkResult
+
 class BenchmarkRunner(
     private val databaseName: String,
     private val adapter: CrudBenchmarkAdapter
@@ -305,6 +308,64 @@ class BenchmarkRunner(
         READ_RUNS_NS=${result.readRunsNs}
         READ_AVG_MS=${result.readAverageMs}
         """.trimIndent()
+        )
+    }
+
+    //______________________________________________________________________________________________
+
+    suspend fun runUpdateBenchmark(config: UpdateBenchmarkConfig): UpdateBenchmarkResult =
+        withContext(Dispatchers.IO) {
+            val updateRunsNs = mutableListOf<Long>()
+
+            repeat(config.warmupRuns) {
+                runSingleUpdateCycle(config)
+            }
+
+            repeat(config.measuredRuns) {
+                val updateNs = runSingleUpdateCycle(config)
+                updateRunsNs += updateNs
+            }
+
+            val result = UpdateBenchmarkResult(
+                databaseName = databaseName,
+                entryCount = config.entryCount,
+                updateRunsNs = updateRunsNs
+            )
+
+            logUpdateResult(result)
+            result
+        }
+
+    private suspend fun runSingleUpdateCycle(
+        config: UpdateBenchmarkConfig
+    ): Long {
+        adapter.clearAll()
+
+        val originalEntries = BenchmarkDataFactory.createEntries(config.entryCount)
+        adapter.insertEntries(originalEntries)
+
+        val updatedEntries = originalEntries.map { entry ->
+            entry.copy(
+                title = entry.title + " UPDATED",
+                description = entry.description + " UPDATED",
+                hasReminder = !entry.hasReminder
+            )
+        }
+
+        return measureNanos {
+            adapter.updateEntries(updatedEntries)
+        }
+    }
+
+    private fun logUpdateResult(result: UpdateBenchmarkResult) {
+        Log.d(
+            "BENCHMARK_UPDATE",
+            """
+            DB=${result.databaseName}
+            N=${result.entryCount}
+            UPDATE_RUNS_NS=${result.updateRunsNs}
+            UPDATE_AVG_MS=${result.updateAverageMs}
+            """.trimIndent()
         )
     }
 }

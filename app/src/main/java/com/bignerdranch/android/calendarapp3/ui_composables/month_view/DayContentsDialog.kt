@@ -118,25 +118,41 @@ fun DayContentsDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ElevatedButton(onClick = { source = EventSource.SQLITE }) {
-                        Text("SQLite")
+                    ElevatedButton(
+                        onClick = { source = EventSource.SQLITE },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "SQLite",
+                            maxLines = 1
+                        )
                     }
-                    Spacer(Modifier.width(8.dp))
-                    ElevatedButton(onClick = {
+
+                    ElevatedButton(
+                        onClick = {
                         source = EventSource.COUCHBASE
                         // refresh on demand too
-                        couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
-                    }) {
-                        Text("Couchbase")
+                        couchbaseCalendarViewModel.loadEntriesForDate(editEntryViewModel.selectedDate) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Couchbase",
+                            maxLines = 1
+                        )
                     }
-                    Spacer(Modifier.width(8.dp))
-                    ElevatedButton(onClick = {
+
+                    ElevatedButton(
+                        onClick = {
                         source = EventSource.OBJECTBOX
-                        objectBoxEditEntryViewModel.loadEntriesForDate(editEntryViewModel.selectedDate)
-                    }) {
-                        Text("ObjectBox")
+                        objectBoxEditEntryViewModel.loadEntriesForDate(editEntryViewModel.selectedDate) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "ObjectBox",
+                            maxLines = 1
+                        )
                     }
                 }
 
@@ -243,25 +259,6 @@ fun DayContentsDialog(
                         ) {
                             Text("New Event (ObjectBox)")
                         }
-                    }
-                }
-
-
-                if (source == EventSource.COUCHBASE) {
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    ElevatedButton(
-                        onClick = {
-                            couchbaseCalendarViewModel.logCalendarDatabaseContents()
-                            android.widget.Toast.makeText(
-                                context,
-                                "Couchbase contents logged to Logcat",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Log Couchbase DB (Logcat)")
                     }
                 }
                 }

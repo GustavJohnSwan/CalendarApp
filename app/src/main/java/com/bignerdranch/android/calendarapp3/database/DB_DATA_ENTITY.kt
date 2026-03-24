@@ -22,14 +22,7 @@ data class EntryTable(
         parentColumns = ["id"],             // PK in EntryTable
         childColumns = ["entry_id"],        // FK in THIS table
         onDelete = ForeignKey.CASCADE       // Delete extra data if entry is deleted
-    ),
-        ForeignKey( // FK to Attachments Table
-            entity = EntryAttachment::class,
-            parentColumns = ["id"],
-            childColumns = ["attachment_id"],
-            onDelete = ForeignKey.SET_NULL // If attachment is deleted, set this FK to null
-        )
-    ]
+    )]
 )
 
 data class ExtraDataTable(
@@ -37,8 +30,7 @@ data class ExtraDataTable(
     @ColumnInfo(name = "entry_id") val entryId: Int,  // This is the FK to EntryTable
     @ColumnInfo(name = "reminder_type") val reminderType: String? = null,
     @ColumnInfo(name = "repeat") val repeat: String? = null,
-    @ColumnInfo(name = "repeat_details") val repeatDetails: String? = null,
-    @ColumnInfo(name = "attachment_id") val attachmentId: Long? = null
+    @ColumnInfo(name = "repeat_details") val repeatDetails: String? = null
 )
 
 

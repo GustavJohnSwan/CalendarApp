@@ -9,8 +9,7 @@ import io.objectbox.relation.ToOne
 class ExtraDataOb(
     var reminderTypeOb: String? = null,
     var repeatOb: String? = null,
-    var repeatDetailsOb: String? = null,
-    var attachmentIdOb: Long? = null
+    var repeatDetailsOb: String? = null
 ) {
     @Id
     var id: Long = 0

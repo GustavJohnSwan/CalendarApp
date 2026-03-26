@@ -105,8 +105,7 @@ class ObjectBoxEditEntryViewModel(application: Application) : AndroidViewModel(a
                         ExtraDataOb(
                             reminderTypeOb = newReminderType,
                             repeatOb = newRepeatType,
-                            repeatDetailsOb = repeatDetails,
-                            attachmentIdOb = null
+                            repeatDetailsOb = repeatDetails
                         ),
                         entry.id
                     )

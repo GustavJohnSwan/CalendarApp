@@ -45,8 +45,7 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
             val extra = ExtraDataOb(
                 reminderTypeOb = reminderType,
                 repeatOb = repeat,
-                repeatDetailsOb = repeatDetails,
-                attachmentIdOb = null
+                repeatDetailsOb = repeatDetails
             )
             extraRepo.insertExtraData(extra, entryIdLong)
         }

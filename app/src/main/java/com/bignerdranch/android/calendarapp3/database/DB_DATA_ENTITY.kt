@@ -19,17 +19,17 @@ data class EntryTable(
 // EXTRA DATA TABLE (child - contains the foreign key)
 @Entity(
     foreignKeys = [ForeignKey(
-        entity = EntryTable::class,          // References the PARENT table
-        parentColumns = ["id"],             // PK in EntryTable
-        childColumns = ["entry_id"],        // FK in THIS table
-        onDelete = ForeignKey.CASCADE       // Delete extra data if entry is deleted
+        entity = EntryTable::class,                                                 // References the PARENT table
+        parentColumns = ["id"],                                                     // PK in EntryTable
+        childColumns = ["entry_id"],                                                // FK in THIS table
+        onDelete = ForeignKey.CASCADE                                               // Delete extra data if entry is deleted
     )],
     indices = [Index(value = ["entry_id"], unique = true)]
 )
 
 data class ExtraDataTable(
     @PrimaryKey(autoGenerate = true) val idExtra: Int = 0,
-    @ColumnInfo(name = "entry_id") val entryId: Int,  // This is the FK to EntryTable
+    @ColumnInfo(name = "entry_id") val entryId: Int,                                // This is the FK to EntryTable
     @ColumnInfo(name = "reminder_type") val reminderType: String? = null,
     @ColumnInfo(name = "repeat") val repeat: String? = null,
     @ColumnInfo(name = "repeat_details") val repeatDetails: String? = null

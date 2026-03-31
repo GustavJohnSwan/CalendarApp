@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
+import androidx.room.Index
 
 // this defines the tables of the database
 @Entity
@@ -22,7 +23,8 @@ data class EntryTable(
         parentColumns = ["id"],             // PK in EntryTable
         childColumns = ["entry_id"],        // FK in THIS table
         onDelete = ForeignKey.CASCADE       // Delete extra data if entry is deleted
-    )]
+    )],
+    indices = [Index(value = ["entry_id"], unique = true)]
 )
 
 data class ExtraDataTable(

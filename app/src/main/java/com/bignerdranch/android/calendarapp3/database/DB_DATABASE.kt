@@ -14,7 +14,7 @@ import com.bignerdranch.android.calendarapp3.benchmark.room.BenchmarkRoomIndexed
 
 // this class sets up the database - defines its configuration and acts as the main access point to the data
 // version needs to be incremented every time the schema is updated/changed
-@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, BenchmarkRoomEntity::class, BenchmarkRoomIndexedEntity::class], version = 15)
+@Database(entities = [EntryTable::class, ExtraDataTable::class, EntryAttachment::class, BenchmarkRoomEntity::class, BenchmarkRoomIndexedEntity::class], version = 16)
 abstract class AppDatabase : RoomDatabase() { // AppDatabase extends RoomDatabase
     // returns DAO interfaces
     abstract fun entryDao(): EntryDao

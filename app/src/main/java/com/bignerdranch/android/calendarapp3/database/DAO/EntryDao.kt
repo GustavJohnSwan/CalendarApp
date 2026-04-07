@@ -16,9 +16,6 @@ interface EntryDao {
     @Query("SELECT * FROM EntryTable")
     suspend fun get_AllEntries(): List<EntryTable>
 
-    // get extra data by entry ID
-    @Query("SELECT * FROM ExtraDataTable WHERE entry_id = :entryId")
-    suspend fun getExtraDataByEntryId(entryId: Int): ExtraDataTable?
 
     // get entries by specific date
     @Query("SELECT * FROM EntryTable WHERE date = :date ORDER BY time_minutes ASC")
@@ -30,14 +27,10 @@ interface EntryDao {
     @Delete
     suspend fun delete_Entry(entryTable: EntryTable)
 
-    @Insert
-    suspend fun insertExtraData(extraDataTable: ExtraDataTable): Long
 
     @Update
     suspend fun updateEntryWithExtraId(entryTable: EntryTable)
 
-    @Update
-    suspend fun updateExtraData(extraDataTable: ExtraDataTable)
 
     // updates time only
     @Query("UPDATE EntryTable SET time_minutes = :timeMinutes WHERE id = :entryId")

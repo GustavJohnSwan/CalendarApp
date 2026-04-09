@@ -24,7 +24,7 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
         repeat: String? = null,
         repeatDetails: String? = null
     ): Int {
-        // Insert main entry with time
+        // Insert main entry
         val newEntry = EntryTable(
             dateDB = dateDB,
             entryDB = entryDB,
@@ -32,6 +32,7 @@ class NewEntryViewModel(application: Application) : AndroidViewModel(application
         )
         val entryId = entryDao.insert_IntoEntryTable(newEntry).toInt()
 
+        // Insert extra data
         if (needsExtraData) {
             extraDataDao.insertExtraData(
                 ExtraDataTable(

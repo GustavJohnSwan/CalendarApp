@@ -22,5 +22,5 @@ object ObjectBoxProvider {
     }
 
     fun get(): BoxStore =
-        store ?: error("ObjectBoxProvider not initialized. Call ObjectBoxProvider.init(context) first.")
+        store ?: error("ObjectBoxProvider not initialized")
 }

@@ -84,6 +84,8 @@ I also make sure the app remembers (saves) certain state data when recomposition
 
 // this is the main screen composable that calls many of the other relevant composables for the month view
 
+// benchmarking functionality isnt fully/properly implemented yet. Currently benchmarking related code was implemented just for testing purposes.
+// Must be replaced with actual benchmarking solution
 private data class BenchmarkButtonItem(
     val label: String,
     val onClick: suspend () -> Unit

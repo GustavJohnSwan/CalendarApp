@@ -232,7 +232,7 @@ fun MainScreen(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
+/*
         Text(
             text = benchmarkStatus,
             modifier = Modifier.fillMaxWidth()
@@ -242,6 +242,9 @@ fun MainScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+ */
+
+        /*
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -278,6 +281,8 @@ fun MainScreen(
                 }
             }
         }
+        */
+
 
         /*
         LazyColumn(

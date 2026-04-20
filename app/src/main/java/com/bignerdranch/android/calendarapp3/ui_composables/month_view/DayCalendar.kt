@@ -23,7 +23,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun Day(onDateClick: () -> Unit, day: CalendarDay, isSelected: Boolean, onDateSelect: (String) -> Unit, onClick: (CalendarDay) -> Unit) {
     // Stores the current date
-    val currentDate = LocalDate.now()
+    //val currentDate = LocalDate.now()
+    val currentDate = LocalDate.of(2026, 3, 27)
 
     Box(
         // CURRENT DATE and SELECTED DATE style

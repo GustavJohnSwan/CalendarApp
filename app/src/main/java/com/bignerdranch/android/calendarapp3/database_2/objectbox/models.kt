@@ -1,6 +1,6 @@
 package com.bignerdranch.android.calendarapp3.database_2.objectbox
 
-import androidx.room.Entity
+import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 
 @Entity

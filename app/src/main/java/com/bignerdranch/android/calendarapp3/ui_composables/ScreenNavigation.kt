@@ -14,6 +14,7 @@ import com.bignerdranch.android.calendarapp3.buisness_logic.NewEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxNewEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.ObjectBoxEditEntryViewModel
 import com.bignerdranch.android.calendarapp3.buisness_logic.objectbox.attachment.ObjectBoxAttachmentViewModel
+import com.bignerdranch.android.calendarapp3.database_2.objectbox.BenchmarkScreen
 
 // this composable is responsible for navigating between tree main composables : MainScreen, NewEntry, EditEntry
 @Composable
@@ -39,6 +40,13 @@ fun ScreenNavigation() {
                 objectBoxEditEntryViewModel = objectBoxEditEntryViewModel
             )
         }
+
+        composable("benchmarks") {
+            BenchmarkScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         composable("NewEntry/{source}") { backStackEntry ->
             val source = backStackEntry.arguments?.getString("source") ?: "sqlite"
             NewEntry(

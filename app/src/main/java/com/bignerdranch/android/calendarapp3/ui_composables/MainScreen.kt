@@ -234,6 +234,10 @@ fun MainScreen(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
+
+
+
 /*
         Text(
             text = benchmarkStatus,
@@ -1002,6 +1006,12 @@ fun MainScreen(
             }
         }
         */
+        Button(onClick = {
+            navController.navigate("benchmarks")
+        }) {
+            Text("Open Benchmarks")
+        }
+
     }
 }
 

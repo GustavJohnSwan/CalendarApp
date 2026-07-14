@@ -18,6 +18,7 @@ class OB_DAO (store: BoxStore) {
         EOBBox.put(entries)
     }
 
+    // GET BULK
     fun getAllEntriesBulk(): List<EntryOb_B> {
         return EOBBox.all
     }

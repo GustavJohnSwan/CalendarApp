@@ -4,10 +4,15 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.bignerdranch.android.calendarapp3.database.objectbox.ObjectBoxProvider
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class BBL_OB_CBL_Room (application: Application) : AndroidViewModel(application){
 
 
+    var benchmarkStatus by mutableStateOf("Ready")
+    private set
 
 
     //-------------------------------------------------------------------------
@@ -62,6 +67,7 @@ class BBL_OB_CBL_Room (application: Application) : AndroidViewModel(application)
             )
         }
 
+        // BULK GET entries
         val allEntries = repo.getAllEntriesBulk()
 
         Log.d(

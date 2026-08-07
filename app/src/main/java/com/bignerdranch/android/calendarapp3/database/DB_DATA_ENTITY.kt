@@ -26,6 +26,7 @@ data class EntryTable(
     )],
     indices = [Index(value = ["entry_id"], unique = true)]
 )
+// relational index explination https://developer.android.com/reference/androidx/room/ForeignKey?utm_source=chatgpt.com
 
 data class ExtraDataTable(
     @PrimaryKey(autoGenerate = true) val idExtra: Int = 0,

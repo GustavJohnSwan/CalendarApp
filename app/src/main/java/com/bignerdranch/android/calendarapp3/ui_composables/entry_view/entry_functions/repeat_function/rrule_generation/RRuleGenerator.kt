@@ -3,8 +3,6 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fu
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.philjay.Frequency
 import com.philjay.RRule
-import com.philjay.Weekday
-import com.philjay.WeekdayNum
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -37,22 +35,6 @@ fun generateRRuleString(
 
     // Handle type-specific rules
     when (repeatType) {
-        "Weekly" -> {
-            // Convert day numbers (1=Mon, 7=Sun) to Weekday constants
-            options.selectedDays.forEach { dayNumber ->
-                val weekday = when (dayNumber) {
-                    1 -> Weekday.Monday
-                    2 -> Weekday.Tuesday
-                    3 -> Weekday.Wednesday
-                    4 -> Weekday.Thursday
-                    5 -> Weekday.Friday
-                    6 -> Weekday.Saturday
-                    7 -> Weekday.Sunday
-                    else -> throw IllegalArgumentException("Invalid day number: $dayNumber")
-                }
-                rule.byDay.add(WeekdayNum(0, weekday)) // 0 means every occurrence
-            }
-        }
         "Monthly" -> {
             if (options.monthlyType == "absolute") {
                 rule.byMonthDay.add(options.absoluteDay)
@@ -109,21 +91,6 @@ fun parseRRuleToRepeatOptions(rRuleString: String, repeatType: String): RepeatOp
     options.interval = rule.interval
 
     when (repeatType) {
-        "Weekly" -> {
-            // Extract days (MO, TU, WE,... -> 1, 2, 3,...)
-            options.selectedDays = rule.byDay.map { weekdayNum ->
-                when (weekdayNum.weekday) {
-                    Weekday.Monday -> 1
-                    Weekday.Tuesday -> 2
-                    Weekday.Wednesday -> 3
-                    Weekday.Thursday -> 4
-                    Weekday.Friday -> 5
-                    Weekday.Saturday -> 6
-                    Weekday.Sunday -> 7
-                    else -> 1 // fallback
-                }
-            }.toSet()
-        }
         "Monthly" -> {
             if (rule.byMonthDay.isNotEmpty()) {
                 options.monthlyType = "absolute"

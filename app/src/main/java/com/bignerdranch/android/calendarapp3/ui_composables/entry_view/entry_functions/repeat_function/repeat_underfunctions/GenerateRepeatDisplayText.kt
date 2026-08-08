@@ -8,17 +8,8 @@ fun generateRepeatDisplayText(repeatType: String, options: RepeatOptions): Strin
     val baseText = when (repeatType) {
         "Never" -> "Repeat: Never"
         "Daily" -> "Repeat: Daily (every ${options.interval} day${if (options.interval > 1) "s" else ""})"
-        "Weekly" -> {
-            val daysText = if (options.selectedDays.isNotEmpty()) {
-                val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-                options.selectedDays.sorted().joinToString(", ") { dayIndex ->
-                    dayNames.getOrElse(dayIndex - 1) { "Day $dayIndex" }
-                }
-            } else {
-                "No days selected"
-            }
-            "Repeat: Weekly (every ${options.interval} week${if (options.interval > 1) "s" else ""} on $daysText)"
-        }
+        "Weekly" ->
+            "Repeat: Weekly (every ${options.interval} week${if (options.interval > 1) "s" else ""})"
         "Monthly" -> {
             val monthlyText = if (options.monthlyType == "absolute") {
                 "on day ${options.absoluteDay}"

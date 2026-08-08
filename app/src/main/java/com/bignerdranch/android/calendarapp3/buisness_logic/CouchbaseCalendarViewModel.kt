@@ -188,8 +188,7 @@ class CouchbaseCalendarViewModel(application: Application) : AndroidViewModel(ap
                         repeatDetails = repeatDetails
                     )
                 } else {
-                    // Optional: if you support clearing extra data when user sets None/Never
-                    // mgr.deleteExtraDataForEntry(entryId)
+                    mgr.deleteExtraDataForEntry(entryId)
                 }
 
                 withContext(Dispatchers.Main) { onUpdated() }

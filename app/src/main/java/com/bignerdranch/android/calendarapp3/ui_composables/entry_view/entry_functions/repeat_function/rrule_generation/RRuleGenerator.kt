@@ -3,6 +3,8 @@ package com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_fu
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.philjay.Frequency
 import com.philjay.RRule
+import com.philjay.Weekday
+import com.philjay.WeekdayNum
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -38,8 +40,33 @@ fun generateRRuleString(
         "Monthly" -> {
             if (options.monthlyType == "absolute") {
                 rule.byMonthDay.add(options.absoluteDay)
-            }
+            } else {
+                val weekNumber = when (options.relativeWeek) {
+                    "first" -> 1
+                    "second" -> 2
+                    "third" -> 3
+                    "fourth" -> 4
+                    "last" -> -1
+                    else -> throw IllegalArgumentException(
+                        "Invalid relative week: ${options.relativeWeek}"
+                    )
+                }
 
+                val weekday = when (options.relativeDay) {
+                    "monday" -> Weekday.Monday
+                    "tuesday" -> Weekday.Tuesday
+                    "wednesday" -> Weekday.Wednesday
+                    "thursday" -> Weekday.Thursday
+                    "friday" -> Weekday.Friday
+                    "saturday" -> Weekday.Saturday
+                    "sunday" -> Weekday.Sunday
+                    else -> throw IllegalArgumentException(
+                        "Invalid relative day: ${options.relativeDay}"
+                    )
+                }
+
+                rule.byDay.add(WeekdayNum(weekNumber, weekday))
+            }
         }
         "Yearly" -> {
             rule.byMonth.add(options.month)
@@ -95,8 +122,30 @@ fun parseRRuleToRepeatOptions(rRuleString: String, repeatType: String): RepeatOp
             if (rule.byMonthDay.isNotEmpty()) {
                 options.monthlyType = "absolute"
                 options.absoluteDay = rule.byMonthDay.first()
-            }
+            } else if (rule.byDay.isNotEmpty()) {
+                val weekdayNum = rule.byDay.first()
 
+                options.monthlyType = "relative"
+
+                options.relativeWeek = when (weekdayNum.number) {
+                    1 -> "first"
+                    2 -> "second"
+                    3 -> "third"
+                    4 -> "fourth"
+                    -1 -> "last"
+                    else -> "first"
+                }
+
+                options.relativeDay = when (weekdayNum.weekday) {
+                    Weekday.Monday -> "monday"
+                    Weekday.Tuesday -> "tuesday"
+                    Weekday.Wednesday -> "wednesday"
+                    Weekday.Thursday -> "thursday"
+                    Weekday.Friday -> "friday"
+                    Weekday.Saturday -> "saturday"
+                    Weekday.Sunday -> "sunday"
+                }
+            }
         }
         "Yearly" -> {
             if (rule.byMonth.isNotEmpty()) {

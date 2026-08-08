@@ -246,12 +246,22 @@ class CouchBaseLiteDao {
 
 
     fun deleteEntry(entryId: String) {
-        val (entriesCollection, _) = ensureCalendarReady()
+        val (entriesCollection, extraDataCollection) = ensureCalendarReady()
 
         val doc = entriesCollection.getDocument(entryId)
             ?: throw IllegalArgumentException("No Couchbase entry with id=$entryId")
 
+        val extraDataId = doc.getString("extraDataId")
+
+        // Delete the main entry.
         entriesCollection.delete(doc)
+
+        // Delete its linked extra_data document if one exists.
+        if (!extraDataId.isNullOrBlank()) {
+            extraDataCollection.getDocument(extraDataId)?.let { extraDoc ->
+                extraDataCollection.delete(extraDoc)
+            }
+        }
 
         Log.i(TAG, "CBL entry deleted id=$entryId")
     }
@@ -339,6 +349,28 @@ class CouchBaseLiteDao {
         if (existingExtraId.isNullOrBlank()) {
             entriesCollection.save(entryDoc.toMutable().setString("extraDataId", extraMutable.id))
         }
+    }
+
+
+    fun deleteExtraDataForEntry(entryId: String) {
+        val (entriesCollection, extraDataCollection) = ensureCalendarReady()
+
+        val entryDoc = entriesCollection.getDocument(entryId) ?: return
+        val extraDataId = entryDoc.getString("extraDataId")
+
+        // First remove the link from the entry.
+        val mutableEntry = entryDoc.toMutable()
+        mutableEntry.remove("extraDataId")
+        entriesCollection.save(mutableEntry)
+
+        // Then remove the actual extra_data document.
+        if (!extraDataId.isNullOrBlank()) {
+            extraDataCollection.getDocument(extraDataId)?.let { extraDoc ->
+                extraDataCollection.delete(extraDoc)
+            }
+        }
+
+        Log.i(TAG, "Extra data deleted for entry: $entryId")
     }
 
 

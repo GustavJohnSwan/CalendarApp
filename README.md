@@ -1,12 +1,18 @@
 Android Calendar App
 
-This app was created as an example app that can perform basic calendar app functionalities and 
-successfully store and interact with the app generated data / user input data in one of 3 databases - Room, ObjectBox, Couchbase Lite.
+This app was created as a learning project demonstrating basic calendar functionality and 
+local data persistence using three different database solutions: Room, ObjectBox, and Couchbase Lite.
 
-- A user can create/edit/delete events for any date
-- add reminder and event repeat data to events
-- add attachments to events
+The application allows users to:
+- Create, edit, and delete events for any date
+- Add reminder and recurrence data to events
+- Add attachments to events
+- Store and interact with event data using Room, ObjectBox, or Couchbase Lite
 
-App was created primarily to learn more about basic app development and storing data.
-App creates and stores the reminder and repeat data but doesn't execute those specific functionalies - it doesn't notify
-the user based on reminder data and it doesn't generate repeat-events based on event repeat data.
+The project was developed primarily to gain practical experience with 
+Android application development, Jetpack Compose, and local database integration.
+
+Note: 
+The application generates and stores reminder and recurrence data, but 
+does not execute these features at runtime. It does not send notifications 
+based on reminder data or automatically generate recurring event instances from recurrence rules.

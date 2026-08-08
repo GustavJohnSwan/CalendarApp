@@ -13,7 +13,7 @@ import com.bignerdranch.android.calendarapp3.database.ExtraDataTable
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.repeat_underfunctions.RepeatOptions
 import com.bignerdranch.android.calendarapp3.ui_composables.entry_view.entry_functions.repeat_function.rrule_generation.parseRRuleToRepeatOptions
 import kotlinx.coroutines.launch
-
+import java.io.File
 
 
 class EditEntryViewModel(application: Application) : AndroidViewModel(application) {
@@ -128,12 +128,30 @@ class EditEntryViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun deleteEntry(entryTable: EntryTable) {
         viewModelScope.launch {
-            val existingExtraData = extraDataDao.getExtraDataByEntryId(entryTable.id)
-            existingExtraData?.let { extraDataDao.delete_ExData(it) }
+            val existingExtraData =
+                extraDataDao.getExtraDataByEntryId(entryTable.id)
 
+            existingExtraData?.let {
+                extraDataDao.delete_ExData(it)
+            }
+
+            // Remember the physical attachment directory before deleting the entry.
+            val attachmentDirectory = File(
+                getApplication<Application>().filesDir,
+                "attachments/entry_${entryTable.id}"
+            )
+
+            // Room deletes associated attachment database rows via FK CASCADE.
             entryDao.delete_Entry(entryTable)
 
-            entryTable.dateDB?.let { loadEntriesForDate(it) }
+            // Room cannot delete physical filesystem files, so remove them here.
+            if (attachmentDirectory.exists()) {
+                attachmentDirectory.deleteRecursively()
+            }
+
+            entryTable.dateDB?.let {
+                loadEntriesForDate(it)
+            }
         }
     }
 }

@@ -77,7 +77,6 @@ class ObjectBoxNewEntryViewModel(application: Application) : AndroidViewModel(ap
             )
 
 
-            Log.d("ObjectBoxTest", "Inserted EntryOb id=$entryId date=$date content=$content")
 
 
             entryRepo.logAllEntries()

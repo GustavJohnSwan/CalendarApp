@@ -79,6 +79,11 @@
           "type": 11,
           "flags": 520,
           "relationTarget": "EntryOb"
+        },
+        {
+          "id": "6:8263889545111377220",
+          "name": "attachmentIdOb",
+          "type": 6
         }
       ],
       "relations": []
@@ -129,100 +134,10 @@
         }
       ],
       "relations": []
-    },
-    {
-      "id": "5:888957053616586367",
-      "lastPropertyId": "7:5909058951392124253",
-      "name": "BenchmarkObjectBoxEntity",
-      "properties": [
-        {
-          "id": "1:7465092738504395813",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:5616128254601850701",
-          "name": "benchmarkId",
-          "type": 9
-        },
-        {
-          "id": "3:6117065289764557773",
-          "name": "title",
-          "type": 9
-        },
-        {
-          "id": "4:3981137194970077629",
-          "name": "description",
-          "type": 9
-        },
-        {
-          "id": "5:3586276592053168215",
-          "name": "startMillis",
-          "type": 6
-        },
-        {
-          "id": "6:5727995562901892288",
-          "name": "endMillis",
-          "type": 6
-        },
-        {
-          "id": "7:5909058951392124253",
-          "name": "hasReminder",
-          "type": 1
-        }
-      ],
-      "relations": []
-    },
-    {
-      "id": "6:3983543517864902682",
-      "lastPropertyId": "7:4141600256573922110",
-      "name": "BenchmarkObjectBoxIndexedEntity",
-      "properties": [
-        {
-          "id": "1:6105889796147739182",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:2017391691046848156",
-          "name": "benchmarkId",
-          "type": 9
-        },
-        {
-          "id": "3:5903181798227742126",
-          "name": "title",
-          "type": 9
-        },
-        {
-          "id": "4:3247070330144552214",
-          "name": "description",
-          "type": 9
-        },
-        {
-          "id": "5:5101312067189379465",
-          "name": "startMillis",
-          "indexId": "5:1047539603411670148",
-          "type": 6,
-          "flags": 8
-        },
-        {
-          "id": "6:9181950634117294416",
-          "name": "endMillis",
-          "type": 6
-        },
-        {
-          "id": "7:4141600256573922110",
-          "name": "hasReminder",
-          "type": 1
-        }
-      ],
-      "relations": []
     }
   ],
-  "lastEntityId": "6:3983543517864902682",
-  "lastIndexId": "5:1047539603411670148",
+  "lastEntityId": "4:2355048928369017897",
+  "lastIndexId": "4:3429230822916942693",
   "lastRelationId": "2:9182496213153922962",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -243,8 +158,7 @@
     6924293391579954873,
     6327411134673489393,
     6362623330744495477,
-    558293220794962619,
-    8263889545111377220
+    558293220794962619
   ],
   "retiredRelationUids": [
     9182496213153922962

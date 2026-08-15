@@ -37,6 +37,8 @@ fun RepeatOptionsDetail(
 
 data class RepeatOptions(
     var interval: Int = 1,
+
+    var selectedDays: Set<Int> = emptySet(),
     var monthlyType: String = "absolute",
     var absoluteDay: Int = 1,
     var relativeWeek: String = "first",

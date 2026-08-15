@@ -42,7 +42,33 @@ fun WeeklyRepeatOptions(
                     }
                 }
             )
-            Text("week(s)")
+            Text("week(s) on:")
+        }
+
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        val scrollState = rememberScrollState()
+
+        Row(
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .horizontalScroll(scrollState)
+        ) {
+            days.forEachIndexed { index, day ->
+                val isSelected = options.selectedDays.contains(index + 1)
+                FilterChip(
+                    selected = isSelected,
+                    onClick = {
+                        val newDays = if (isSelected) {
+                            options.selectedDays - (index + 1)
+                        } else {
+                            options.selectedDays + (index + 1)
+                        }
+                        onOptionsChange(options.copy(selectedDays = newDays))
+                    },
+                    label = { Text(day) },
+                    modifier = Modifier.padding(end = 4.dp)
+                )
+            }
         }
     }
 }
